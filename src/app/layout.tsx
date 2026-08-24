@@ -15,13 +15,13 @@ const quicksand = Quicksand({
 });
 
 export const metadata: Metadata = {
-  title: "MySLide corp.",
+  title: "GYCA",
   description: "Young Artists Begin and Grow — A Place Where Young Artists Begin and Grow",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ko" className={`${bebas.variable} ${quicksand.variable}`}>
+    <html lang="en" className={`${bebas.variable} ${quicksand.variable}`}>
       <head>
         <link rel="preconnect" href="https://cdn.jsdelivr.net" />
         <link

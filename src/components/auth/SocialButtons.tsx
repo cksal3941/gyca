@@ -45,8 +45,7 @@ export function SocialButtons() {
     const { error } = await signIn.social({ provider, callbackURL: "/" });
     if (error) {
       setError(
-        error.message ??
-          "소셜 로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+        error.message ?? "Social sign-in failed. Please try again later.",
       );
       setPending(null);
     }
@@ -62,7 +61,7 @@ export function SocialButtons() {
         onClick={() => social("google")}
       >
         <GoogleIcon />
-        Google로 계속하기
+        Continue with Google
       </Button>
       <Button
         type="button"
@@ -72,7 +71,7 @@ export function SocialButtons() {
         onClick={() => social("apple")}
       >
         <AppleIcon />
-        Apple로 계속하기
+        Continue with Apple
       </Button>
       {error && <p className="text-destructive text-xs">{error}</p>}
     </div>

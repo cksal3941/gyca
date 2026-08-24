@@ -1,20 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import Logo from "./Logo";
-import { signOut, useSession } from "@/lib/auth-client";
+import { useSession } from "@/lib/auth-client";
 
 const MENU = [
-  "자사 소개",
-  "북스토어",
-  "새 소식",
-  "주최 대회",
-  "에필로그",
-  "수상작",
-  "협업 갤러리",
-  "제휴 문의",
+  "About",
+  "Bookstore",
+  "News",
+  "Contests",
+  "Epilogue",
+  "Winners",
+  "Gallery",
+  "Contact",
 ];
 
 // The reference uses the simple-line-icons webfont (icon-social-instagram /
@@ -29,84 +28,162 @@ function Icon({ name, size }: { name: string; size: number }) {
   );
 }
 
-function AuthNav({ mobile = false }: { mobile?: boolean }) {
-  const router = useRouter();
-  const { data: session, isPending } = useSession();
+/** Circular avatar: user image if present, otherwise the name's initial. */
+function Avatar({
+  name,
+  image,
+  size = 30,
+}: {
+  name: string;
+  image?: string | null;
+  size?: number;
+}) {
+  if (image) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={image}
+        alt={name}
+        width={size}
+        height={size}
+        className="rounded-full border border-black/10 object-cover"
+        style={{ width: size, height: size }}
+      />
+    );
+  }
+  return (
+    <span
+      className="inline-flex items-center justify-center rounded-full bg-brand-blue font-nav font-semibold text-white uppercase"
+      style={{ width: size, height: size, fontSize: size * 0.45 }}
+    >
+      {name?.trim()?.charAt(0) || "?"}
+    </span>
+  );
+}
 
-  const logout = async () => {
-    await signOut();
-    router.refresh();
-  };
+/** GitHub-style account dropdown for the signed-in state. */
+function AccountMenu() {
+  const { data: session } = useSession();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  if (!session) return null;
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Account menu"
+        aria-expanded={open}
+        className="inline-flex items-center justify-center p-[5px] !transition-none"
+      >
+        <Avatar name={session.user.name} image={session.user.image} />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-[calc(100%+8px)] w-56 overflow-hidden rounded-lg border border-black/10 bg-white text-ink shadow-lg">
+          <div className="border-b border-black/10 px-4 py-3">
+            <p className="text-[13px] leading-tight text-neutral-500">
+              Signed in as
+            </p>
+            <p className="truncate text-[14px] font-semibold leading-snug">
+              {session.user.name}
+            </p>
+            <p className="truncate text-[12px] text-neutral-500">
+              {session.user.email}
+            </p>
+          </div>
+          <nav className="py-1">
+            <Link
+              href="/signout"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2.5 px-4 py-2 text-[13px] !transition-none hover:bg-brand-blue hover:text-white"
+            >
+              <Icon name="logout" size={14} />
+              Sign out
+            </Link>
+          </nav>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AuthNav({ mobile = false }: { mobile?: boolean }) {
+  const { data: session, isPending } = useSession();
 
   if (isPending) return null;
 
   if (mobile) {
     return session ? (
       <div className="flex items-center justify-between border-b border-line py-3 font-nav text-[16px]">
-        <span className="flex items-center gap-2">
-          <Icon name="user" size={16} /> {session.user.name}
+        <span className="flex items-center gap-2.5">
+          <Avatar name={session.user.name} image={session.user.image} size={26} />
+          {session.user.name}
         </span>
-        <button onClick={logout} className="text-neutral-500 hover:text-brand-blue">
-          Sign Out
-        </button>
+        <Link href="/signout" className="text-neutral-500 hover:text-brand-blue">
+          Sign out
+        </Link>
       </div>
     ) : (
       <div className="flex items-center gap-6 border-b border-line py-3 font-nav text-[16px]">
         <Link href="/login" className="flex items-center gap-2 hover:text-brand-blue">
-          <Icon name="login" size={16} /> Sign In
+          <Icon name="login" size={16} /> Sign in
         </Link>
         <Link href="/signup" className="flex items-center gap-2 hover:text-brand-blue">
-          <Icon name="user-follow" size={16} /> Sign Up
+          <Icon name="user-follow" size={16} /> Sign up
         </Link>
       </div>
     );
   }
 
-  // 화면이 좁으면 아이콘만, 2xl(1536px+)부터 텍스트 라벨 표시
+  // Desktop: narrow screens show icons only, labels appear from 2xl (1536px+)
   return session ? (
     <div className="hidden items-center lg:flex">
-      <span
-        className="flex items-center font-nav text-[15px] whitespace-nowrap"
-        title={session.user.name}
-      >
-        <span className="inline-flex items-center justify-center p-[10px]">
-          <Icon name="user" size={17} />
-        </span>
-        <span className="hidden 2xl:inline">{session.user.name}</span>
-      </span>
-      <button
-        onClick={logout}
-        aria-label="로그아웃"
-        title="Sign Out"
-        className="inline-flex items-center justify-center p-[10px] !transition-none hover:text-brand-blue"
-      >
-        <Icon name="logout" size={17} />
-      </button>
+      <AccountMenu />
     </div>
   ) : (
     <div className="hidden items-center lg:flex">
       <Link
         href="/login"
-        title="Sign In"
+        title="Sign in"
         className="flex items-center !transition-none hover:text-brand-blue"
       >
         <span className="inline-flex items-center justify-center p-[10px]">
           <Icon name="login" size={17} />
         </span>
         <span className="hidden font-nav text-[15px] whitespace-nowrap 2xl:inline">
-          Sign In
+          Sign in
         </span>
       </Link>
       <Link
         href="/signup"
-        title="Sign Up"
+        title="Sign up"
         className="flex items-center !transition-none hover:text-brand-blue 2xl:ml-2"
       >
         <span className="inline-flex items-center justify-center p-[10px]">
           <Icon name="user-follow" size={17} />
         </span>
         <span className="hidden font-nav text-[15px] whitespace-nowrap 2xl:inline">
-          Sign Up
+          Sign up
         </span>
       </Link>
     </div>
@@ -172,10 +249,8 @@ export default function Header() {
           ))}
         </nav>
 
-        {/* Icons zone — sits at the container's right edge (no padding), with
-            instagram ~26px after the divider. Both icons share a 10px-padded
-            box (no border/background) so they read as a uniform icon set. */}
-        <div className="ml-auto flex shrink-0 items-center pl-4 pr-4 lg:ml-0 lg:pl-[26px] lg:pr-0">
+        {/* Icons zone — sits at the container's right edge (no padding). */}
+        <div className="ml-auto flex shrink-0 items-center pl-4 pr-4 lg:ml-0 lg:pl-[26px] lg:pr-2">
           <AuthNav />
           {/* Instagram: 39×39 box (10px padding, 19px glyph) */}
           <a
@@ -185,31 +260,11 @@ export default function Header() {
           >
             <Icon name="social-instagram" size={19} />
           </a>
-          <button className="hidden items-center !transition-none hover:text-brand-blue sm:flex">
-            {/* Globe: matching 38×38 box (10px padding, 18px glyph) */}
-            <span className="inline-flex items-center justify-center p-[10px]">
-              <Icon name="globe" size={18} />
-            </span>
-            <span className="font-nav text-[17px]">한국어</span>
-            {/* Dropdown caret: CSS triangle (8×4, points down) in currentColor,
-                matching the reference border-triangle. */}
-            <span
-              aria-hidden
-              className="ml-[5px]"
-              style={{
-                width: 0,
-                height: 0,
-                borderLeft: "4px solid transparent",
-                borderRight: "4px solid transparent",
-                borderTop: "4px solid currentColor",
-              }}
-            />
-          </button>
 
           {/* Hamburger */}
           <button
             className="flex flex-col gap-[5px] p-2 !transition-none lg:hidden"
-            aria-label="메뉴 열기"
+            aria-label="Open menu"
             onClick={() => setMobileOpen((v) => !v)}
           >
             <span className="block h-[2px] w-6 bg-current" />
@@ -235,9 +290,6 @@ export default function Header() {
             <AuthNav mobile />
             <div className="flex items-center gap-4 py-3 text-neutral-600">
               <Icon name="social-instagram" size={19} />
-              <span className="flex items-center gap-1.5 font-nav text-[13px]">
-                <Icon name="globe" size={18} /> 한국어
-              </span>
             </div>
           </nav>
         </div>

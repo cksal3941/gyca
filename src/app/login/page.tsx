@@ -32,8 +32,8 @@ export default function LoginPage() {
     if (error) {
       setError(
         error.status === 401
-          ? "이메일 또는 비밀번호가 올바르지 않습니다."
-          : (error.message ?? "로그인에 실패했습니다. 다시 시도해 주세요."),
+          ? "Incorrect email or password."
+          : (error.message ?? "Sign in failed. Please try again."),
       );
       return;
     }
@@ -48,23 +48,23 @@ export default function LoginPage() {
           href="/"
           className="font-title mb-6 block text-center text-3xl tracking-wide text-brand-blue"
         >
-          MYSLIDE
+          GYCA
         </Link>
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-lg">로그인</CardTitle>
-            <CardDescription>계정에 로그인하세요</CardDescription>
+            <CardTitle className="text-lg">Sign in</CardTitle>
+            <CardDescription>Sign in to your account</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
             <SocialButtons />
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               <div className="h-px flex-1 bg-border" />
-              또는 이메일로 로그인
+              or continue with email
               <div className="h-px flex-1 bg-border" />
             </div>
             <form onSubmit={onSubmit} className="grid gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="email">이메일</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -76,7 +76,7 @@ export default function LoginPage() {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="password">비밀번호</Label>
+                <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -92,16 +92,16 @@ export default function LoginPage() {
                 className="w-full bg-brand-blue text-white hover:bg-brand-blue/90"
                 disabled={pending}
               >
-                {pending ? "로그인 중..." : "로그인"}
+                {pending ? "Signing in..." : "Sign in"}
               </Button>
             </form>
             <p className="text-center text-xs text-muted-foreground">
-              계정이 없으신가요?{" "}
+              Don&apos;t have an account?{" "}
               <Link
                 href="/signup"
                 className="font-medium text-brand-blue hover:underline"
               >
-                회원가입
+                Sign up
               </Link>
             </p>
           </CardContent>

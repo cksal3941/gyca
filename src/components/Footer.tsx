@@ -7,10 +7,10 @@ export default function Footer() {
         <div className="flex flex-col justify-between gap-10 md:flex-row md:items-start">
           <div>
             <span className="font-display text-[34px] italic tracking-[-0.5px] text-white">
-              MYSLIDE
+              GYCA
             </span>
             <p className="mt-4 text-[11px] leading-5 tracking-wide text-neutral-400">
-              COPYRIGHT© 2026 MYSLIDE CORP.
+              COPYRIGHT© 2026 GYCA CORP.
               <br />
               ALL RIGHTS RESERVED.
             </p>
@@ -18,13 +18,13 @@ export default function Footer() {
 
           <div className="text-[12px] leading-6 text-neutral-400">
             <p>
-              홈페이지 시스템 관련 문의 ·{" "}
+              Website inquiries ·{" "}
               <a href="#" className="text-neutral-200 hover:text-white">
-                admin@myslide.org
+                admin@gyca.org
               </a>
             </p>
-            <p>주소 · 서울 서초구 1687-6</p>
-            <p>사업자등록 / 통신판매업 · 451-87-01831</p>
+            <p>Address · 1687-6, Seocho-gu, Seoul, Korea</p>
+            <p>Business registration · 451-87-01831</p>
             <div className="mt-5 flex gap-5">
               {SNS.map((s) => (
                 <a
@@ -42,9 +42,9 @@ export default function Footer() {
 
       <div className="border-t border-white/10">
         <p className="mx-auto max-w-[1200px] px-6 py-5 text-[11px] leading-5 text-neutral-500">
-          상호명: 마이슬라이드(MySLide) · 대표자: 홍길동 · 사업자등록번호:
-          451-87-01831 · 통신판매업신고: 2025-서울서초-0000 · 개인정보관리책임자:
-          admin@myslide.org · 호스팅 제공자: 마이슬라이드
+          Company: GYCA · CEO: Gildong Hong · Business registration no.:
+          451-87-01831 · E-commerce permit: 2025-Seoul-Seocho-0000 · Privacy
+          officer: admin@gyca.org · Hosting provider: GYCA
         </p>
       </div>
     </footer>

@@ -29,11 +29,11 @@ export default function SignupPage() {
     e.preventDefault();
     setError(null);
     if (password !== confirm) {
-      setError("비밀번호가 일치하지 않습니다.");
+      setError("Passwords do not match.");
       return;
     }
     if (password.length < 8) {
-      setError("비밀번호는 8자 이상이어야 합니다.");
+      setError("Password must be at least 8 characters.");
       return;
     }
     setPending(true);
@@ -42,8 +42,8 @@ export default function SignupPage() {
     if (error) {
       setError(
         error.status === 422
-          ? "이미 가입된 이메일입니다."
-          : (error.message ?? "회원가입에 실패했습니다. 다시 시도해 주세요."),
+          ? "An account with this email already exists."
+          : (error.message ?? "Sign up failed. Please try again."),
       );
       return;
     }
@@ -58,26 +58,26 @@ export default function SignupPage() {
           href="/"
           className="font-title mb-6 block text-center text-3xl tracking-wide text-brand-blue"
         >
-          MYSLIDE
+          GYCA
         </Link>
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-lg">회원가입</CardTitle>
-            <CardDescription>새 계정을 만드세요</CardDescription>
+            <CardTitle className="text-lg">Sign up</CardTitle>
+            <CardDescription>Create a new account</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
             <SocialButtons />
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               <div className="h-px flex-1 bg-border" />
-              또는 이메일로 가입
+              or sign up with email
               <div className="h-px flex-1 bg-border" />
             </div>
             <form onSubmit={onSubmit} className="grid gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="name">이름</Label>
+                <Label htmlFor="name">Name</Label>
                 <Input
                   id="name"
-                  placeholder="홍길동"
+                  placeholder="Your name"
                   autoComplete="name"
                   required
                   value={name}
@@ -85,7 +85,7 @@ export default function SignupPage() {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="email">이메일</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -97,19 +97,19 @@ export default function SignupPage() {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="password">비밀번호</Label>
+                <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   type="password"
                   autoComplete="new-password"
-                  placeholder="8자 이상"
+                  placeholder="At least 8 characters"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="confirm">비밀번호 확인</Label>
+                <Label htmlFor="confirm">Confirm password</Label>
                 <Input
                   id="confirm"
                   type="password"
@@ -125,16 +125,16 @@ export default function SignupPage() {
                 className="w-full bg-brand-blue text-white hover:bg-brand-blue/90"
                 disabled={pending}
               >
-                {pending ? "가입 중..." : "회원가입"}
+                {pending ? "Creating account..." : "Sign up"}
               </Button>
             </form>
             <p className="text-center text-xs text-muted-foreground">
-              이미 계정이 있으신가요?{" "}
+              Already have an account?{" "}
               <Link
                 href="/login"
                 className="font-medium text-brand-blue hover:underline"
               >
-                로그인
+                Sign in
               </Link>
             </p>
           </CardContent>
