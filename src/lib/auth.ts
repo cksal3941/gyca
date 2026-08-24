@@ -30,6 +30,11 @@ export const auth = betterAuth({
     enabled: true,
     minPasswordLength: 8,
   },
+  user: {
+    deleteUser: {
+      enabled: true,
+    },
+  },
   socialProviders,
   // Apple 로그인의 form_post 콜백을 허용하기 위해 필요
   trustedOrigins: ["https://appleid.apple.com"],

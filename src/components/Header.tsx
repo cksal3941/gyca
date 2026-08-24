@@ -113,6 +113,14 @@ function AccountMenu() {
           </div>
           <nav className="py-1">
             <Link
+              href="/settings"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2.5 px-4 py-2 text-[13px] !transition-none hover:bg-brand-blue hover:text-white"
+            >
+              <Icon name="settings" size={14} />
+              Settings
+            </Link>
+            <Link
               href="/signout"
               onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 px-4 py-2 text-[13px] !transition-none hover:bg-brand-blue hover:text-white"
@@ -139,9 +147,14 @@ function AuthNav({ mobile = false }: { mobile?: boolean }) {
           <Avatar name={session.user.name} image={session.user.image} size={26} />
           {session.user.name}
         </span>
-        <Link href="/signout" className="text-neutral-500 hover:text-brand-blue">
-          Sign out
-        </Link>
+        <span className="flex items-center gap-4">
+          <Link href="/settings" className="text-neutral-500 hover:text-brand-blue">
+            Settings
+          </Link>
+          <Link href="/signout" className="text-neutral-500 hover:text-brand-blue">
+            Sign out
+          </Link>
+        </span>
       </div>
     ) : (
       <div className="flex items-center gap-6 border-b border-line py-3 font-nav text-[16px]">
@@ -252,14 +265,6 @@ export default function Header() {
         {/* Icons zone — sits at the container's right edge (no padding). */}
         <div className="ml-auto flex shrink-0 items-center pl-4 pr-4 lg:ml-0 lg:pl-[26px] lg:pr-2">
           <AuthNav />
-          {/* Instagram: 39×39 box (10px padding, 19px glyph) */}
-          <a
-            href="#"
-            aria-label="Instagram"
-            className="inline-flex items-center justify-center p-[10px] !transition-none hover:text-brand-blue"
-          >
-            <Icon name="social-instagram" size={19} />
-          </a>
 
           {/* Hamburger */}
           <button
@@ -288,9 +293,6 @@ export default function Header() {
               </a>
             ))}
             <AuthNav mobile />
-            <div className="flex items-center gap-4 py-3 text-neutral-600">
-              <Icon name="social-instagram" size={19} />
-            </div>
           </nav>
         </div>
       )}
