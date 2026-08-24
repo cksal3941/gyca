@@ -1,26 +1,128 @@
 @import "tailwindcss";
 
+@theme {
+  /* Brand palette (measured from myslide.org) */
+  --color-brand-blue: #0b05e2;
+  --color-brand-orange: #e55100;
+  --color-ink: #222222;
+  --color-ink-strong: #111111;
+  --color-line: #eeeeee;
+
+  /* Content max-width ~1000px */
+  --container-content: 1000px;
+
+  /* Fonts (measured from myslide.org) */
+  --font-display: var(--font-bebas), "Bebas Neue", sans-serif;
+  --font-nav: var(--font-quicksand), sans-serif;
+  --font-sans: "Pretendard Variable", Pretendard, var(--font-quicksand),
+    helvetica, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+
+  /* Global timing */
+  --ease-brand: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /* Keyframes */
+  --animate-marquee: marquee 25s linear infinite;
+  --animate-logo-marquee: logoMarquee 40s linear infinite;
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @keyframes logoMarquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @keyframes heroWordUp {
+    from {
+      opacity: 0;
+      transform: translateY(115%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #222222;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Global transition baseline (site uses `all .3s ease` broadly) */
+a,
+button {
+  transition: all 0.3s ease;
+}
+
+/* Section title: Latin/numbers render in Bebas, Korean falls back to Pretendard
+   (mirrors the reference "Bebas Kai, NexonLv2Gothic" stack) */
+.font-title {
+  font-family: var(--font-bebas), "Pretendard Variable", Pretendard, sans-serif;
+}
+
+/* Hero word-up reveal */
+.hero-word {
+  display: inline-block;
+  animation: heroWordUp 1s var(--ease-brand) both;
+}
+
+/* Scroll reveal utility */
+.reveal {
+  animation: fadeUp 0.7s var(--ease-brand) both;
+}
+
+/* Marquee helpers */
+.animate-marquee {
+  animation: var(--animate-marquee);
+}
+.animate-logo-marquee {
+  animation: var(--animate-logo-marquee);
+}
+.marquee-paused:hover .animate-marquee,
+.marquee-paused:hover .animate-logo-marquee {
+  animation-play-state: paused;
+}
+
+/* Hide scrollbar for internal sliders */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
