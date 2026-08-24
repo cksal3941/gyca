@@ -1,0 +1,15 @@
+# 배포용 리버스 프록시 설정 (Caddy)
+# 사용법: 도메인을 실제 도메인으로 바꾼 뒤, 서버에서 `caddy run` 실행
+# - 80 포트: 자동으로 443(HTTPS)으로 리다이렉트
+# - 443 포트: Let's Encrypt 인증서 자동 발급/갱신 후 HTTPS 서비스
+
+example.com {
+	reverse_proxy localhost:3000
+}
+
+# 아직 도메인이 없어서 IP로만 접속하는 경우 위 블록 대신 아래를 사용
+# (인증서 발급이 불가능하므로 80 포트 HTTP만 열림)
+#
+# :80 {
+# 	reverse_proxy localhost:3000
+# }
