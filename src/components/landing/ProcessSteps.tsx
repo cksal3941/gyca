@@ -69,13 +69,20 @@ export default function ProcessSteps() {
               to the Global Stage
             </h2>
 
-            <div className="grid gap-x-4 gap-y-8 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2 xl:grid-cols-4">
               {STEPS.map((step, i) => (
                 <div key={step.no} className="relative">
                   {/* Connector arrow between steps (desktop) — vertically
                       centered so all four align once the cards are equal height */}
                   {i < STEPS.length - 1 && (
-                    <span className="absolute left-[calc(100%+8px)] top-1/2 hidden -translate-x-1/2 -translate-y-1/2 text-ink-strong xl:block">
+                    <span
+                      className="absolute hidden text-ink-strong xl:block"
+                      style={{
+                        left: "calc(100% + 16px)",
+                        top: "50%",
+                        transform: "translate(-50%, -50%)",
+                      }}
+                    >
                       <ArrowRight size={18} />
                     </span>
                   )}
