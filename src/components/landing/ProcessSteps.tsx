@@ -75,7 +75,7 @@ export default function ProcessSteps() {
                   {/* Connector arrow between steps (desktop) — vertically
                       centered so all four align once the cards are equal height */}
                   {i < STEPS.length - 1 && (
-                    <span className="absolute -right-2 top-1/2 hidden -translate-y-1/2 text-ink-strong xl:block">
+                    <span className="absolute left-[calc(100%+8px)] top-1/2 hidden -translate-x-1/2 -translate-y-1/2 text-ink-strong xl:block">
                       <ArrowRight size={18} />
                     </span>
                   )}
