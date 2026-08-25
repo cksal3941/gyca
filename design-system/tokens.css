@@ -1,0 +1,26 @@
+:root {
+  --color-primary: rgb(0, 0, 0);
+  --color-secondary: rgb(255, 255, 255);
+  --font-heading: Manrope;
+  --font-body: Manrope;
+  --space-1: 1px;
+  --space-2: 2px;
+  --space-3: 3px;
+  --space-4: 4px;
+  --space-5: 5px;
+  --space-6: 6px;
+  --space-7: 7px;
+  --space-8: 8px;
+  --space-9: 9.75px;
+  --space-10: 10px;
+  --space-11: 12px;
+  --space-12: 13px;
+  --space-13: 14px;
+  --space-14: 15px;
+  --space-15: 20px;
+  --space-16: 24px;
+  --space-17: 25px;
+  --space-18: 32px;
+  --space-19: 40px;
+  --space-20: 80px;
+}

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bebas_Neue, Quicksand } from "next/font/google";
+import { Bebas_Neue, Quicksand, Manrope } from "next/font/google";
 import "./globals.css";
 
 const bebas = Bebas_Neue({
@@ -14,6 +14,13 @@ const quicksand = Quicksand({
   weight: ["400", "500", "600", "700"],
 });
 
+// Extracted from reference site (myslide.org) via extract-design-system
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+});
+
 export const metadata: Metadata = {
   title: "GYCA",
   description: "Young Artists Begin and Grow — A Place Where Young Artists Begin and Grow",
@@ -21,7 +28,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${bebas.variable} ${quicksand.variable}`}>
+    <html
+      lang="en"
+      className={`${bebas.variable} ${quicksand.variable} ${manrope.variable}`}
+    >
       <head>
         <link rel="preconnect" href="https://cdn.jsdelivr.net" />
         <link

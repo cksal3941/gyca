@@ -40,3 +40,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# design token extraction cache (raw output from extract-design-system)
+/.extract-design-system/

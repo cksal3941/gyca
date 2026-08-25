@@ -1,25 +1,17 @@
-import Header from "@/components/Header";
-import Hero from "@/components/Hero";
-import EventSlider from "@/components/EventSlider";
-import Marquee from "@/components/Marquee";
-import DarkProjects from "@/components/DarkProjects";
-import PartnerMarquee from "@/components/PartnerMarquee";
-import MediaUpdate from "@/components/MediaUpdate";
-import NewsUpdate from "@/components/NewsUpdate";
+import LandingHeader from "@/components/landing/LandingHeader";
+import LandingHero from "@/components/landing/LandingHero";
+import FeaturedAwards from "@/components/landing/FeaturedAwards";
+import ProcessSteps from "@/components/landing/ProcessSteps";
 import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
-    <div id="top">
-      <Header />
+    <div id="top" className="font-body">
+      <LandingHeader />
       <main>
-        <Hero />
-        <EventSlider />
-        <Marquee />
-        <DarkProjects />
-        <PartnerMarquee />
-        <MediaUpdate />
-        <NewsUpdate />
+        <LandingHero />
+        <FeaturedAwards />
+        <ProcessSteps />
       </main>
       <Footer />
     </div>

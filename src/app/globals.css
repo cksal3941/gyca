@@ -12,12 +12,22 @@
   --color-ink-strong: #111111;
   --color-line: #eeeeee;
 
+  /* Landing accents (home.png layout, reference design system) */
+  --color-brand-purple: #7c5cff;
+  --color-brand-teal: #12b5a5;
+  --color-canvas: #f7f6fb;
+  --color-surface: #f4f4f6;
+
   /* Content max-width ~1000px */
   --container-content: 1000px;
+  /* Wider shell for the landing layout */
+  --container-shell: 1280px;
 
   /* Fonts (measured from myslide.org) */
   --font-display: var(--font-bebas), "Bebas Neue", sans-serif;
   --font-nav: var(--font-quicksand), sans-serif;
+  /* Extracted from myslide.org via extract-design-system */
+  --font-body: var(--font-manrope), "Manrope", sans-serif;
   --font-sans: "Pretendard Variable", Pretendard, var(--font-quicksand),
     helvetica, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
 

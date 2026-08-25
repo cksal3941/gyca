@@ -15,19 +15,19 @@ const SLIDES: Slide[] = [
     title: ["2026 6TH IYAC", "YOUTH ART CONTEST"],
     desc: "뉴욕 대형 갤러리 Detour Gallery 수상작 전시 참여 기회가 제공되었으며, 세계적 큐레이터의 심사를 거칩니다.",
     tag: "2026 IYAC6",
-    image: "https://picsum.photos/seed/iyac-contest/1920/1080",
+    image: "/images/hero/iyac.jpg",
   },
   {
     title: ["2026 KAJAA YOUTH", "ART-FESTIVAL EXHIBITION"],
     desc: "2026 KAJAA가 낳은 청소년기 대상과 성장의 존적을 수상작 전시회 제3전시에서 함께 만나 보세요.",
     tag: "2026 KAJAA",
-    image: "https://picsum.photos/seed/kajaa-festival/1920/1080",
+    image: "/images/hero/kajaa.jpg",
   },
   {
     title: ["AWARD-WINNING", "ART ON SCREEN"],
     desc: "도심의 대형 스크린 위에 펼쳐진, 청소년 예술가들의 진심 어린 메시지를 만나보세요.",
     tag: "LED wall",
-    image: "https://picsum.photos/seed/led-wall-city/1920/1080",
+    image: "/images/hero/led-wall.jpg",
   },
 ];
 

@@ -12,19 +12,19 @@ const ITEMS: Media[] = [
     cat: "인터뷰",
     title: "IYAC 심사위원 Dale Clifford 인터뷰",
     sub: "심사위원 Dale Clifford 인터뷰 (前 SCAD 교수님 / AP 미술 수석 채점관)",
-    image: "https://picsum.photos/seed/media-dale/640/400",
+    image: "/images/media/dale-interview.jpg",
   },
   {
     cat: "미디어",
     title: "2025 카쟈아트페스티벌 전광판 송출",
     sub: "서울 삼성역 근처 옥택스 미디어(옥외 파리스크 미디어)&외 우수작 송출",
-    image: "https://picsum.photos/seed/media-billboard/640/400",
+    image: "/images/media/billboard.jpg",
   },
   {
     cat: "인터뷰",
     title: "2025 IYAC 은상 수상자 인터뷰 영상",
     sub: "2025 SVA 심가 / 2025 IYAC 수상자 강남 학원가 글로벌 무대 도전기",
-    image: "https://picsum.photos/seed/media-interview/640/400",
+    image: "/images/media/iyac-interview.jpg",
   },
 ];
 

@@ -19,9 +19,9 @@ const EVENTS: EventItem[] = [
     title: ["2026 6TH IYAC 글로벌", "청소년 미술 대회"],
     desc: "뉴욕 대형 갤러리 Detour Gallery 수상작 전시 참여 기회가 제공되었으며, 우수한 성적을 작품은 미국 뉴저지 상원의원상 수여 및 코엑스 대형 스크린 전시가 진행 됩니다.",
     posters: [
-      "https://picsum.photos/seed/poster-global-art/447/632",
-      "https://picsum.photos/seed/poster-iyac-junior/447/632",
-      "https://picsum.photos/seed/poster-iyac-3/447/632",
+      "/images/posters/iyac-1.jpg",
+      "/images/posters/iyac-2.jpg",
+      "/images/posters/iyac-3.jpg",
     ],
   },
   {
@@ -31,9 +31,9 @@ const EVENTS: EventItem[] = [
     title: ["2026 KAJAA 한국 청소년", "아트 페스티벌"],
     desc: "대한민국 청소년 창작 미술 대회. 도심 LED 스크린 송출과 오프라인 전시가 함께 진행되며, 우수작은 글로벌 무대로 이어집니다.",
     posters: [
-      "https://picsum.photos/seed/poster-kajaa-1/447/632",
-      "https://picsum.photos/seed/poster-kajaa-2/447/632",
-      "https://picsum.photos/seed/poster-kajaa-3/447/632",
+      "/images/posters/kajaa-1.jpg",
+      "/images/posters/kajaa-2.jpg",
+      "/images/posters/kajaa-3.jpg",
     ],
   },
   {
@@ -43,9 +43,9 @@ const EVENTS: EventItem[] = [
     title: ["2025 IYAC Global", "Youth Art Contest"],
     desc: "전 세계 청소년 예술가들이 참여한 글로벌 아트 콘테스트. 뉴욕 Detour Gallery 전시로 마무리되었습니다.",
     posters: [
-      "https://picsum.photos/seed/poster-2025-1/447/632",
-      "https://picsum.photos/seed/poster-2025-2/447/632",
-      "https://picsum.photos/seed/poster-2025-3/447/632",
+      "/images/posters/2025-1.jpg",
+      "/images/posters/2025-2.jpg",
+      "/images/posters/2025-3.jpg",
     ],
   },
 ];
