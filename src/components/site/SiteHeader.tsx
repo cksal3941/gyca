@@ -39,8 +39,8 @@ export default function SiteHeader() {
             <Link
               key={item.href}
               href={item.href}
-              className={`text-[15px] font-medium hover:text-brand-blue ${
-                isActive(item.href) ? "text-brand-blue" : "text-ink-strong"
+              className={`text-[17px] hover:text-brand-blue ${
+                isActive(item.href) ? "font-bold text-brand-blue" : "text-ink-strong"
               }`}
             >
               {item.label}

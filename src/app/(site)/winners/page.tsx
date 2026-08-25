@@ -25,7 +25,7 @@ function WinnerItem({ w }: { w: Winner }) {
         <span className={`h-2.5 w-2.5 rounded-full ${AWARD_COLOR[w.award]}`} />
         {w.award}
       </p>
-      <h3 className="mt-2 font-serif text-[clamp(20px,2.2vw,26px)] font-bold leading-tight text-ink-strong group-hover:text-brand-blue">
+      <h3 className="mt-2 font-serif text-[clamp(24px,2.4vw,30px)] leading-[1.2] tracking-[0.01em] text-ink-strong group-hover:text-brand-blue">
         {w.title}
       </h3>
       <p className="mt-2 text-[14px] text-neutral-500">

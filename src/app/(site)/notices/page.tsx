@@ -19,7 +19,7 @@ function FaqItem({ n }: { n: Notice }) {
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center justify-between gap-6 py-6 text-left"
       >
-        <span className="font-serif text-[clamp(18px,1.8vw,22px)] font-bold leading-snug text-ink-strong">
+        <span className="font-serif text-[clamp(20px,2vw,24px)] leading-snug tracking-[0.01em] text-ink-strong">
           {n.title}
         </span>
         <span
@@ -31,7 +31,7 @@ function FaqItem({ n }: { n: Notice }) {
         </span>
       </button>
       {open && (
-        <p className="max-w-[46rem] pb-7 text-[16px] leading-[1.8] text-neutral-500">
+        <p className="max-w-[46rem] pb-7 text-[14px] leading-[1.9] text-neutral-500">
           {n.body}
         </p>
       )}
@@ -86,7 +86,7 @@ export default function NoticesPage() {
                 >
                   {n.category}
                 </span>
-                <h2 className="min-w-0 flex-1 font-serif text-[clamp(19px,2vw,26px)] font-bold leading-snug text-ink-strong group-hover:text-brand-blue">
+                <h2 className="min-w-0 flex-1 font-serif text-[clamp(20px,2vw,24px)] leading-snug tracking-[0.01em] text-ink-strong group-hover:text-brand-blue">
                   {n.title}
                 </h2>
                 <span className="hidden shrink-0 text-[14px] text-neutral-500 sm:block">
@@ -109,7 +109,7 @@ export default function NoticesPage() {
             <p className="text-[13px] font-bold uppercase tracking-[0.18em] text-brand-blue">
               FAQ
             </p>
-            <h2 className="mt-5 font-serif text-[clamp(26px,3vw,38px)] font-bold leading-[1.1] tracking-[-0.02em] text-ink-strong">
+            <h2 className="mt-5 font-serif text-[clamp(26px,2.6vw,32px)] leading-[1.15] tracking-[0.01em] text-ink-strong">
               자주 묻는 질문
             </h2>
 

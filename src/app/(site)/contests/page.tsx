@@ -37,11 +37,11 @@ function ContestRow({ c, flip }: { c: Contest; flip: boolean }) {
           {c.categoryEn}
         </p>
         <Link href={`/contests/${c.slug}`}>
-          <h2 className="mt-3 font-serif text-[clamp(26px,3vw,36px)] font-bold leading-tight text-ink-strong hover:text-brand-blue">
+          <h2 className="mt-3 font-serif text-[clamp(30px,3.6vw,40px)] leading-[1.2] tracking-[0.01em] text-ink-strong hover:text-brand-blue">
             {c.title}
           </h2>
         </Link>
-        <p className="mt-4 max-w-[34rem] text-[15px] leading-[1.7] text-neutral-500">
+        <p className="mt-4 max-w-[34rem] text-[14px] leading-[1.9] text-neutral-500">
           {c.summary}
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-neutral-500">

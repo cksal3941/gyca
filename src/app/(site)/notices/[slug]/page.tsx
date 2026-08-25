@@ -34,13 +34,13 @@ export default async function NoticeDetail({
         <p className="text-[13px] font-bold uppercase tracking-[0.18em] text-brand-blue">
           {n.category}
         </p>
-        <h1 className="mt-4 font-serif text-[clamp(30px,4.2vw,52px)] font-bold leading-[1.08] tracking-[-0.02em] text-ink-strong">
+        <h1 className="mt-4 font-serif text-[clamp(40px,5vw,64px)] leading-[1.05] tracking-[0.01em] text-ink-strong">
           {n.title}
         </h1>
         <p className="mt-6 text-[14px] text-neutral-500">{n.date}</p>
 
         <div className="mt-10 border-t border-line pt-10">
-          <p className="text-[17px] leading-[1.8] text-neutral-500">{n.body}</p>
+          <p className="text-[14px] leading-[1.9] text-neutral-500">{n.body}</p>
         </div>
 
         <div className="mt-14 border-t border-line pt-8">

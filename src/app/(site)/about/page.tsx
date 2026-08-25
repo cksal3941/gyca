@@ -49,17 +49,17 @@ export default function AboutPage() {
             <p className="text-[13px] font-bold uppercase tracking-[0.18em] text-brand-blue">
               Vision &amp; Mission
             </p>
-            <h2 className="mt-5 font-serif text-[clamp(28px,3.4vw,44px)] font-bold leading-[1.12] tracking-[-0.02em] text-ink-strong">
+            <h2 className="mt-5 font-serif text-[clamp(40px,5vw,64px)] leading-[1.05] tracking-[0.01em] text-ink-strong">
               청소년의 창작이 국경을 넘어 세계와 만나도록.
             </h2>
           </div>
           <div className="lg:col-span-7 lg:pt-2">
-            <p className="max-w-[42rem] text-[17px] leading-[1.8] text-neutral-500">
+            <p className="max-w-[42rem] text-[14px] leading-[1.9] text-neutral-500">
               GYCA는 도서·미술·음악·비즈니스 등 다양한 분야에서 청소년 창작자를
               발굴하고, 수상작을 프랑크푸르트·스폴레토·서울·미국의 국제 무대로
               연결합니다.
             </p>
-            <p className="mt-6 max-w-[42rem] text-[17px] leading-[1.8] text-neutral-500">
+            <p className="mt-6 max-w-[42rem] text-[14px] leading-[1.9] text-neutral-500">
               공정한 심사와 지속 가능한 성장 경로를 통해 청소년이 자신의 이야기를
               세계와 나눌 수 있도록 돕는 것이 우리의 미션입니다.
             </p>
@@ -73,10 +73,10 @@ export default function AboutPage() {
           <p className="text-[13px] font-bold uppercase tracking-[0.18em] text-brand-blue">
             Programs
           </p>
-          <h2 className="mt-5 max-w-[36rem] font-serif text-[clamp(26px,3vw,38px)] font-bold leading-[1.1] tracking-[-0.02em] text-ink-strong">
+          <h2 className="mt-5 max-w-[36rem] font-serif text-[clamp(26px,2.6vw,32px)] leading-[1.15] tracking-[0.01em] text-ink-strong">
             국제 프로그램 카테고리
           </h2>
-          <p className="mt-5 max-w-[42rem] text-[16px] leading-[1.7] text-neutral-500">
+          <p className="mt-5 max-w-[42rem] text-[14px] leading-[1.9] text-neutral-500">
             네 개의 핵심 분야에서 청소년 창작자를 위한 국제 공모전을 운영합니다.
           </p>
 
@@ -88,10 +88,10 @@ export default function AboutPage() {
                 >
                   {p.eyebrow}
                 </p>
-                <h3 className="mt-3 font-serif text-[clamp(20px,2vw,26px)] font-bold leading-snug text-ink-strong">
+                <h3 className="mt-3 font-serif text-[clamp(24px,2.4vw,30px)] leading-[1.2] tracking-[0.01em] text-ink-strong">
                   {p.title}
                 </h3>
-                <p className="mt-3 text-[15px] leading-[1.7] text-neutral-500">
+                <p className="mt-3 text-[14px] leading-[1.9] text-neutral-500">
                   {p.note}
                 </p>
               </div>
@@ -106,7 +106,7 @@ export default function AboutPage() {
           <p className="text-[13px] font-bold uppercase tracking-[0.18em] text-brand-blue">
             Global Stages
           </p>
-          <h2 className="mt-5 font-serif text-[clamp(26px,3vw,38px)] font-bold leading-[1.1] tracking-[-0.02em] text-ink-strong">
+          <h2 className="mt-5 font-serif text-[clamp(26px,2.6vw,32px)] leading-[1.15] tracking-[0.01em] text-ink-strong">
             세계로 이어지는 무대
           </h2>
 
@@ -116,10 +116,10 @@ export default function AboutPage() {
                 <p className="font-mono text-[13px] text-neutral-400">
                   {String(i + 1).padStart(2, "0")}
                 </p>
-                <p className="mt-4 font-serif text-[clamp(24px,2.4vw,32px)] font-bold leading-tight text-ink-strong">
+                <p className="mt-4 font-serif text-[clamp(24px,2.4vw,30px)] leading-[1.2] tracking-[0.01em] text-ink-strong">
                   {s.city}
                 </p>
-                <p className="mt-3 text-[15px] leading-[1.7] text-neutral-500">
+                <p className="mt-3 text-[14px] leading-[1.9] text-neutral-500">
                   {s.note}
                 </p>
               </div>
@@ -134,7 +134,7 @@ export default function AboutPage() {
           <p className="text-[13px] font-bold uppercase tracking-[0.18em] text-brand-blue">
             Partners
           </p>
-          <h2 className="mt-5 font-serif text-[clamp(26px,3vw,38px)] font-bold leading-[1.1] tracking-[-0.02em] text-ink-strong">
+          <h2 className="mt-5 font-serif text-[clamp(26px,2.6vw,32px)] leading-[1.15] tracking-[0.01em] text-ink-strong">
             파트너 · 협력기관
           </h2>
 
@@ -158,10 +158,10 @@ export default function AboutPage() {
       <section className="mx-auto max-w-shell px-6">
         <div className="flex flex-col justify-between gap-8 py-16 lg:flex-row lg:items-end lg:py-24">
           <div>
-            <h2 className="max-w-[26rem] font-serif text-[clamp(28px,3.2vw,42px)] font-bold leading-[1.1] tracking-[-0.02em] text-ink-strong">
+            <h2 className="max-w-[26rem] font-serif text-[clamp(26px,2.6vw,32px)] leading-[1.15] tracking-[0.01em] text-ink-strong">
               지금 GYCA와 함께하세요
             </h2>
-            <p className="mt-5 max-w-[36rem] text-[16px] leading-[1.7] text-neutral-500">
+            <p className="mt-5 max-w-[36rem] text-[14px] leading-[1.9] text-neutral-500">
               분야별 공모전을 살펴보고 작품을 접수해 보세요.
             </p>
           </div>

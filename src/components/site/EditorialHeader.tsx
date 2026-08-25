@@ -47,11 +47,11 @@ export default function EditorialHeader({
                 {eyebrow}
               </p>
             )}
-            <h1 className="font-serif text-[clamp(34px,4.6vw,58px)] font-bold leading-[1.06] tracking-[-0.02em] text-ink-strong">
+            <h1 className="font-serif text-[clamp(44px,5.6vw,72px)] leading-[1.04] tracking-[0.01em] text-ink-strong">
               {title}
             </h1>
             {description && (
-              <p className="mt-5 max-w-[42rem] text-[16px] leading-[1.7] text-neutral-500">
+              <p className="mt-6 max-w-[40rem] text-[14px] leading-[1.9] text-neutral-500">
                 {description}
               </p>
             )}

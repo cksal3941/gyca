@@ -100,10 +100,10 @@ export default async function ContestDetail({
                   id={s.id}
                   className="scroll-mt-24 border-b border-line py-8"
                 >
-                  <h2 className="font-serif text-[clamp(24px,2.4vw,30px)] font-bold leading-tight text-ink-strong">
+                  <h2 className="font-serif text-[clamp(26px,2.6vw,32px)] leading-[1.15] tracking-[0.01em] text-ink-strong">
                     {s.title}
                   </h2>
-                  <p className="mt-4 max-w-[38rem] text-[16px] leading-[1.8] text-neutral-500">
+                  <p className="mt-4 max-w-[38rem] text-[14px] leading-[1.9] text-neutral-500">
                     {s.body}
                   </p>
                 </div>
@@ -112,7 +112,7 @@ export default async function ContestDetail({
 
             {/* Schedule */}
             <div id="schedule" className="scroll-mt-24 py-8">
-              <h2 className="font-serif text-[clamp(24px,2.4vw,30px)] font-bold leading-tight text-ink-strong">
+              <h2 className="font-serif text-[clamp(26px,2.6vw,32px)] leading-[1.15] tracking-[0.01em] text-ink-strong">
                 전체 일정
               </h2>
               <div className="mt-6 border-t border-line">

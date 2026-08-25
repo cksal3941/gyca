@@ -44,7 +44,7 @@ export default async function WinnerDetail({
             <span className={`h-2.5 w-2.5 rounded-full ${AWARD_COLOR[w.award]}`} />
             {w.award}
           </p>
-          <h1 className="font-serif text-[clamp(36px,4.6vw,58px)] font-bold leading-[1.05] tracking-[-0.02em] text-ink-strong">
+          <h1 className="font-serif text-[clamp(40px,5vw,64px)] leading-[1.05] tracking-[0.01em] text-ink-strong">
             {w.title}
           </h1>
 
@@ -86,19 +86,19 @@ export default async function WinnerDetail({
             </span>
           </div>
 
-          <h2 className="mt-12 font-serif text-[22px] font-bold text-ink-strong">
+          <h2 className="mt-12 font-serif text-[clamp(26px,2.6vw,32px)] leading-[1.15] tracking-[0.01em] text-ink-strong">
             작품 설명
           </h2>
-          <p className="mt-3 text-[15px] leading-[1.8] text-neutral-500">
+          <p className="mt-3 text-[14px] leading-[1.9] text-neutral-500">
             작가가 작품을 통해 전하고자 한 주제와 표현 의도를 담은 설명입니다.
             심사에서는 창의성, 주제 이해, 표현력, 완성도, 발전 가능성을 종합적으로
             평가했습니다.
           </p>
 
-          <h2 className="mt-10 font-serif text-[22px] font-bold text-ink-strong">
+          <h2 className="mt-10 font-serif text-[clamp(26px,2.6vw,32px)] leading-[1.15] tracking-[0.01em] text-ink-strong">
             심사평
           </h2>
-          <blockquote className="mt-3 border-l-2 border-brand-blue pl-5 text-[15px] leading-[1.8] text-ink">
+          <blockquote className="mt-3 border-l-2 border-brand-blue pl-5 text-[14px] leading-[1.9] text-ink">
             “주제를 대하는 진정성과 완성도가 돋보이는 작품으로, 심사위원단의 높은
             평가를 받았습니다.”
           </blockquote>
