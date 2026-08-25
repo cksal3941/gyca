@@ -1,4 +1,4 @@
-import type { ComponentType } from "react";
+import { Fragment, type ComponentType } from "react";
 import { Search, PenLine, Globe, Trophy, ArrowRight } from "./icons";
 
 type Step = {
@@ -69,38 +69,35 @@ export default function ProcessSteps() {
               to the Global Stage
             </h2>
 
-            <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2 xl:grid-cols-4">
+            {/* Below xl: 2-col grid. At xl: a flex flow where the connector
+                arrows are real flex items between content-width steps, so both
+                of each arrow's side margins are equal. */}
+            <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2 xl:flex xl:items-center xl:justify-between xl:gap-0">
               {STEPS.map((step, i) => (
-                <div key={step.no} className="relative">
-                  {/* Connector arrow between steps (desktop) — vertically
-                      centered so all four align once the cards are equal height */}
-                  {i < STEPS.length - 1 && (
+                <Fragment key={step.no}>
+                  <div>
                     <span
-                      className="absolute hidden text-ink-strong xl:block"
-                      style={{
-                        left: "calc(100% + 16px)",
-                        top: "50%",
-                        transform: "translate(-50%, -50%)",
-                      }}
+                      className={`text-[30px] font-extrabold tracking-[-0.02em] ${step.numColor}`}
                     >
-                      <ArrowRight size={18} />
+                      {step.no}
                     </span>
+                    <span className="mt-3 flex h-11 w-11 items-center justify-center rounded-xl bg-white text-ink-strong ring-1 ring-black/5">
+                      <step.Icon size={20} />
+                    </span>
+                    <h3 className="mt-4 text-[16px] font-bold text-ink-strong">
+                      {step.title}
+                    </h3>
+                    <p className="mt-1.5 min-h-[3.2em] max-w-[190px] text-[16px] leading-[1.6] text-ink-strong">
+                      {step.desc}
+                    </p>
+                  </div>
+                  {i < STEPS.length - 1 && (
+                    <ArrowRight
+                      size={18}
+                      className="hidden shrink-0 text-ink-strong xl:block"
+                    />
                   )}
-                  <span
-                    className={`text-[30px] font-extrabold tracking-[-0.02em] ${step.numColor}`}
-                  >
-                    {step.no}
-                  </span>
-                  <span className="mt-3 flex h-11 w-11 items-center justify-center rounded-xl bg-white text-ink-strong ring-1 ring-black/5">
-                    <step.Icon size={20} />
-                  </span>
-                  <h3 className="mt-4 text-[16px] font-bold text-ink-strong">
-                    {step.title}
-                  </h3>
-                  <p className="mt-1.5 min-h-[3.2em] max-w-[190px] text-[16px] leading-[1.6] text-ink-strong">
-                    {step.desc}
-                  </p>
-                </div>
+                </Fragment>
               ))}
             </div>
           </div>
