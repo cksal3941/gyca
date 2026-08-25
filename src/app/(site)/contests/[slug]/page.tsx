@@ -56,7 +56,7 @@ export default async function ContestDetail({
         description={c.summary}
         crumbs={[{ label: "공모전", href: "/contests" }, { label: c.title }]}
         action={
-          <span className="inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-[14px] font-semibold text-ink-strong">
+          <span className="inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-[16px] font-semibold text-ink-strong">
             <span className={`h-2 w-2 rounded-full ${STATUS_COLOR[c.status]}`} />
             {STATUS_LABEL[c.status]}
           </span>
@@ -84,8 +84,8 @@ export default async function ContestDetail({
                   key={k}
                   className="flex items-center justify-between border-b border-line py-4"
                 >
-                  <dt className="text-[14px] text-neutral-500">{k}</dt>
-                  <dd className="text-[15px] font-semibold text-ink-strong">
+                  <dt className="text-[16px] text-ink-strong">{k}</dt>
+                  <dd className="text-[16px] font-semibold text-ink-strong">
                     {v}
                   </dd>
                 </div>
@@ -103,7 +103,7 @@ export default async function ContestDetail({
                   <h2 className="font-serif text-[clamp(26px,2.6vw,32px)] leading-[1.15] tracking-[0.01em] text-ink-strong">
                     {s.title}
                   </h2>
-                  <p className="mt-4 max-w-[38rem] text-[14px] leading-[1.9] text-neutral-500">
+                  <p className="mt-4 max-w-[38rem] text-[16px] leading-[1.9] text-ink-strong">
                     {s.body}
                   </p>
                 </div>
@@ -121,10 +121,10 @@ export default async function ContestDetail({
                     key={row.phase}
                     className="flex items-center justify-between border-b border-line py-4"
                   >
-                    <span className="text-[15px] font-semibold text-ink-strong">
+                    <span className="text-[16px] font-semibold text-ink-strong">
                       {row.phase}
                     </span>
-                    <span className="text-[14px] uppercase tracking-[0.08em] text-neutral-500">
+                    <span className="text-[16px] uppercase tracking-[0.08em] text-ink-strong">
                       {row.range}
                     </span>
                   </div>
@@ -136,29 +136,29 @@ export default async function ContestDetail({
           {/* Sticky CTA (desktop) */}
           <aside className="hidden lg:block">
             <div className="sticky top-[92px] rounded-2xl border border-line bg-white p-6">
-              <p className="text-[13px] text-neutral-500">참가비</p>
+              <p className="text-[16px] text-ink-strong">참가비</p>
               <p className="mt-1 font-serif text-[26px] font-bold text-ink-strong">
                 {c.fee}
               </p>
-              <p className="mt-1 text-[13px] text-neutral-500">
+              <p className="mt-1 text-[16px] text-ink-strong">
                 마감 {c.deadline}
               </p>
               <Link
                 href={`/submit?contest=${c.slug}`}
-                className="mt-5 flex items-center justify-center gap-2 rounded-lg bg-brand-blue px-5 py-3 text-[15px] font-semibold text-white hover:-translate-y-0.5"
+                className="mt-5 flex items-center justify-center gap-2 rounded-lg bg-brand-blue px-5 py-3 text-[16px] font-semibold text-white hover:-translate-y-0.5"
               >
                 작품 접수하기
                 <ArrowRight size={16} />
               </Link>
               <a
                 href="#"
-                className="mt-2 flex items-center justify-center rounded-lg border border-line px-5 py-3 text-[14px] font-semibold text-ink-strong hover:border-brand-blue hover:text-brand-blue"
+                className="mt-2 flex items-center justify-center rounded-lg border border-line px-5 py-3 text-[16px] font-semibold text-ink-strong hover:border-brand-blue hover:text-brand-blue"
               >
                 공모요강 다운로드
               </a>
               <Link
                 href="/notices"
-                className="mt-2 flex items-center justify-center rounded-lg px-5 py-3 text-[14px] font-semibold text-neutral-500 hover:text-brand-blue"
+                className="mt-2 flex items-center justify-center rounded-lg px-5 py-3 text-[16px] font-semibold text-ink-strong hover:text-brand-blue"
               >
                 문의하기
               </Link>
@@ -171,7 +171,7 @@ export default async function ContestDetail({
       <div className="sticky bottom-0 z-40 border-t border-line bg-white px-6 py-3 lg:hidden">
         <Link
           href={`/submit?contest=${c.slug}`}
-          className="flex items-center justify-center gap-2 rounded-lg bg-brand-blue px-5 py-3 text-[15px] font-semibold text-white"
+          className="flex items-center justify-center gap-2 rounded-lg bg-brand-blue px-5 py-3 text-[16px] font-semibold text-white"
         >
           작품 접수하기
           <ArrowRight size={16} />

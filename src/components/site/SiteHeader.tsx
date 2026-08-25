@@ -50,20 +50,20 @@ export default function SiteHeader() {
 
         {/* Utilities */}
         <div className="ml-auto flex items-center gap-5 lg:ml-0">
-          <div className="hidden items-center gap-2 text-[13px] font-semibold text-neutral-500 sm:flex">
+          <div className="hidden items-center gap-2 text-[16px] font-semibold text-ink-strong sm:flex">
             <button className="text-ink-strong hover:text-brand-blue">EN</button>
             <span className="text-line">|</span>
             <button className="hover:text-brand-blue">KR</button>
           </div>
           <Link
             href={session ? "/mypage" : "/login"}
-            className="hidden text-[15px] font-medium text-ink-strong hover:text-brand-blue sm:block"
+            className="hidden text-[16px] font-medium text-ink-strong hover:text-brand-blue sm:block"
           >
             {session ? "마이페이지" : "로그인"}
           </Link>
           <Link
             href="/submit"
-            className="inline-flex items-center gap-2 rounded-lg bg-brand-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-transform hover:-translate-y-0.5"
+            className="inline-flex items-center gap-2 rounded-lg bg-brand-blue px-5 py-2.5 text-[16px] font-semibold text-white transition-transform hover:-translate-y-0.5"
           >
             작품 접수
             <ArrowRight size={16} />
@@ -88,7 +88,7 @@ export default function SiteHeader() {
         <div className="border-t border-line bg-white lg:hidden">
           <nav className="mx-auto flex max-w-shell flex-col px-6 py-2">
             {session && (
-              <div className="flex items-center justify-between border-b border-line py-3 text-[15px]">
+              <div className="flex items-center justify-between border-b border-line py-3 text-[16px]">
                 <span className="font-semibold text-ink-strong">
                   {session.user.name}
                 </span>

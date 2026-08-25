@@ -9,17 +9,17 @@ export default function Footer() {
             <span className="font-display text-[34px] italic tracking-[-0.5px] text-white">
               GYCA
             </span>
-            <p className="mt-4 text-[11px] leading-5 tracking-wide text-neutral-400">
+            <p className="mt-4 text-[16px] leading-5 tracking-wide text-white">
               COPYRIGHT© 2026 GYCA CORP.
               <br />
               ALL RIGHTS RESERVED.
             </p>
           </div>
 
-          <div className="text-[12px] leading-6 text-neutral-400">
+          <div className="text-[16px] leading-6 text-white">
             <p>
               Website inquiries ·{" "}
-              <a href="#" className="text-neutral-200 hover:text-white">
+              <a href="#" className="text-white hover:text-white">
                 admin@gyca.org
               </a>
             </p>
@@ -30,7 +30,7 @@ export default function Footer() {
                 <a
                   key={s}
                   href="#"
-                  className="text-[12px] font-medium tracking-wide text-neutral-300 hover:text-white"
+                  className="text-[16px] font-medium tracking-wide text-white hover:text-white"
                 >
                   {s}
                 </a>
@@ -41,7 +41,7 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-white/10">
-        <p className="mx-auto max-w-[1200px] px-6 py-5 text-[11px] leading-5 text-neutral-500">
+        <p className="mx-auto max-w-[1200px] px-6 py-5 text-[16px] leading-5 text-white">
           Company: GYCA · CEO: Gildong Hong · Business registration no.:
           451-87-01831 · E-commerce permit: 2025-Seoul-Seocho-0000 · Privacy
           officer: admin@gyca.org · Hosting provider: GYCA

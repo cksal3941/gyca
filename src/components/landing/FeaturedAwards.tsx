@@ -66,17 +66,17 @@ function AwardCard({ award }: { award: Award }) {
           ))}
         </h3>
         <p
-          className={`mt-2 text-[11px] font-bold uppercase tracking-[0.12em] ${award.tagColor}`}
+          className={`mt-2 text-[16px] font-bold uppercase tracking-[0.12em] ${award.tagColor}`}
         >
           {award.tags}
         </p>
-        <p className="mt-3 flex items-center gap-2 text-[13px] text-neutral-500">
+        <p className="mt-3 flex items-center gap-2 text-[16px] text-ink-strong">
           <span className={`h-2 w-2 rounded-full ${award.statusColor}`} />
           {award.status}
         </p>
         <a
           href="#"
-          className="mt-5 inline-flex items-center gap-1.5 border-t border-line pt-4 text-[14px] font-semibold text-ink-strong group-hover:text-brand-blue"
+          className="mt-5 inline-flex items-center gap-1.5 border-t border-line pt-4 text-[16px] font-semibold text-ink-strong group-hover:text-brand-blue"
         >
           View Award
           <ArrowRight size={16} />
@@ -134,7 +134,7 @@ function AnnualCalendar() {
         </h2>
         <a
           href="#"
-          className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-brand-blue"
+          className="inline-flex items-center gap-1.5 text-[16px] font-semibold text-brand-blue"
         >
           View Full Calendar
           <ArrowRight size={15} />
@@ -150,14 +150,14 @@ function AnnualCalendar() {
             }`}
           >
             <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${row.dot}`} />
-            <span className="w-[62px] shrink-0 text-[12px] font-bold tracking-[0.01em] text-ink-strong">
+            <span className="w-[62px] shrink-0 text-[16px] font-bold tracking-[0.01em] text-ink-strong">
               {row.months}
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-[13px] font-semibold leading-snug text-ink-strong">
+              <p className="text-[16px] font-semibold leading-snug text-ink-strong">
                 {row.title}
               </p>
-              <p className="mt-0.5 text-[12px] leading-snug text-neutral-500">
+              <p className="mt-0.5 text-[16px] leading-snug text-ink-strong">
                 {row.sub}
               </p>
             </div>
@@ -181,7 +181,7 @@ export default function FeaturedAwards() {
             <h2 className="font-serif text-[26px] font-bold tracking-[-0.01em] text-ink-strong">
               Featured International Awards
             </h2>
-            <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-neutral-400">
+            <span className="inline-flex items-center gap-1.5 text-[16px] font-medium text-ink-strong">
               Co-planned with ACCK
               <span className="text-brand-blue">
                 <Asterisk size={12} />

@@ -74,7 +74,7 @@ export default function ProcessSteps() {
                 <div key={step.no} className="relative">
                   {/* Connector arrow between steps (desktop) */}
                   {i < STEPS.length - 1 && (
-                    <span className="absolute -right-3 top-1 hidden text-neutral-300 xl:block">
+                    <span className="absolute -right-3 top-1 hidden text-ink-strong xl:block">
                       <ArrowRight size={18} />
                     </span>
                   )}
@@ -89,7 +89,7 @@ export default function ProcessSteps() {
                   <h3 className="mt-4 text-[16px] font-bold text-ink-strong">
                     {step.title}
                   </h3>
-                  <p className="mt-1.5 text-[13px] leading-[1.6] text-neutral-500">
+                  <p className="mt-1.5 text-[16px] leading-[1.6] text-ink-strong">
                     {step.desc}
                   </p>
                 </div>

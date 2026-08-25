@@ -75,7 +75,7 @@ export default function JudgeDashboard() {
               key={k.label}
               className="rounded-2xl border border-line bg-white p-5"
             >
-              <p className="text-[13px] text-neutral-500">{k.label}</p>
+              <p className="text-[16px] text-ink-strong">{k.label}</p>
               <p className="mt-2 font-serif text-[26px] font-bold text-ink-strong">
                 {k.value}
               </p>
@@ -90,14 +90,14 @@ export default function JudgeDashboard() {
               배정 작품
             </h2>
           </div>
-          <p className="mt-2 text-[13px] text-neutral-500">
+          <p className="mt-2 text-[16px] text-ink-strong">
             공정성을 위해 참가자 식별정보는 비공개입니다.
           </p>
 
           <div className="mt-4 overflow-hidden rounded-2xl border border-line bg-white">
-            <table className="w-full text-left text-[14px]">
+            <table className="w-full text-left text-[16px]">
               <thead>
-                <tr className="border-b border-line bg-surface text-[13px] text-neutral-500">
+                <tr className="border-b border-line bg-surface text-[16px] text-ink-strong">
                   <th className="px-5 py-3 font-semibold">접수번호</th>
                   <th className="px-5 py-3 font-semibold">부문</th>
                   <th className="px-5 py-3 font-semibold">연령</th>
@@ -115,11 +115,11 @@ export default function JudgeDashboard() {
                     <td className="px-5 py-4 font-semibold text-ink-strong">
                       {w.id}
                     </td>
-                    <td className="px-5 py-4 text-neutral-500">{w.division}</td>
-                    <td className="px-5 py-4 text-neutral-500">{w.age}</td>
+                    <td className="px-5 py-4 text-ink-strong">{w.division}</td>
+                    <td className="px-5 py-4 text-ink-strong">{w.age}</td>
                     <td className="px-5 py-4 text-ink-strong">{w.title}</td>
                     <td className="px-5 py-4">
-                      <span className="inline-flex items-center gap-2 text-[13px] text-neutral-500">
+                      <span className="inline-flex items-center gap-2 text-[16px] text-ink-strong">
                         <span
                           className={`h-2 w-2 rounded-full ${REVIEW_STATUS_COLOR[w.status]}`}
                         />
@@ -129,7 +129,7 @@ export default function JudgeDashboard() {
                     <td className="px-5 py-4 text-right">
                       <Link
                         href={`/judge/review/${w.id}`}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-brand-blue px-4 py-2 text-[13px] font-semibold text-white hover:-translate-y-0.5"
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-brand-blue px-4 py-2 text-[16px] font-semibold text-white hover:-translate-y-0.5"
                       >
                         심사하기
                         <ArrowRight size={14} />

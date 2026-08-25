@@ -22,7 +22,7 @@ export default function PageHeader({
     <section className="border-b border-line bg-canvas">
       <div className="mx-auto max-w-shell px-6 py-12 lg:py-16">
         {crumbs && crumbs.length > 0 && (
-          <nav className="mb-4 flex flex-wrap items-center gap-1.5 text-[13px] text-neutral-500">
+          <nav className="mb-4 flex flex-wrap items-center gap-1.5 text-[16px] text-ink-strong">
             <Link href="/" className="hover:text-brand-blue">
               홈
             </Link>
@@ -43,7 +43,7 @@ export default function PageHeader({
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
             {eyebrow && (
-              <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-brand-blue">
+              <p className="text-[16px] font-bold uppercase tracking-[0.14em] text-brand-blue">
                 {eyebrow}
               </p>
             )}
@@ -51,7 +51,7 @@ export default function PageHeader({
               {title}
             </h1>
             {description && (
-              <p className="mt-3 max-w-[46rem] text-[15px] leading-[1.7] text-neutral-500">
+              <p className="mt-3 max-w-[46rem] text-[16px] leading-[1.7] text-ink-strong">
                 {description}
               </p>
             )}

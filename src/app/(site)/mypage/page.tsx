@@ -145,8 +145,8 @@ function ActionButton({ action }: { action: SubmissionAction }) {
       href={action.href}
       className={
         action.primary
-          ? "inline-flex items-center gap-1.5 rounded-lg bg-brand-blue px-4 py-2 text-[13px] font-semibold text-white hover:-translate-y-0.5"
-          : "inline-flex items-center rounded-lg border border-line px-4 py-2 text-[13px] font-semibold text-ink-strong hover:border-brand-blue hover:text-brand-blue"
+          ? "inline-flex items-center gap-1.5 rounded-lg bg-brand-blue px-4 py-2 text-[16px] font-semibold text-white hover:-translate-y-0.5"
+          : "inline-flex items-center rounded-lg border border-line px-4 py-2 text-[16px] font-semibold text-ink-strong hover:border-brand-blue hover:text-brand-blue"
       }
     >
       {action.label}
@@ -174,7 +174,7 @@ export default function MyPage() {
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`rounded-full border px-4 py-2 text-[14px] font-medium transition-colors ${
+              className={`rounded-full border px-4 py-2 text-[16px] font-medium transition-colors ${
                 tab === t
                   ? "border-brand-blue bg-brand-blue text-white"
                   : "border-line text-ink hover:border-brand-blue hover:text-brand-blue"
@@ -194,14 +194,14 @@ export default function MyPage() {
                 className="flex flex-col gap-4 rounded-2xl border border-line bg-white p-5 sm:flex-row sm:items-center"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-brand-blue">
+                  <p className="text-[16px] font-bold uppercase tracking-[0.12em] text-brand-blue">
                     {s.id}
                   </p>
                   <h3 className="mt-1 font-serif text-[18px] font-bold text-ink-strong">
                     {s.work}
                   </h3>
-                  <p className="mt-1 text-[13px] text-neutral-500">{s.contest}</p>
-                  <p className="mt-2 flex items-center gap-2 text-[13px] text-neutral-500">
+                  <p className="mt-1 text-[16px] text-ink-strong">{s.contest}</p>
+                  <p className="mt-2 flex items-center gap-2 text-[16px] text-ink-strong">
                     <span
                       className={`h-2 w-2 rounded-full ${SUB_STATUS_COLOR[s.status]}`}
                     />
@@ -230,10 +230,10 @@ export default function MyPage() {
                   <h3 className="font-serif text-[18px] font-bold text-ink-strong">
                     {r.work}
                   </h3>
-                  <p className="mt-1 text-[13px] text-neutral-500">{r.contest}</p>
+                  <p className="mt-1 text-[16px] text-ink-strong">{r.contest}</p>
                 </div>
                 <span
-                  className={`inline-flex items-center rounded-full px-3 py-1 text-[12px] font-semibold text-white ${AWARD_BADGE[r.award]}`}
+                  className={`inline-flex items-center rounded-full px-3 py-1 text-[16px] font-semibold text-white ${AWARD_BADGE[r.award]}`}
                 >
                   {r.award}
                 </span>
@@ -245,9 +245,9 @@ export default function MyPage() {
         {/* 결제 내역 */}
         {tab === "결제 내역" && (
           <div className="mt-8 overflow-hidden rounded-2xl border border-line bg-white">
-            <table className="w-full text-left text-[14px]">
+            <table className="w-full text-left text-[16px]">
               <thead>
-                <tr className="border-b border-line bg-surface text-[13px] text-neutral-500">
+                <tr className="border-b border-line bg-surface text-[16px] text-ink-strong">
                   <th className="px-5 py-3 font-semibold">일자</th>
                   <th className="px-5 py-3 font-semibold">공모전</th>
                   <th className="px-5 py-3 font-semibold">금액</th>
@@ -260,12 +260,12 @@ export default function MyPage() {
                     key={p.date + p.contest}
                     className={i < PAYMENTS.length - 1 ? "border-b border-line" : ""}
                   >
-                    <td className="px-5 py-4 text-neutral-500">{p.date}</td>
+                    <td className="px-5 py-4 text-ink-strong">{p.date}</td>
                     <td className="px-5 py-4 font-semibold text-ink-strong">
                       {p.contest}
                     </td>
                     <td className="px-5 py-4 text-ink-strong">{p.amount}</td>
-                    <td className="px-5 py-4 text-neutral-500">{p.status}</td>
+                    <td className="px-5 py-4 text-ink-strong">{p.status}</td>
                   </tr>
                 ))}
               </tbody>
@@ -285,11 +285,11 @@ export default function MyPage() {
                   <h3 className="font-serif text-[17px] font-bold text-ink-strong">
                     {c.title}
                   </h3>
-                  <p className="mt-1 text-[13px] text-neutral-500">발급 {c.date}</p>
+                  <p className="mt-1 text-[16px] text-ink-strong">발급 {c.date}</p>
                 </div>
                 <a
                   href="#"
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-brand-blue px-4 py-2 text-[13px] font-semibold text-white hover:-translate-y-0.5"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-brand-blue px-4 py-2 text-[16px] font-semibold text-white hover:-translate-y-0.5"
                 >
                   다운로드
                   <ArrowRight size={14} />
@@ -322,20 +322,20 @@ export default function MyPage() {
                 },
               ].map((f) => (
                 <label key={f.label} className="block">
-                  <span className="text-[13px] font-semibold text-ink-strong">
+                  <span className="text-[16px] font-semibold text-ink-strong">
                     {f.label}
                   </span>
                   <input
                     type={f.type}
                     placeholder={f.placeholder}
-                    className="mt-2 w-full rounded-lg border border-line bg-canvas px-4 py-3 text-[14px] text-ink-strong outline-none focus:border-brand-blue"
+                    className="mt-2 w-full rounded-lg border border-line bg-canvas px-4 py-3 text-[16px] text-ink-strong outline-none focus:border-brand-blue"
                   />
                 </label>
               ))}
             </div>
             <button
               type="button"
-              className="mt-6 inline-flex items-center gap-1.5 rounded-lg bg-brand-blue px-5 py-3 text-[14px] font-semibold text-white hover:-translate-y-0.5"
+              className="mt-6 inline-flex items-center gap-1.5 rounded-lg bg-brand-blue px-5 py-3 text-[16px] font-semibold text-white hover:-translate-y-0.5"
             >
               변경 사항 저장
               <ArrowRight size={16} />

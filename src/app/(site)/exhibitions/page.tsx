@@ -15,7 +15,7 @@ function ExhibitionRow({ e, flip }: { e: Exhibition; flip: boolean }) {
     <article className="grid items-center gap-8 border-b border-line py-12 lg:grid-cols-2 lg:gap-16">
       {/* Text */}
       <div className={flip ? "lg:order-2" : ""}>
-        <p className="inline-flex items-center rounded-full border border-line px-3 py-1 text-[12px] font-bold uppercase tracking-[0.12em] text-brand-blue">
+        <p className="inline-flex items-center rounded-full border border-line px-3 py-1 text-[16px] font-bold uppercase tracking-[0.12em] text-brand-blue">
           {e.type}
         </p>
         <Link href={`/exhibitions/${e.slug}`}>
@@ -23,24 +23,24 @@ function ExhibitionRow({ e, flip }: { e: Exhibition; flip: boolean }) {
             {e.title}
           </h2>
         </Link>
-        <p className="mt-4 max-w-[34rem] text-[14px] leading-[1.9] text-neutral-500">
+        <p className="mt-4 max-w-[34rem] text-[16px] leading-[1.9] text-ink-strong">
           {e.summary}
         </p>
-        <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-neutral-500">
+        <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-[16px] text-ink-strong">
           <span>{e.city}</span>
           <span>{e.date}</span>
         </div>
         <div className="mt-7 flex items-center gap-4">
           <Link
             href={`/exhibitions/${e.slug}`}
-            className="inline-flex items-center gap-2 rounded-lg bg-brand-blue px-5 py-2.5 text-[14px] font-semibold text-white hover:-translate-y-0.5"
+            className="inline-flex items-center gap-2 rounded-lg bg-brand-blue px-5 py-2.5 text-[16px] font-semibold text-white hover:-translate-y-0.5"
           >
             행사 소개
             <ArrowRight size={15} />
           </Link>
           <Link
             href={`/exhibitions/${e.slug}#works`}
-            className="text-[14px] font-semibold text-ink-strong hover:text-brand-blue"
+            className="text-[16px] font-semibold text-ink-strong hover:text-brand-blue"
           >
             참여작 보기
           </Link>
@@ -85,7 +85,7 @@ export default function ExhibitionsPage() {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`rounded-full border px-4 py-2 text-[14px] font-medium transition-colors ${
+              className={`rounded-full border px-4 py-2 text-[16px] font-medium transition-colors ${
                 filter === f
                   ? "border-brand-blue bg-brand-blue text-white"
                   : "border-line text-ink hover:border-brand-blue hover:text-brand-blue"
@@ -103,7 +103,7 @@ export default function ExhibitionsPage() {
             ))}
           </div>
         ) : (
-          <p className="py-24 text-center text-[15px] text-neutral-500">
+          <p className="py-24 text-center text-[16px] text-ink-strong">
             해당 지역의 전시·공연이 아직 없습니다.
           </p>
         )}

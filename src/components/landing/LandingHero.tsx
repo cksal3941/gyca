@@ -133,14 +133,14 @@ export default function LandingHero() {
           <div className="mt-9 flex flex-wrap items-center gap-3">
             <a
               href="#"
-              className="inline-flex items-center gap-2.5 rounded-lg bg-brand-blue px-6 py-3.5 text-[15px] font-semibold text-white transition-transform hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2.5 rounded-lg bg-brand-blue px-6 py-3.5 text-[16px] font-semibold text-white transition-transform hover:-translate-y-0.5"
             >
               Explore Awards
               <ArrowRight size={18} />
             </a>
             <a
               href="#"
-              className="inline-flex items-center gap-2.5 rounded-lg border border-ink-strong/15 bg-white px-6 py-3.5 text-[15px] font-semibold text-ink-strong transition-colors hover:border-brand-blue hover:text-brand-blue"
+              className="inline-flex items-center gap-2.5 rounded-lg border border-ink-strong/15 bg-white px-6 py-3.5 text-[16px] font-semibold text-ink-strong transition-colors hover:border-brand-blue hover:text-brand-blue"
             >
               View Global Programs
               <ArrowRight size={18} />

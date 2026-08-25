@@ -23,7 +23,7 @@ function FaqItem({ n }: { n: Notice }) {
           {n.title}
         </span>
         <span
-          className={`shrink-0 text-[24px] leading-none text-neutral-400 transition-transform ${
+          className={`shrink-0 text-[24px] leading-none text-ink-strong transition-transform ${
             open ? "rotate-45" : ""
           }`}
         >
@@ -31,7 +31,7 @@ function FaqItem({ n }: { n: Notice }) {
         </span>
       </button>
       {open && (
-        <p className="max-w-[46rem] pb-7 text-[14px] leading-[1.9] text-neutral-500">
+        <p className="max-w-[46rem] pb-7 text-[16px] leading-[1.9] text-ink-strong">
           {n.body}
         </p>
       )}
@@ -61,7 +61,7 @@ export default function NoticesPage() {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`rounded-full border px-4 py-2 text-[14px] font-medium transition-colors ${
+              className={`rounded-full border px-4 py-2 text-[16px] font-medium transition-colors ${
                 filter === f
                   ? "border-brand-blue bg-brand-blue text-white"
                   : "border-line text-ink hover:border-brand-blue hover:text-brand-blue"
@@ -82,21 +82,21 @@ export default function NoticesPage() {
                 className="group flex items-center gap-6 border-b border-line py-8"
               >
                 <span
-                  className={`shrink-0 rounded-full px-3 py-1 text-[12px] font-semibold text-white ${CATEGORY_COLOR[n.category]}`}
+                  className={`shrink-0 rounded-full px-3 py-1 text-[16px] font-semibold text-white ${CATEGORY_COLOR[n.category]}`}
                 >
                   {n.category}
                 </span>
                 <h2 className="min-w-0 flex-1 font-serif text-[clamp(20px,2vw,24px)] leading-snug tracking-[0.01em] text-ink-strong group-hover:text-brand-blue">
                   {n.title}
                 </h2>
-                <span className="hidden shrink-0 text-[14px] text-neutral-500 sm:block">
+                <span className="hidden shrink-0 text-[16px] text-ink-strong sm:block">
                   {n.date}
                 </span>
               </Link>
             ))}
           </div>
         ) : (
-          <p className="py-24 text-center text-[15px] text-neutral-500">
+          <p className="py-24 text-center text-[16px] text-ink-strong">
             해당 분류의 공지가 아직 없습니다.
           </p>
         )}
@@ -106,7 +106,7 @@ export default function NoticesPage() {
       {faqs.length > 0 && (
         <section className="mx-auto max-w-shell px-6">
           <div className="border-t border-line py-16 lg:py-24">
-            <p className="text-[13px] font-bold uppercase tracking-[0.18em] text-brand-blue">
+            <p className="text-[16px] font-bold uppercase tracking-[0.18em] text-brand-blue">
               FAQ
             </p>
             <h2 className="mt-5 font-serif text-[clamp(26px,2.6vw,32px)] leading-[1.15] tracking-[0.01em] text-ink-strong">

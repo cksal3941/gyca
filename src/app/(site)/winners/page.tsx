@@ -21,14 +21,14 @@ function WinnerItem({ w }: { w: Winner }) {
         role="img"
         aria-label={w.title}
       />
-      <p className="mt-5 flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.1em] text-ink-strong">
+      <p className="mt-5 flex items-center gap-2 text-[16px] font-bold uppercase tracking-[0.1em] text-ink-strong">
         <span className={`h-2.5 w-2.5 rounded-full ${AWARD_COLOR[w.award]}`} />
         {w.award}
       </p>
       <h3 className="mt-2 font-serif text-[clamp(24px,2.4vw,30px)] leading-[1.2] tracking-[0.01em] text-ink-strong group-hover:text-brand-blue">
         {w.title}
       </h3>
-      <p className="mt-2 text-[14px] text-neutral-500">
+      <p className="mt-2 text-[16px] text-ink-strong">
         {w.artist} · {w.country} · {w.year}
       </p>
     </Link>
@@ -48,14 +48,14 @@ function FilterRow({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="mr-1 w-16 shrink-0 text-[13px] font-semibold text-ink-strong">
+      <span className="mr-1 w-16 shrink-0 text-[16px] font-semibold text-ink-strong">
         {label}
       </span>
       {options.map((o) => (
         <button
           key={o}
           onClick={() => onChange(o)}
-          className={`rounded-full border px-4 py-2 text-[14px] font-medium transition-colors ${
+          className={`rounded-full border px-4 py-2 text-[16px] font-medium transition-colors ${
             value === o
               ? "border-brand-blue bg-brand-blue text-white"
               : "border-line text-ink hover:border-brand-blue hover:text-brand-blue"
@@ -124,7 +124,7 @@ export default function WinnersPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="참가자 이름, 접수번호, 작품명, 국가, 부문"
-              className="w-full rounded-lg border border-line px-4 py-3 text-[14px] text-ink-strong placeholder:text-neutral-400 focus:border-brand-blue focus:outline-none"
+              className="w-full rounded-lg border border-line px-4 py-3 text-[16px] text-ink-strong placeholder:text-ink-strong focus:border-brand-blue focus:outline-none"
             />
           </div>
         </div>
@@ -136,7 +136,7 @@ export default function WinnersPage() {
             ))}
           </div>
         ) : (
-          <p className="py-24 text-center text-[15px] text-neutral-500">
+          <p className="py-24 text-center text-[16px] text-ink-strong">
             조건에 맞는 수상작이 없습니다.
           </p>
         )}

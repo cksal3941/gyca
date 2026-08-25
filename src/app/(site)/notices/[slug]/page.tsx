@@ -19,7 +19,7 @@ export default async function NoticeDetail({
   return (
     <section className="mx-auto max-w-shell px-6 py-16 lg:py-24">
       <div className="mx-auto max-w-[46rem]">
-        <nav className="mb-10 flex flex-wrap items-center gap-1.5 text-[13px] text-neutral-500">
+        <nav className="mb-10 flex flex-wrap items-center gap-1.5 text-[16px] text-ink-strong">
           <Link href="/" className="hover:text-brand-blue">
             홈
           </Link>
@@ -31,22 +31,22 @@ export default async function NoticeDetail({
           <span className="text-ink-strong">{n.title}</span>
         </nav>
 
-        <p className="text-[13px] font-bold uppercase tracking-[0.18em] text-brand-blue">
+        <p className="text-[16px] font-bold uppercase tracking-[0.18em] text-brand-blue">
           {n.category}
         </p>
         <h1 className="mt-4 font-serif text-[clamp(40px,5vw,64px)] leading-[1.05] tracking-[0.01em] text-ink-strong">
           {n.title}
         </h1>
-        <p className="mt-6 text-[14px] text-neutral-500">{n.date}</p>
+        <p className="mt-6 text-[16px] text-ink-strong">{n.date}</p>
 
         <div className="mt-10 border-t border-line pt-10">
-          <p className="text-[14px] leading-[1.9] text-neutral-500">{n.body}</p>
+          <p className="text-[16px] leading-[1.9] text-ink-strong">{n.body}</p>
         </div>
 
         <div className="mt-14 border-t border-line pt-8">
           <Link
             href="/notices"
-            className="inline-flex items-center gap-2 text-[14px] font-semibold text-ink-strong hover:text-brand-blue"
+            className="inline-flex items-center gap-2 text-[16px] font-semibold text-ink-strong hover:text-brand-blue"
           >
             <ArrowRight size={15} className="rotate-180" />
             공지사항 목록으로

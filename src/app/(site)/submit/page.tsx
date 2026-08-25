@@ -27,23 +27,23 @@ function Stepper({ current }: { current: number }) {
           <li key={s.no} className="flex items-center">
             <div className="flex items-center gap-2.5">
               <span
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] font-bold ${
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[16px] font-bold ${
                   active
                     ? "bg-brand-blue text-white"
                     : done
                     ? "bg-brand-blue/15 text-brand-blue"
-                    : "bg-neutral-100 text-neutral-400"
+                    : "bg-neutral-100 text-ink-strong"
                 }`}
               >
                 {s.no}
               </span>
               <span
-                className={`text-[14px] font-medium ${
+                className={`text-[16px] font-medium ${
                   active
                     ? "text-ink-strong"
                     : done
                     ? "text-brand-blue"
-                    : "text-neutral-400"
+                    : "text-ink-strong"
                 }`}
               >
                 {s.label}
@@ -76,17 +76,17 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[13px] font-semibold text-ink-strong">
+      <span className="mb-1.5 block text-[16px] font-semibold text-ink-strong">
         {label}
       </span>
       {children}
-      {hint && <span className="mt-1 block text-[12px] text-neutral-400">{hint}</span>}
+      {hint && <span className="mt-1 block text-[16px] text-ink-strong">{hint}</span>}
     </label>
   );
 }
 
 const inputCls =
-  "w-full rounded-lg border border-line px-4 py-2.5 text-[15px] text-ink-strong placeholder:text-neutral-400 focus:border-brand-blue focus:outline-none";
+  "w-full rounded-lg border border-line px-4 py-2.5 text-[16px] text-ink-strong placeholder:text-ink-strong focus:border-brand-blue focus:outline-none";
 
 function TextInput(props: { placeholder?: string; type?: string }) {
   return <input type={props.type ?? "text"} placeholder={props.placeholder} className={inputCls} />;
@@ -113,13 +113,13 @@ function Textarea({ placeholder, rows = 4 }: { placeholder?: string; rows?: numb
 function Dropzone({ label, hint }: { label: string; hint: string }) {
   return (
     <div>
-      <p className="mb-1.5 text-[13px] font-semibold text-ink-strong">{label}</p>
+      <p className="mb-1.5 text-[16px] font-semibold text-ink-strong">{label}</p>
       <div className="flex flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-line bg-canvas px-6 py-8 text-center transition-colors hover:border-brand-blue">
-        <p className="text-[14px] font-medium text-ink-strong">
+        <p className="text-[16px] font-medium text-ink-strong">
           파일을 끌어다 놓거나 클릭하여 선택
         </p>
-        <p className="text-[12px] text-neutral-400">{hint}</p>
-        <span className="mt-2 rounded-lg border border-line px-4 py-2 text-[13px] font-semibold text-ink-strong hover:border-brand-blue">
+        <p className="text-[16px] text-ink-strong">{hint}</p>
+        <span className="mt-2 rounded-lg border border-line px-4 py-2 text-[16px] font-semibold text-ink-strong hover:border-brand-blue">
           파일 선택
         </span>
       </div>
@@ -134,7 +134,7 @@ function PrimaryBtn({ children, onClick }: { children: ReactNode; onClick?: () =
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex items-center gap-1.5 rounded-lg bg-brand-blue px-5 py-3 text-[15px] font-semibold text-white hover:-translate-y-0.5"
+      className="inline-flex items-center gap-1.5 rounded-lg bg-brand-blue px-5 py-3 text-[16px] font-semibold text-white hover:-translate-y-0.5"
     >
       {children}
     </button>
@@ -146,7 +146,7 @@ function OutlineBtn({ children, onClick }: { children: ReactNode; onClick?: () =
     <button
       type="button"
       onClick={onClick}
-      className="rounded-lg border border-line px-5 py-3 text-[15px] font-semibold text-ink-strong hover:border-brand-blue"
+      className="rounded-lg border border-line px-5 py-3 text-[16px] font-semibold text-ink-strong hover:border-brand-blue"
     >
       {children}
     </button>
@@ -194,7 +194,7 @@ function SubmitFlow() {
         </div>
 
         {/* UX rule note */}
-        <p className="mt-4 text-[13px] leading-[1.7] text-neutral-500">
+        <p className="mt-4 text-[16px] leading-[1.7] text-ink-strong">
           입력 내용은 단계 이동 시 자동 저장되며, 이탈 후 재로그인해도 이어서 작성할 수 있습니다.
         </p>
 
@@ -247,7 +247,7 @@ function SubmitFlow() {
 
               <label className="mt-6 flex items-start gap-3 rounded-lg border border-line bg-canvas p-4">
                 <input type="checkbox" className="mt-0.5 h-4 w-4 accent-brand-blue" />
-                <span className="text-[14px] leading-[1.6] text-neutral-500">
+                <span className="text-[16px] leading-[1.6] text-ink-strong">
                   개인정보 수집·이용 및 참가 약관에 동의합니다. (필수)
                 </span>
               </label>
@@ -307,15 +307,15 @@ function SubmitFlow() {
               </div>
 
               <fieldset className="mt-6">
-                <legend className="mb-2 text-[13px] font-semibold text-ink-strong">
+                <legend className="mb-2 text-[16px] font-semibold text-ink-strong">
                   참가 형태
                 </legend>
                 <div className="flex flex-wrap gap-3">
-                  <label className="flex items-center gap-2 rounded-lg border border-line px-4 py-2.5 text-[14px] text-ink-strong hover:border-brand-blue">
+                  <label className="flex items-center gap-2 rounded-lg border border-line px-4 py-2.5 text-[16px] text-ink-strong hover:border-brand-blue">
                     <input type="radio" name="teamType" defaultChecked className="h-4 w-4 accent-brand-blue" />
                     개인
                   </label>
-                  <label className="flex items-center gap-2 rounded-lg border border-line px-4 py-2.5 text-[14px] text-ink-strong hover:border-brand-blue">
+                  <label className="flex items-center gap-2 rounded-lg border border-line px-4 py-2.5 text-[16px] text-ink-strong hover:border-brand-blue">
                     <input type="radio" name="teamType" className="h-4 w-4 accent-brand-blue" />
                     팀
                   </label>
@@ -362,26 +362,26 @@ function SubmitFlow() {
           {step === 4 && (
             <StepCard title="확인 및 결제">
               <div className="rounded-2xl border border-line bg-canvas p-5">
-                <p className="text-[13px] font-bold uppercase tracking-[0.12em] text-brand-blue">
+                <p className="text-[16px] font-bold uppercase tracking-[0.12em] text-brand-blue">
                   Review
                 </p>
-                <dl className="mt-4 grid gap-x-6 gap-y-3 text-[14px] sm:grid-cols-2">
+                <dl className="mt-4 grid gap-x-6 gap-y-3 text-[16px] sm:grid-cols-2">
                   <div className="flex justify-between border-b border-line pb-2">
-                    <dt className="text-neutral-500">공모전</dt>
+                    <dt className="text-ink-strong">공모전</dt>
                     <dd className="font-medium text-ink-strong">{contestTitle}</dd>
                   </div>
                   <div className="flex justify-between border-b border-line pb-2">
-                    <dt className="text-neutral-500">부문</dt>
+                    <dt className="text-ink-strong">부문</dt>
                     <dd className="font-medium text-ink-strong">
                       {contest?.categoryEn ?? "미선택"}
                     </dd>
                   </div>
                   <div className="flex justify-between border-b border-line pb-2">
-                    <dt className="text-neutral-500">참가자</dt>
+                    <dt className="text-ink-strong">참가자</dt>
                     <dd className="font-medium text-ink-strong">홍길동</dd>
                   </div>
                   <div className="flex justify-between border-b border-line pb-2">
-                    <dt className="text-neutral-500">작품명</dt>
+                    <dt className="text-ink-strong">작품명</dt>
                     <dd className="font-medium text-ink-strong">Quiet Morning</dd>
                   </div>
                 </dl>
@@ -389,17 +389,17 @@ function SubmitFlow() {
 
               <div className="mt-6 grid gap-5 sm:grid-cols-2">
                 <div className="rounded-2xl border border-line bg-white p-5">
-                  <p className="text-[13px] font-semibold text-ink-strong">참가비</p>
+                  <p className="text-[16px] font-semibold text-ink-strong">참가비</p>
                   <p className="mt-2 font-serif text-[26px] font-bold text-ink-strong">
                     {contest?.fee ?? "₩60,000"}
                   </p>
-                  <p className="mt-1 text-[13px] text-neutral-500">
+                  <p className="mt-1 text-[16px] text-ink-strong">
                     카드 · 계좌이체 · 간편결제 지원
                   </p>
                 </div>
                 <div className="rounded-2xl border border-line bg-white p-5">
-                  <p className="text-[13px] font-semibold text-ink-strong">환불규정</p>
-                  <p className="mt-2 text-[13px] leading-[1.7] text-neutral-500">
+                  <p className="text-[16px] font-semibold text-ink-strong">환불규정</p>
+                  <p className="mt-2 text-[16px] leading-[1.7] text-ink-strong">
                     접수 마감 전 취소 시 전액 환불되며, 마감 이후에는 환불이 불가합니다.
                     심사 시작 이후 접수 취소는 불가합니다.
                   </p>
@@ -408,7 +408,7 @@ function SubmitFlow() {
 
               <label className="mt-6 flex items-start gap-3 rounded-lg border border-line bg-canvas p-4">
                 <input type="checkbox" className="mt-0.5 h-4 w-4 accent-brand-blue" />
-                <span className="text-[14px] leading-[1.6] text-neutral-500">
+                <span className="text-[16px] leading-[1.6] text-ink-strong">
                   접수 내용과 환불규정을 확인하였으며, 최종 제출에 동의합니다. (필수)
                 </span>
               </label>
@@ -432,27 +432,27 @@ function SubmitFlow() {
                 <h3 className="mt-4 font-serif text-[24px] font-bold text-ink-strong">
                   접수가 완료되었습니다
                 </h3>
-                <p className="mt-2 text-[14px] text-neutral-500">
+                <p className="mt-2 text-[16px] text-ink-strong">
                   접수 확인 메일을 발송했습니다. 마이페이지에서 진행 상황을 확인하세요.
                 </p>
 
-                <dl className="mt-8 w-full max-w-md space-y-3 text-left text-[14px]">
+                <dl className="mt-8 w-full max-w-md space-y-3 text-left text-[16px]">
                   <div className="flex justify-between border-b border-line pb-2">
-                    <dt className="text-neutral-500">접수번호</dt>
+                    <dt className="text-ink-strong">접수번호</dt>
                     <dd className="font-semibold text-brand-blue">GYCA-2026-000123</dd>
                   </div>
                   <div className="flex justify-between border-b border-line pb-2">
-                    <dt className="text-neutral-500">작품명</dt>
+                    <dt className="text-ink-strong">작품명</dt>
                     <dd className="font-medium text-ink-strong">Quiet Morning</dd>
                   </div>
                   <div className="flex justify-between border-b border-line pb-2">
-                    <dt className="text-neutral-500">결제정보</dt>
+                    <dt className="text-ink-strong">결제정보</dt>
                     <dd className="font-medium text-ink-strong">
                       {contest?.fee ?? "₩60,000"} · 카드 결제 완료
                     </dd>
                   </div>
                   <div className="flex justify-between border-b border-line pb-2">
-                    <dt className="text-neutral-500">결과발표일</dt>
+                    <dt className="text-ink-strong">결과발표일</dt>
                     <dd className="font-medium text-ink-strong">2026.09.15</dd>
                   </div>
                 </dl>
@@ -462,7 +462,7 @@ function SubmitFlow() {
                 <OutlineBtn>접수증</OutlineBtn>
                 <Link
                   href="/mypage"
-                  className="rounded-lg border border-line px-5 py-3 text-[15px] font-semibold text-ink-strong hover:border-brand-blue"
+                  className="rounded-lg border border-line px-5 py-3 text-[16px] font-semibold text-ink-strong hover:border-brand-blue"
                 >
                   내 접수
                 </Link>

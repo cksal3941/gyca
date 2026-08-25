@@ -84,7 +84,7 @@ export default function AdminDashboard() {
         <div className="grid gap-8 lg:grid-cols-[220px_1fr]">
           {/* LEFT sidebar — 관리 메뉴 */}
           <aside>
-            <p className="px-3 text-[11px] font-bold uppercase tracking-[0.12em] text-brand-blue">
+            <p className="px-3 text-[16px] font-bold uppercase tracking-[0.12em] text-brand-blue">
               관리 메뉴
             </p>
             <nav className="mt-3 overflow-hidden rounded-2xl border border-line bg-white">
@@ -92,7 +92,7 @@ export default function AdminDashboard() {
                 <a
                   key={m}
                   href="#"
-                  className={`block px-4 py-3 text-[14px] font-medium text-ink hover:bg-surface hover:text-brand-blue ${
+                  className={`block px-4 py-3 text-[16px] font-medium text-ink hover:bg-surface hover:text-brand-blue ${
                     i < MENU.length - 1 ? "border-b border-line" : ""
                   }`}
                 >
@@ -111,7 +111,7 @@ export default function AdminDashboard() {
                   key={k.label}
                   className="rounded-2xl border border-line bg-white p-5"
                 >
-                  <p className="text-[13px] text-neutral-500">{k.label}</p>
+                  <p className="text-[16px] text-ink-strong">{k.label}</p>
                   <p className="mt-2 font-serif text-[26px] font-bold text-ink-strong">
                     {k.value}
                   </p>
@@ -124,14 +124,14 @@ export default function AdminDashboard() {
               <input
                 type="search"
                 placeholder="접수번호·이름·공모전 검색"
-                className="w-full flex-1 rounded-lg border border-line bg-white px-4 py-2.5 text-[14px] text-ink-strong outline-none focus:border-brand-blue"
+                className="w-full flex-1 rounded-lg border border-line bg-white px-4 py-2.5 text-[16px] text-ink-strong outline-none focus:border-brand-blue"
               />
               <div className="flex flex-wrap gap-2">
                 {FILTERS.map((f) => (
                   <select
                     key={f.label}
                     aria-label={f.label}
-                    className="rounded-lg border border-line bg-white px-3 py-2.5 text-[14px] text-ink-strong outline-none focus:border-brand-blue"
+                    className="rounded-lg border border-line bg-white px-3 py-2.5 text-[16px] text-ink-strong outline-none focus:border-brand-blue"
                   >
                     {f.options.map((o) => (
                       <option key={o}>{o}</option>
@@ -143,9 +143,9 @@ export default function AdminDashboard() {
 
             {/* Recent 접수 table */}
             <div className="mt-4 overflow-hidden rounded-2xl border border-line bg-white">
-              <table className="w-full text-left text-[14px]">
+              <table className="w-full text-left text-[16px]">
                 <thead>
-                  <tr className="border-b border-line bg-surface text-[13px] text-neutral-500">
+                  <tr className="border-b border-line bg-surface text-[16px] text-ink-strong">
                     <th className="px-5 py-3 font-semibold">접수번호</th>
                     <th className="px-5 py-3 font-semibold">접수자</th>
                     <th className="px-5 py-3 font-semibold">공모전</th>
@@ -164,10 +164,10 @@ export default function AdminDashboard() {
                         {r.id}
                       </td>
                       <td className="px-5 py-4 text-ink-strong">{r.applicant}</td>
-                      <td className="px-5 py-4 text-neutral-500">{r.contest}</td>
-                      <td className="px-5 py-4 text-neutral-500">{r.status}</td>
-                      <td className="px-5 py-4 text-neutral-500">{r.payment}</td>
-                      <td className="px-5 py-4 text-neutral-500">{r.date}</td>
+                      <td className="px-5 py-4 text-ink-strong">{r.contest}</td>
+                      <td className="px-5 py-4 text-ink-strong">{r.status}</td>
+                      <td className="px-5 py-4 text-ink-strong">{r.payment}</td>
+                      <td className="px-5 py-4 text-ink-strong">{r.date}</td>
                     </tr>
                   ))}
                 </tbody>

@@ -22,7 +22,7 @@ export default function EditorialHeader({
     <section className="border-b border-line">
       <div className="mx-auto max-w-shell px-6 pb-10 pt-14 lg:pb-14 lg:pt-20">
         {crumbs && crumbs.length > 0 && (
-          <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-[13px] text-neutral-500">
+          <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-[16px] text-ink-strong">
             <Link href="/" className="hover:text-brand-blue">
               홈
             </Link>
@@ -43,7 +43,7 @@ export default function EditorialHeader({
         <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <div>
             {eyebrow && (
-              <p className="mb-3 text-[13px] font-bold uppercase tracking-[0.18em] text-brand-blue">
+              <p className="mb-3 text-[16px] font-bold uppercase tracking-[0.18em] text-brand-blue">
                 {eyebrow}
               </p>
             )}
@@ -51,7 +51,7 @@ export default function EditorialHeader({
               {title}
             </h1>
             {description && (
-              <p className="mt-6 max-w-[40rem] text-[14px] leading-[1.9] text-neutral-500">
+              <p className="mt-6 max-w-[40rem] text-[16px] leading-[1.9] text-ink-strong">
                 {description}
               </p>
             )}
