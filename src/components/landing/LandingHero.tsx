@@ -1,5 +1,28 @@
 import type { CSSProperties } from "react";
+import { svgPath } from "blobs/v2";
 import { ArrowRight } from "./icons";
+
+// Soft organic blobs generated with the `blobs` library (fixed seeds →
+// deterministic, so server and client render identically).
+const BLOB_A = svgPath({ seed: "gyca-a", extraPoints: 6, randomness: 4, size: 200 });
+const BLOB_B = svgPath({ seed: "gyca-b", extraPoints: 8, randomness: 6, size: 200 });
+const BLOB_C = svgPath({ seed: "gyca-c", extraPoints: 7, randomness: 5, size: 200 });
+
+function Blob({
+  path,
+  fill,
+  className,
+}: {
+  path: string;
+  fill: string;
+  className?: string;
+}) {
+  return (
+    <svg viewBox="0 0 200 200" className={className} aria-hidden>
+      <path fill={fill} d={path} />
+    </svg>
+  );
+}
 
 /** Even 8-spoke sparkle (original shape), tilted for a slight lean.
  *  A −45° turn is invisible on an 8-fold-symmetric mark, so we lean −22.5°. */
@@ -25,7 +48,7 @@ function Sparkle({ size = 44 }: { size?: number }) {
  *  bottom arc, with a blue sparkle in the middle. */
 function StampBadge() {
   return (
-    <div className="relative h-[140px] w-[140px]">
+    <div className="relative h-[152px] w-[152px]">
       <svg viewBox="0 0 120 120" className="h-full w-full text-ink-strong">
         <defs>
           {/* upper semicircle: text baseline sits on r=44, caps rise outward */}
@@ -54,7 +77,7 @@ function StampBadge() {
         </text>
       </svg>
       <span className="absolute inset-0 flex items-center justify-center text-brand-blue">
-        <Sparkle size={62} />
+        <Sparkle size={68} />
       </span>
     </div>
   );
@@ -94,7 +117,7 @@ export default function LandingHero() {
       <div className="relative mx-auto grid max-w-shell items-center gap-10 px-6 py-16 lg:grid-cols-[1.15fr_0.85fr] lg:py-20">
         {/* Left: copy */}
         <div>
-          <p className="text-[13px] font-extrabold uppercase tracking-[0.12em] text-brand-blue">
+          <p className="text-[18px] font-extrabold uppercase tracking-[0.12em] text-brand-blue">
             Global Creative Arts Platform
           </p>
           <h1 className="mt-5 text-[clamp(36px,4.2vw,52px)] font-extrabold leading-[1.06] tracking-[-0.03em] text-ink-strong">
@@ -128,12 +151,23 @@ export default function LandingHero() {
         {/* Right: geometric backdrop + image collage.
             All three tiles share one bottom baseline; only their heights differ.
             The whole group is nudged down with mt. */}
-        <div className="relative mt-8 h-[380px] sm:h-[430px] lg:mt-12">
-          {/* Geometric backdrop — pale lavender ellipse + mint circle +
-              lower-left lavender, mirroring the reference. */}
-          <div className="absolute -top-20 left-[20%] z-0 h-[360px] w-[480px] rounded-full bg-brand-purple/15" />
-          <div className="absolute left-[40%] top-[54px] z-0 h-[172px] w-[172px] rounded-full bg-brand-teal/25" />
-          <div className="absolute -bottom-20 -left-24 z-0 h-[320px] w-[320px] rounded-full bg-brand-purple/12" />
+        <div className="relative mt-8 h-[420px] sm:h-[470px] lg:mt-12">
+          {/* Organic pastel blobs behind the collage (free blob-generator SVGs) */}
+          <Blob
+            path={BLOB_A}
+            fill="#e0d6f5"
+            className="absolute -top-24 left-[16%] z-0 h-[500px] w-[500px]"
+          />
+          <Blob
+            path={BLOB_B}
+            fill="#cceae2"
+            className="absolute left-[40%] top-[30px] z-0 h-[240px] w-[240px]"
+          />
+          <Blob
+            path={BLOB_C}
+            fill="#e6def7"
+            className="absolute -bottom-28 -left-28 z-0 h-[360px] w-[360px]"
+          />
 
           {/* Image cluster — bottom-aligned row, right-anchored.
               Cards 1 & 2 sit flush (flex, no gap → never overlap); card 3
@@ -141,14 +175,14 @@ export default function LandingHero() {
               1–2 overlap back. */}
           <div className="absolute inset-x-0 bottom-0 z-10 flex items-end justify-end">
             {/* Dancer (tallest) with the stamp anchored to its top-left corner */}
-            <div className="relative shrink-0" style={{ width: 262, height: 346 }}>
+            <div className="relative shrink-0" style={{ width: 288, height: 380 }}>
               <CollageTile
                 src="/images/hero/collage-dance.jpg"
                 alt="Contemporary dance performance"
                 tint="linear-gradient(135deg,#d0d0d6,#6c6c74)"
                 className="h-full w-full rounded-[14px] rounded-br-none"
               />
-              <div className="absolute -left-12 -top-10 z-30">
+              <div className="absolute -left-16 -top-14 z-30">
                 <StampBadge />
               </div>
             </div>
@@ -158,7 +192,7 @@ export default function LandingHero() {
               alt="Abstract painting detail"
               tint="linear-gradient(135deg,#a8dcd0,#f4c7cf 55%,#8fb6f0)"
               className="z-20 shrink-0 rounded-tr-[14px]"
-              style={{ width: 196, height: 222 }}
+              style={{ width: 216, height: 244 }}
             />
             {/* Piano — medium height, folded (rounded) top-right corner, overlaps paint */}
             <CollageTile
@@ -167,12 +201,12 @@ export default function LandingHero() {
               tint="linear-gradient(135deg,#6b4326,#161616)"
               className="shrink-0"
               style={{
-                width: 256,
-                height: 292,
-                marginLeft: -49,
-                // 256×292 tile: rounded corners (r=14) + folded, rounded top-right
+                width: 282,
+                height: 321,
+                marginLeft: -54,
+                // 282×321 tile: rounded corners (r=14) + folded, rounded top-right
                 clipPath:
-                  'path("M 14 0 L 191 0 Q 204 0 213.2 9.2 L 246.8 42.8 Q 256 52 256 65 L 256 278 Q 256 292 242 292 L 14 292 Q 0 292 0 278 L 0 14 Q 0 0 14 0 Z")',
+                  'path("M 14 0 L 211 0 Q 225 0 234.9 9.9 L 272.1 47.1 Q 282 57 282 71 L 282 307 Q 282 321 268 321 L 14 321 Q 0 321 0 307 L 0 14 Q 0 0 14 0 Z")',
               }}
             />
           </div>

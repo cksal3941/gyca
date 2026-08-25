@@ -11,6 +11,9 @@ importers:
       better-auth:
         specifier: ^1.7.1
         version: 1.7.1(next@16.3.1(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(pg@8.23.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      blobs:
+        specifier: 2.3.0-beta.2
+        version: 2.3.0-beta.2
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -1908,6 +1911,9 @@ packages:
       zod:
         optional: true
 
+  blobs@2.3.0-beta.2:
+    resolution: {integrity: sha512-kzLT5TOg/hsETxeyHae1sNpRWXNHnB1VN467FASoZfLRm4LdoXyp6HTTjes0cPE1sOVoOHEJFT9qyFGOpQFvPw==}
+
   body-parser@2.3.0:
     resolution: {integrity: sha512-2cGmJupaNgg+QUwVLAucDuWuoMZ6EX9iHDRswZ5lsNYEmwPaRknMPCLZz07yTzVq/83p4o/wzbDZbBrTvGGTIw==}
     engines: {node: '>=18'}
@@ -3629,6 +3635,9 @@ packages:
   signal-exit@4.1.0:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
+
+  simplex-noise@4.0.3:
+    resolution: {integrity: sha512-qSE2I4AngLQG7BXqoZj51jokT4WUXe8mOBrvfOXpci8+6Yu44+/dD5zqDpOx3Ux792eamTd2lLcI8jqFntk/lg==}
 
   sisteransi@1.0.5:
     resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
@@ -5805,6 +5814,10 @@ snapshots:
     optionalDependencies:
       zod: 4.4.3
 
+  blobs@2.3.0-beta.2:
+    dependencies:
+      simplex-noise: 4.0.3
+
   body-parser@2.3.0(supports-color@7.2.0):
     dependencies:
       bytes: 3.1.2
@@ -7781,6 +7794,8 @@ snapshots:
   signal-exit@3.0.7: {}
 
   signal-exit@4.1.0: {}
+
+  simplex-noise@4.0.3: {}
 
   sisteransi@1.0.5: {}
 
