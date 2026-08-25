@@ -24,7 +24,7 @@ export default function SiteHeader() {
     pathname === href || pathname.startsWith(href + "/");
 
   return (
-    <header className="sticky top-0 z-[1000] border-b border-line bg-white/85 backdrop-blur-md">
+    <header className="sticky top-0 z-[1000] border-b border-line bg-white">
       <div className="mx-auto flex h-[72px] max-w-shell items-center gap-8 px-6">
         <Link
           href="/"

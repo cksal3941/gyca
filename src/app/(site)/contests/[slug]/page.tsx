@@ -168,7 +168,7 @@ export default async function ContestDetail({
       </section>
 
       {/* Sticky CTA (mobile) */}
-      <div className="sticky bottom-0 z-40 border-t border-line bg-white/95 px-6 py-3 backdrop-blur-md lg:hidden">
+      <div className="sticky bottom-0 z-40 border-t border-line bg-white px-6 py-3 lg:hidden">
         <Link
           href={`/submit?contest=${c.slug}`}
           className="flex items-center justify-center gap-2 rounded-lg bg-brand-blue px-5 py-3 text-[15px] font-semibold text-white"
