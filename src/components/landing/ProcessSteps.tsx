@@ -62,8 +62,8 @@ export default function ProcessSteps() {
       <div className="mx-auto max-w-shell px-6">
         <div className="relative overflow-hidden rounded-3xl bg-surface px-8 py-12 lg:px-12">
           <DotGrid />
-          <div className="grid gap-10 lg:grid-cols-[260px_1fr] lg:items-center">
-            <h2 className="font-serif text-[30px] font-bold leading-[1.2] tracking-[-0.01em] text-ink-strong">
+          <div className="grid gap-10 lg:grid-cols-[340px_1fr] lg:items-center">
+            <h2 className="font-sans text-[28px] font-bold leading-[1.25] tracking-[-0.01em] text-ink-strong">
               From Discovery
               <br />
               to the Global Stage
@@ -72,9 +72,10 @@ export default function ProcessSteps() {
             <div className="grid gap-x-4 gap-y-8 sm:grid-cols-2 xl:grid-cols-4">
               {STEPS.map((step, i) => (
                 <div key={step.no} className="relative">
-                  {/* Connector arrow between steps (desktop) */}
+                  {/* Connector arrow between steps (desktop) — vertically
+                      centered so all four align once the cards are equal height */}
                   {i < STEPS.length - 1 && (
-                    <span className="absolute -right-3 top-1 hidden text-ink-strong xl:block">
+                    <span className="absolute -right-2 top-1/2 hidden -translate-y-1/2 text-ink-strong xl:block">
                       <ArrowRight size={18} />
                     </span>
                   )}
@@ -89,7 +90,7 @@ export default function ProcessSteps() {
                   <h3 className="mt-4 text-[16px] font-bold text-ink-strong">
                     {step.title}
                   </h3>
-                  <p className="mt-1.5 text-[16px] leading-[1.6] text-ink-strong">
+                  <p className="mt-1.5 min-h-[3.2em] text-[16px] leading-[1.6] text-ink-strong">
                     {step.desc}
                   </p>
                 </div>
