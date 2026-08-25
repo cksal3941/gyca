@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bebas_Neue, Quicksand, Manrope, PT_Serif } from "next/font/google";
+import { Bebas_Neue, Quicksand, Manrope, DM_Serif_Display } from "next/font/google";
 import "./globals.css";
 
 const bebas = Bebas_Neue({
@@ -21,11 +21,11 @@ const manrope = Manrope({
   weight: ["400", "500", "600", "700", "800"],
 });
 
-// Editorial serif for section + card headings (home.png landing)
-const ptSerif = PT_Serif({
-  variable: "--font-pt-serif",
+// Serif titles — matches the reference site (myslide.org uses DM Serif Display)
+const dmSerif = DM_Serif_Display({
+  variable: "--font-dm-serif",
   subsets: ["latin"],
-  weight: ["400", "700"],
+  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -37,7 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${bebas.variable} ${quicksand.variable} ${manrope.variable} ${ptSerif.variable}`}
+      className={`${bebas.variable} ${quicksand.variable} ${manrope.variable} ${dmSerif.variable}`}
     >
       <head>
         <link rel="preconnect" href="https://cdn.jsdelivr.net" />

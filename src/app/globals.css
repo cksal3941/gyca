@@ -12,11 +12,13 @@
   --color-ink-strong: #111111;
   --color-line: #eeeeee;
 
-  /* Landing accents (home.png layout, reference design system) */
-  --color-brand-purple: #7c5cff;
-  --color-brand-teal: #12b5a5;
-  --color-canvas: #f7f6fb;
-  --color-surface: #f4f4f6;
+  /* Reference (myslide.org) is monochrome + a single blue accent, so the
+     former purple/teal accents collapse to the brand blue and backgrounds
+     become neutral rather than lavender. */
+  --color-brand-purple: #0b05e2;
+  --color-brand-teal: #0b05e2;
+  --color-canvas: #f7f7f8;
+  --color-surface: #f1f1f2;
 
   /* Content max-width ~1000px */
   --container-content: 1000px;
@@ -30,8 +32,10 @@
   --font-nav: var(--font-quicksand), sans-serif;
   /* Extracted from myslide.org via extract-design-system */
   --font-body: var(--font-manrope), "Manrope", sans-serif;
-  /* Editorial serif for landing headings */
-  --font-serif: var(--font-pt-serif), "PT Serif", Georgia, serif;
+  /* Serif titles — Latin renders in DM Serif Display (like the reference);
+     Korean falls back to a gothic (as the reference does), not a batang serif. */
+  --font-serif: var(--font-dm-serif), "DM Serif Display", "Pretendard Variable",
+    Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   --font-sans: "Pretendard Variable", Pretendard, var(--font-quicksand),
     helvetica, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
 

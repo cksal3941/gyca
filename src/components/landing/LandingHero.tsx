@@ -155,17 +155,17 @@ export default function LandingHero() {
           {/* Organic pastel blobs behind the collage (free blob-generator SVGs) */}
           <Blob
             path={BLOB_A}
-            fill="#e0d6f5"
+            fill="#e4e3fb"
             className="absolute -top-24 left-[16%] z-0 h-[500px] w-[500px]"
           />
           <Blob
             path={BLOB_B}
-            fill="#cceae2"
+            fill="#ededf2"
             className="absolute left-[40%] top-[30px] z-0 h-[240px] w-[240px]"
           />
           <Blob
             path={BLOB_C}
-            fill="#e6def7"
+            fill="#e9e8fb"
             className="absolute -bottom-28 -left-28 z-0 h-[360px] w-[360px]"
           />
 

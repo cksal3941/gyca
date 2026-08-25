@@ -34,7 +34,7 @@ export default function SiteHeader() {
         </Link>
 
         {/* Primary nav */}
-        <nav className="hidden flex-1 items-center justify-center gap-8 lg:flex">
+        <nav className="hidden flex-1 items-center justify-center gap-8 font-nav lg:flex">
           {NAV.map((item) => (
             <Link
               key={item.href}

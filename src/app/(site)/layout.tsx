@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 
 export default function SiteLayout({ children }: { children: ReactNode }) {
   return (
-    <div id="top" className="font-body">
+    <div id="top" className="font-sans">
       <SiteHeader />
       {/* Offset for the fixed 72px header */}
       <main className="pt-[72px]">{children}</main>
