@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
@@ -18,11 +18,7 @@ export default function SiteHeader() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
-
-  // Close the mobile drawer on navigation
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+  const closeDrawer = () => setOpen(false);
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + "/");
@@ -96,7 +92,7 @@ export default function SiteHeader() {
                 <span className="font-semibold text-ink-strong">
                   {session.user.name}
                 </span>
-                <Link href="/mypage" className="text-brand-blue">
+                <Link href="/mypage" onClick={closeDrawer} className="text-brand-blue">
                   마이페이지
                 </Link>
               </div>
@@ -105,6 +101,7 @@ export default function SiteHeader() {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={closeDrawer}
                 className="border-b border-line py-3 text-[16px] text-ink-strong hover:text-brand-blue"
               >
                 {item.label}
@@ -113,6 +110,7 @@ export default function SiteHeader() {
             {!session && (
               <Link
                 href="/login"
+                onClick={closeDrawer}
                 className="py-3 text-[16px] text-ink-strong hover:text-brand-blue"
               >
                 로그인 · 회원가입

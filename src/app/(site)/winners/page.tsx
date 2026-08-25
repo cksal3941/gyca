@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import PageHeader from "@/components/site/PageHeader";
+import EditorialHeader from "@/components/site/EditorialHeader";
 import {
   WINNERS,
   WINNER_YEARS,
@@ -12,33 +12,25 @@ import {
   type Winner,
 } from "@/lib/site-data";
 
-function WinnerCard({ w }: { w: Winner }) {
+function WinnerItem({ w }: { w: Winner }) {
   return (
-    <Link
-      href={`/winners/${w.slug}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-white transition-shadow hover:shadow-[0_24px_50px_-28px_rgba(17,17,17,0.4)]"
-    >
+    <Link href={`/winners/${w.slug}`} className="group block">
       <div
-        className="h-[180px] w-full bg-cover bg-center"
+        className="aspect-[4/5] w-full rounded-2xl bg-cover bg-center ring-1 ring-black/5"
         style={{ backgroundImage: w.tint }}
         role="img"
         aria-label={w.title}
       />
-      <div className="flex flex-1 flex-col p-5">
-        <p className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.1em] text-ink-strong">
-          <span className={`h-2.5 w-2.5 rounded-full ${AWARD_COLOR[w.award]}`} />
-          {w.award}
-        </p>
-        <h3 className="mt-2 font-serif text-[18px] font-bold leading-snug text-ink-strong group-hover:text-brand-blue">
-          {w.title}
-        </h3>
-        <p className="mt-1 text-[13px] text-neutral-500">
-          {w.artist} · {w.country}
-        </p>
-        <p className="mt-1 text-[13px] text-neutral-500">
-          {w.category} · {w.year}
-        </p>
-      </div>
+      <p className="mt-5 flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.1em] text-ink-strong">
+        <span className={`h-2.5 w-2.5 rounded-full ${AWARD_COLOR[w.award]}`} />
+        {w.award}
+      </p>
+      <h3 className="mt-2 font-serif text-[clamp(20px,2.2vw,26px)] font-bold leading-tight text-ink-strong group-hover:text-brand-blue">
+        {w.title}
+      </h3>
+      <p className="mt-2 text-[14px] text-neutral-500">
+        {w.artist} · {w.country} · {w.year}
+      </p>
     </Link>
   );
 }
@@ -99,16 +91,27 @@ export default function WinnersPage() {
 
   return (
     <>
-      <PageHeader
+      <EditorialHeader
         eyebrow="Winners"
         title="수상작"
         description="역대 국제 청소년 공모전 수상작을 연도·수상 등급·부문별로 살펴보세요."
         crumbs={[{ label: "수상작" }]}
       />
-      <section className="mx-auto max-w-shell px-6 py-12">
-        <div className="space-y-4 rounded-2xl border border-line bg-white p-6">
-          <FilterRow label="연도" options={WINNER_YEARS} value={year} onChange={setYear} />
-          <FilterRow label="수상" options={AWARD_LEVELS} value={award} onChange={setAward} />
+      <section className="mx-auto max-w-shell px-6">
+        {/* Filters */}
+        <div className="space-y-4 border-b border-line py-6">
+          <FilterRow
+            label="연도"
+            options={WINNER_YEARS}
+            value={year}
+            onChange={setYear}
+          />
+          <FilterRow
+            label="수상"
+            options={AWARD_LEVELS}
+            value={award}
+            onChange={setAward}
+          />
           <FilterRow
             label="부문"
             options={CONTEST_FILTERS}
@@ -127,13 +130,13 @@ export default function WinnersPage() {
         </div>
 
         {list.length > 0 ? (
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-x-10 gap-y-16 py-14 sm:grid-cols-2">
             {list.map((w) => (
-              <WinnerCard key={w.slug} w={w} />
+              <WinnerItem key={w.slug} w={w} />
             ))}
           </div>
         ) : (
-          <p className="mt-16 text-center text-[15px] text-neutral-500">
+          <p className="py-24 text-center text-[15px] text-neutral-500">
             조건에 맞는 수상작이 없습니다.
           </p>
         )}

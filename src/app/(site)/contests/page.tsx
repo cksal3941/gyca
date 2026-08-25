@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import PageHeader from "@/components/site/PageHeader";
+import EditorialHeader from "@/components/site/EditorialHeader";
 import {
   CONTESTS,
   CONTEST_FILTERS,
@@ -12,7 +12,6 @@ import {
 } from "@/lib/site-data";
 import { ArrowRight } from "@/components/landing/icons";
 
-/** Status → primary action per the UX spec. */
 function statusAction(c: Contest): { label: string; href: string } {
   switch (c.status) {
     case "upcoming":
@@ -28,51 +27,61 @@ function statusAction(c: Contest): { label: string; href: string } {
   }
 }
 
-function ContestCard({ c }: { c: Contest }) {
+function ContestRow({ c, flip }: { c: Contest; flip: boolean }) {
   const action = statusAction(c);
   return (
-    <div className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-white transition-shadow hover:shadow-[0_24px_50px_-28px_rgba(17,17,17,0.4)]">
-      <Link href={`/contests/${c.slug}`} className="block">
-        <div
-          className="h-[150px] w-full bg-cover bg-center"
-          style={{ backgroundImage: c.tint }}
-          role="img"
-          aria-label={c.title}
-        />
-      </Link>
-      <div className="flex flex-1 flex-col p-5">
-        <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-brand-blue">
+    <article className="grid items-center gap-8 border-b border-line py-12 lg:grid-cols-2 lg:gap-16">
+      {/* Text */}
+      <div className={flip ? "lg:order-2" : ""}>
+        <p className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.12em] text-brand-blue">
           {c.categoryEn}
         </p>
         <Link href={`/contests/${c.slug}`}>
-          <h3 className="mt-2 font-serif text-[18px] font-bold leading-snug text-ink-strong group-hover:text-brand-blue">
+          <h2 className="mt-3 font-serif text-[clamp(26px,3vw,36px)] font-bold leading-tight text-ink-strong hover:text-brand-blue">
             {c.title}
-          </h3>
+          </h2>
         </Link>
-        <p className="mt-1 text-[13px] text-neutral-500">
-          {c.city} · 마감 {c.deadline}
+        <p className="mt-4 max-w-[34rem] text-[15px] leading-[1.7] text-neutral-500">
+          {c.summary}
         </p>
-        <p className="mt-3 flex items-center gap-2 text-[13px] text-neutral-500">
-          <span className={`h-2 w-2 rounded-full ${STATUS_COLOR[c.status]}`} />
-          {STATUS_LABEL[c.status]}
-        </p>
-        <div className="mt-5 flex items-center gap-3 border-t border-line pt-4">
+        <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-neutral-500">
+          <span className="flex items-center gap-2">
+            <span className={`h-2 w-2 rounded-full ${STATUS_COLOR[c.status]}`} />
+            {STATUS_LABEL[c.status]}
+          </span>
+          <span>{c.city}</span>
+          <span>접수 {c.period}</span>
+        </div>
+        <div className="mt-7 flex items-center gap-4">
+          <Link
+            href={action.href}
+            className="inline-flex items-center gap-2 rounded-lg bg-brand-blue px-5 py-2.5 text-[14px] font-semibold text-white hover:-translate-y-0.5"
+          >
+            {action.label}
+            <ArrowRight size={15} />
+          </Link>
           <Link
             href={`/contests/${c.slug}`}
             className="text-[14px] font-semibold text-ink-strong hover:text-brand-blue"
           >
             자세히 보기
           </Link>
-          <Link
-            href={action.href}
-            className="ml-auto inline-flex items-center gap-1.5 rounded-lg bg-brand-blue px-4 py-2 text-[13px] font-semibold text-white hover:-translate-y-0.5"
-          >
-            {action.label}
-            <ArrowRight size={14} />
-          </Link>
         </div>
       </div>
-    </div>
+
+      {/* Image */}
+      <Link
+        href={`/contests/${c.slug}`}
+        className={`block ${flip ? "lg:order-1" : ""}`}
+      >
+        <div
+          className="aspect-[4/3] w-full rounded-2xl bg-cover bg-center ring-1 ring-black/5"
+          style={{ backgroundImage: c.tint }}
+          role="img"
+          aria-label={c.title}
+        />
+      </Link>
+    </article>
   );
 }
 
@@ -83,14 +92,15 @@ export default function ContestsPage() {
 
   return (
     <>
-      <PageHeader
+      <EditorialHeader
         eyebrow="Contests"
         title="공모전"
         description="분야별 국제 청소년 공모전을 탐색하고, 접수 중인 공모전에 바로 지원하세요."
         crumbs={[{ label: "공모전" }]}
       />
-      <section className="mx-auto max-w-shell px-6 py-12">
-        <div className="flex flex-wrap gap-2">
+      <section className="mx-auto max-w-shell px-6">
+        {/* Filters */}
+        <div className="flex flex-wrap gap-2 border-b border-line py-6">
           {CONTEST_FILTERS.map((f) => (
             <button
               key={f}
@@ -107,13 +117,13 @@ export default function ContestsPage() {
         </div>
 
         {list.length > 0 ? (
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {list.map((c) => (
-              <ContestCard key={c.slug} c={c} />
+          <div>
+            {list.map((c, i) => (
+              <ContestRow key={c.slug} c={c} flip={i % 2 === 1} />
             ))}
           </div>
         ) : (
-          <p className="mt-16 text-center text-[15px] text-neutral-500">
+          <p className="py-24 text-center text-[15px] text-neutral-500">
             해당 분야의 공모전이 아직 없습니다.
           </p>
         )}

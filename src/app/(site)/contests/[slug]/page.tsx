@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import PageHeader from "@/components/site/PageHeader";
+import EditorialHeader from "@/components/site/EditorialHeader";
 import {
   getContest,
   CONTESTS,
@@ -41,9 +41,16 @@ export default async function ContestDetail({
   const c = getContest(slug);
   if (!c) notFound();
 
+  const facts: [string, string][] = [
+    ["도시", c.city],
+    ["연계", c.stage],
+    ["접수 기간", c.period],
+    ["참가비", c.fee],
+  ];
+
   return (
     <>
-      <PageHeader
+      <EditorialHeader
         eyebrow={c.categoryEn}
         title={c.title}
         description={c.summary}
@@ -56,54 +63,68 @@ export default async function ContestDetail({
         }
       />
 
-      <section className="mx-auto max-w-shell px-6 py-12">
-        <div className="grid gap-10 lg:grid-cols-[1fr_320px]">
+      {/* Hero image band */}
+      <div className="mx-auto max-w-shell px-6 pt-10 lg:pt-14">
+        <div
+          className="aspect-[21/9] w-full rounded-2xl bg-cover bg-center ring-1 ring-black/5"
+          style={{ backgroundImage: c.tint }}
+          role="img"
+          aria-label={c.title}
+        />
+      </div>
+
+      <section className="mx-auto max-w-shell px-6 py-12 lg:py-16">
+        <div className="grid gap-12 lg:grid-cols-[1fr_320px] lg:gap-16">
           {/* Content */}
           <div className="min-w-0">
-            <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-4">
-              {[
-                ["대표 도시", c.city],
-                ["연계", c.stage],
-                ["접수 기간", c.period],
-                ["참가비", c.fee],
-              ].map(([k, v]) => (
-                <div key={k} className="bg-white p-4">
-                  <dt className="text-[12px] text-neutral-500">{k}</dt>
-                  <dd className="mt-1 text-[14px] font-semibold text-ink-strong">
+            {/* Key facts index */}
+            <dl className="border-t border-line">
+              {facts.map(([k, v]) => (
+                <div
+                  key={k}
+                  className="flex items-center justify-between border-b border-line py-4"
+                >
+                  <dt className="text-[14px] text-neutral-500">{k}</dt>
+                  <dd className="text-[15px] font-semibold text-ink-strong">
                     {v}
                   </dd>
                 </div>
               ))}
             </dl>
 
-            {SECTIONS.map((s) => (
-              <div key={s.id} id={s.id} className="scroll-mt-24 border-b border-line py-8">
-                <h2 className="font-serif text-[22px] font-bold text-ink-strong">
-                  {s.title}
-                </h2>
-                <p className="mt-3 text-[15px] leading-[1.7] text-neutral-500">
-                  {s.body}
-                </p>
-              </div>
-            ))}
+            {/* Spec sections */}
+            <div className="mt-4">
+              {SECTIONS.map((s) => (
+                <div
+                  key={s.id}
+                  id={s.id}
+                  className="scroll-mt-24 border-b border-line py-8"
+                >
+                  <h2 className="font-serif text-[clamp(24px,2.4vw,30px)] font-bold leading-tight text-ink-strong">
+                    {s.title}
+                  </h2>
+                  <p className="mt-4 max-w-[38rem] text-[16px] leading-[1.8] text-neutral-500">
+                    {s.body}
+                  </p>
+                </div>
+              ))}
+            </div>
 
             {/* Schedule */}
             <div id="schedule" className="scroll-mt-24 py-8">
-              <h2 className="font-serif text-[22px] font-bold text-ink-strong">
+              <h2 className="font-serif text-[clamp(24px,2.4vw,30px)] font-bold leading-tight text-ink-strong">
                 전체 일정
               </h2>
-              <div className="mt-4 overflow-hidden rounded-2xl border border-line">
-                {SCHEDULE.map((row, i) => (
+              <div className="mt-6 border-t border-line">
+                {SCHEDULE.map((row) => (
                   <div
                     key={row.phase}
-                    className={`flex items-center justify-between px-5 py-4 ${
-                      i < SCHEDULE.length - 1 ? "border-b border-line" : ""
-                    }`}
+                    className="flex items-center justify-between border-b border-line py-4"
                   >
                     <span className="text-[15px] font-semibold text-ink-strong">
                       {row.phase}
                     </span>
-                    <span className="text-[14px] text-neutral-500">
+                    <span className="text-[14px] uppercase tracking-[0.08em] text-neutral-500">
                       {row.range}
                     </span>
                   </div>
