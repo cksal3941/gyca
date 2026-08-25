@@ -10,8 +10,10 @@ import {
 
 type Award = {
   image: string;
+  tint: string;
   title: string[];
   tags: string;
+  tagColor: string;
   status: string;
   statusColor: string;
 };
@@ -19,22 +21,28 @@ type Award = {
 const AWARDS: Award[] = [
   {
     image: "/images/awards/klimt.jpg",
+    tint: "linear-gradient(135deg,#efd189,#c68f2c)",
     title: ["International Klimt", "Youth Award"],
     tags: "Art · Youth",
+    tagColor: "text-brand-teal",
     status: "Preliminary Round Open",
     statusColor: "bg-brand-teal",
   },
   {
     image: "/images/awards/bach.jpg",
+    tint: "linear-gradient(135deg,#7a4b2b,#1b1b1b)",
     title: ["Bach Festival", "International Competition"],
     tags: "Music · Performance",
+    tagColor: "text-brand-blue",
     status: "Applications Open",
     statusColor: "bg-brand-teal",
   },
   {
     image: "/images/awards/viyba.jpg",
+    tint: "linear-gradient(135deg,#e6e6e6,#a6a6a6)",
     title: ["VIYBA Vienna International", "Youth Book Award"],
     tags: "Book · Illustration",
+    tagColor: "text-brand-blue",
     status: "Pre-registration Open",
     statusColor: "bg-brand-blue",
   },
@@ -44,20 +52,22 @@ function AwardCard({ award }: { award: Award }) {
   return (
     <div className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-white transition-shadow hover:shadow-[0_24px_50px_-28px_rgba(17,17,17,0.4)]">
       <div
-        className="h-[150px] w-full bg-surface bg-cover bg-center"
-        style={{ backgroundImage: `url(${award.image})` }}
+        className="h-[150px] w-full bg-cover bg-center"
+        style={{ backgroundImage: `url(${award.image}), ${award.tint}` }}
         role="img"
         aria-label={award.title.join(" ")}
       />
       <div className="flex flex-1 flex-col p-5">
-        <h3 className="text-[18px] font-bold leading-snug text-ink-strong">
+        <h3 className="font-serif text-[19px] font-bold leading-snug text-ink-strong">
           {award.title.map((line) => (
             <span key={line} className="block">
               {line}
             </span>
           ))}
         </h3>
-        <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-brand-blue">
+        <p
+          className={`mt-2 text-[11px] font-bold uppercase tracking-[0.12em] ${award.tagColor}`}
+        >
           {award.tags}
         </p>
         <p className="mt-3 flex items-center gap-2 text-[13px] text-neutral-500">
@@ -119,7 +129,7 @@ function AnnualCalendar() {
   return (
     <div>
       <div className="flex items-baseline justify-between">
-        <h2 className="text-[26px] font-extrabold tracking-[-0.01em] text-ink-strong">
+        <h2 className="font-serif text-[26px] font-bold tracking-[-0.01em] text-ink-strong">
           Annual Calendar
         </h2>
         <a
@@ -168,7 +178,7 @@ export default function FeaturedAwards() {
         {/* Featured awards — 2/3 */}
         <div className="lg:col-span-2">
           <div className="flex items-center gap-3">
-            <h2 className="text-[26px] font-extrabold tracking-[-0.01em] text-ink-strong">
+            <h2 className="font-serif text-[26px] font-bold tracking-[-0.01em] text-ink-strong">
               Featured International Awards
             </h2>
             <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-neutral-400">

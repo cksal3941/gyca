@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bebas_Neue, Quicksand, Manrope } from "next/font/google";
+import { Bebas_Neue, Quicksand, Manrope, PT_Serif } from "next/font/google";
 import "./globals.css";
 
 const bebas = Bebas_Neue({
@@ -21,6 +21,13 @@ const manrope = Manrope({
   weight: ["400", "500", "600", "700", "800"],
 });
 
+// Editorial serif for section + card headings (home.png landing)
+const ptSerif = PT_Serif({
+  variable: "--font-pt-serif",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
 export const metadata: Metadata = {
   title: "GYCA",
   description: "Young Artists Begin and Grow — A Place Where Young Artists Begin and Grow",
@@ -30,7 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${bebas.variable} ${quicksand.variable} ${manrope.variable}`}
+      className={`${bebas.variable} ${quicksand.variable} ${manrope.variable} ${ptSerif.variable}`}
     >
       <head>
         <link rel="preconnect" href="https://cdn.jsdelivr.net" />

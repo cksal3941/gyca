@@ -20,14 +20,18 @@
 
   /* Content max-width ~1000px */
   --container-content: 1000px;
-  /* Wider shell for the landing layout */
-  --container-shell: 1280px;
+  /* Landing shell — matches the reference's main content width: myslide.org
+     uses a 1600px outer container with ~1570px inner content, which is the
+     same 1570px the Header/EventSlider already use. */
+  --container-shell: 1570px;
 
   /* Fonts (measured from myslide.org) */
   --font-display: var(--font-bebas), "Bebas Neue", sans-serif;
   --font-nav: var(--font-quicksand), sans-serif;
   /* Extracted from myslide.org via extract-design-system */
   --font-body: var(--font-manrope), "Manrope", sans-serif;
+  /* Editorial serif for landing headings */
+  --font-serif: var(--font-pt-serif), "PT Serif", Georgia, serif;
   --font-sans: "Pretendard Variable", Pretendard, var(--font-quicksand),
     helvetica, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
 

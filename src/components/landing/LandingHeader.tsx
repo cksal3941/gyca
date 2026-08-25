@@ -27,7 +27,7 @@ export default function LandingHeader() {
             <a
               key={item}
               href="#"
-              className="text-[15px] font-medium text-ink hover:text-brand-blue"
+              className="text-[15px] font-medium text-ink-strong hover:text-brand-blue"
             >
               {item}
             </a>
@@ -49,7 +49,7 @@ export default function LandingHeader() {
           </Link>
           <a
             href="#"
-            className="inline-flex items-center gap-2 rounded-full bg-brand-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-transform hover:-translate-y-0.5"
+            className="inline-flex items-center gap-2 rounded-lg bg-brand-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-transform hover:-translate-y-0.5"
           >
             Apply Now
             <ArrowRight size={16} />

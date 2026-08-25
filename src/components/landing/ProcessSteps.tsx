@@ -63,7 +63,7 @@ export default function ProcessSteps() {
         <div className="relative overflow-hidden rounded-3xl bg-surface px-8 py-12 lg:px-12">
           <DotGrid />
           <div className="grid gap-10 lg:grid-cols-[260px_1fr] lg:items-center">
-            <h2 className="text-[30px] font-extrabold leading-[1.15] tracking-[-0.01em] text-ink-strong">
+            <h2 className="font-serif text-[30px] font-bold leading-[1.2] tracking-[-0.01em] text-ink-strong">
               From Discovery
               <br />
               to the Global Stage

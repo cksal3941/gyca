@@ -1,51 +1,87 @@
-import { ArrowRight, Asterisk } from "./icons";
+import type { CSSProperties } from "react";
+import { ArrowRight } from "./icons";
 
-/** Rotating stamp badge: curved text around an 8-point star. */
+/** Even 8-spoke sparkle (original shape), tilted for a slight lean.
+ *  A −45° turn is invisible on an 8-fold-symmetric mark, so we lean −22.5°. */
+function Sparkle({ size = 44 }: { size?: number }) {
+  const spokes = [0, 45, 90, 135];
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden>
+      <g
+        stroke="currentColor"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        transform="translate(20 20) rotate(-22.5)"
+      >
+        {spokes.map((deg) => (
+          <line key={deg} x1="0" y1="-15" x2="0" y2="15" transform={`rotate(${deg})`} />
+        ))}
+      </g>
+    </svg>
+  );
+}
+
+/** Circular stamp: "GLOBAL CREATIVE ARTS" on the top arc, "PLATFORM" on the
+ *  bottom arc, with a blue sparkle in the middle. */
 function StampBadge() {
   return (
-    <div className="absolute -top-2 left-0 z-20 h-[112px] w-[112px] lg:-left-6">
+    <div className="relative h-[140px] w-[140px]">
       <svg viewBox="0 0 120 120" className="h-full w-full text-ink-strong">
         <defs>
-          <path
-            id="stamp-arc"
-            d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0"
-          />
+          {/* upper semicircle: text baseline sits on r=44, caps rise outward */}
+          <path id="stamp-top" d="M16,60 A44,44 0 0 1 104,60" fill="none" />
+          {/* lower semicircle: larger radius (r=51) so the bottom text sits the
+              same distance from the border as the top text (caps rise inward) */}
+          <path id="stamp-bottom" d="M9,60 A51,51 0 0 0 111,60" fill="none" />
         </defs>
         <circle
           cx="60"
           cy="60"
           r="58"
           fill="white"
-          stroke="currentColor"
-          strokeOpacity="0.12"
+          stroke="#000000"
+          strokeWidth="0.8"
         />
-        <text className="fill-current text-[9px] font-semibold tracking-[0.22em] uppercase">
-          <textPath href="#stamp-arc" startOffset="0">
-            Global Creative Arts · Platform ·
+        <text className="fill-current text-[11px] font-bold tracking-[0.02em] uppercase">
+          <textPath href="#stamp-top" startOffset="50%" textAnchor="middle">
+            Global Creative Arts
+          </textPath>
+        </text>
+        <text className="fill-current text-[11px] font-bold tracking-[0.18em] uppercase">
+          <textPath href="#stamp-bottom" startOffset="50%" textAnchor="middle">
+            Platform
           </textPath>
         </text>
       </svg>
       <span className="absolute inset-0 flex items-center justify-center text-brand-blue">
-        <Asterisk size={22} />
+        <Sparkle size={62} />
       </span>
     </div>
   );
 }
 
-/** Placeholder tile that shows a local image if present, else a soft surface. */
+/**
+ * Collage tile. Layers the local image OVER a tone-matched gradient, so until
+ * the real file is dropped in the gradient shows through (a failed image layer
+ * is treated as none) instead of leaving the tile blank.
+ */
 function CollageTile({
   src,
   alt,
+  tint,
   className = "",
+  style,
 }: {
   src: string;
   alt: string;
+  tint: string;
   className?: string;
+  style?: CSSProperties;
 }) {
   return (
     <div
-      className={`overflow-hidden rounded-2xl bg-surface bg-cover bg-center shadow-[0_20px_50px_-20px_rgba(17,17,17,0.35)] ring-1 ring-black/5 ${className}`}
-      style={{ backgroundImage: `url(${src})` }}
+      className={`overflow-hidden bg-cover bg-center ring-1 ring-black/5 ${className}`}
+      style={{ backgroundImage: `url(${src}), ${tint}`, ...style }}
       role="img"
       aria-label={alt}
     />
@@ -55,22 +91,18 @@ function CollageTile({
 export default function LandingHero() {
   return (
     <section className="relative overflow-hidden bg-canvas">
-      {/* Decorative blobs */}
-      <div className="pointer-events-none absolute -right-24 top-10 h-[420px] w-[420px] rounded-full bg-brand-purple/15 blur-3xl" />
-      <div className="pointer-events-none absolute right-40 bottom-0 h-[260px] w-[260px] rounded-full bg-brand-teal/10 blur-3xl" />
-
-      <div className="relative mx-auto grid max-w-shell items-center gap-12 px-6 py-16 lg:grid-cols-[1.08fr_0.92fr] lg:py-20">
+      <div className="relative mx-auto grid max-w-shell items-center gap-10 px-6 py-16 lg:grid-cols-[1.15fr_0.85fr] lg:py-20">
         {/* Left: copy */}
         <div>
-          <p className="text-[13px] font-bold uppercase tracking-[0.18em] text-brand-blue">
+          <p className="text-[13px] font-extrabold uppercase tracking-[0.12em] text-brand-blue">
             Global Creative Arts Platform
           </p>
-          <h1 className="mt-5 text-[clamp(34px,4vw,50px)] font-extrabold leading-[1.06] tracking-[-0.02em] text-ink-strong">
+          <h1 className="mt-5 text-[clamp(36px,4.2vw,52px)] font-extrabold leading-[1.06] tracking-[-0.03em] text-ink-strong">
             Discover the Next Stage
             <br />
             for Your Creativity.
           </h1>
-          <p className="mt-6 max-w-[30rem] text-[16px] leading-[1.6] text-neutral-500">
+          <p className="mt-6 max-w-[31rem] text-[16px] leading-[1.6] text-ink-strong">
             Explore international awards, join preliminary rounds, and build a
             verified creative record—all through GYCA.
           </p>
@@ -78,14 +110,14 @@ export default function LandingHero() {
           <div className="mt-9 flex flex-wrap items-center gap-3">
             <a
               href="#"
-              className="inline-flex items-center gap-2 rounded-full bg-brand-blue px-6 py-3.5 text-[15px] font-semibold text-white transition-transform hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2.5 rounded-lg bg-brand-blue px-6 py-3.5 text-[15px] font-semibold text-white transition-transform hover:-translate-y-0.5"
             >
               Explore Awards
               <ArrowRight size={18} />
             </a>
             <a
               href="#"
-              className="inline-flex items-center gap-2 rounded-full border border-ink-strong/20 bg-white px-6 py-3.5 text-[15px] font-semibold text-ink-strong transition-colors hover:border-brand-blue hover:text-brand-blue"
+              className="inline-flex items-center gap-2.5 rounded-lg border border-ink-strong/15 bg-white px-6 py-3.5 text-[15px] font-semibold text-ink-strong transition-colors hover:border-brand-blue hover:text-brand-blue"
             >
               View Global Programs
               <ArrowRight size={18} />
@@ -93,24 +125,57 @@ export default function LandingHero() {
           </div>
         </div>
 
-        {/* Right: stamp + image collage */}
-        <div className="relative h-[360px] sm:h-[420px]">
-          <StampBadge />
-          <CollageTile
-            src="/images/hero/collage-dance.jpg"
-            alt="Contemporary dance performance"
-            className="absolute left-10 top-4 h-[300px] w-[46%]"
-          />
-          <CollageTile
-            src="/images/hero/collage-paint.jpg"
-            alt="Abstract painting detail"
-            className="absolute left-[42%] top-24 z-10 h-[180px] w-[34%]"
-          />
-          <CollageTile
-            src="/images/hero/collage-piano.jpg"
-            alt="Pianist performing"
-            className="absolute right-0 top-10 h-[260px] w-[40%]"
-          />
+        {/* Right: geometric backdrop + image collage.
+            All three tiles share one bottom baseline; only their heights differ.
+            The whole group is nudged down with mt. */}
+        <div className="relative mt-8 h-[380px] sm:h-[430px] lg:mt-12">
+          {/* Geometric backdrop — pale lavender ellipse + mint circle +
+              lower-left lavender, mirroring the reference. */}
+          <div className="absolute -top-20 left-[20%] z-0 h-[360px] w-[480px] rounded-full bg-brand-purple/15" />
+          <div className="absolute left-[40%] top-[54px] z-0 h-[172px] w-[172px] rounded-full bg-brand-teal/25" />
+          <div className="absolute -bottom-20 -left-24 z-0 h-[320px] w-[320px] rounded-full bg-brand-purple/12" />
+
+          {/* Image cluster — bottom-aligned row, right-anchored.
+              Cards 1 & 2 sit flush (flex, no gap → never overlap); card 3
+              overlaps card 2 by a fixed margin, so resizing never brings the
+              1–2 overlap back. */}
+          <div className="absolute inset-x-0 bottom-0 z-10 flex items-end justify-end">
+            {/* Dancer (tallest) with the stamp anchored to its top-left corner */}
+            <div className="relative shrink-0" style={{ width: 262, height: 346 }}>
+              <CollageTile
+                src="/images/hero/collage-dance.jpg"
+                alt="Contemporary dance performance"
+                tint="linear-gradient(135deg,#d0d0d6,#6c6c74)"
+                className="h-full w-full rounded-[14px] rounded-br-none"
+              />
+              <div className="absolute -left-12 -top-10 z-30">
+                <StampBadge />
+              </div>
+            </div>
+            {/* Abstract paint — shortest, in front */}
+            <CollageTile
+              src="/images/hero/collage-paint.jpg"
+              alt="Abstract painting detail"
+              tint="linear-gradient(135deg,#a8dcd0,#f4c7cf 55%,#8fb6f0)"
+              className="z-20 shrink-0 rounded-tr-[14px]"
+              style={{ width: 196, height: 222 }}
+            />
+            {/* Piano — medium height, folded (rounded) top-right corner, overlaps paint */}
+            <CollageTile
+              src="/images/hero/collage-piano.jpg"
+              alt="Pianist performing"
+              tint="linear-gradient(135deg,#6b4326,#161616)"
+              className="shrink-0"
+              style={{
+                width: 256,
+                height: 292,
+                marginLeft: -49,
+                // 256×292 tile: rounded corners (r=14) + folded, rounded top-right
+                clipPath:
+                  'path("M 14 0 L 191 0 Q 204 0 213.2 9.2 L 246.8 42.8 Q 256 52 256 65 L 256 278 Q 256 292 242 292 L 14 292 Q 0 292 0 278 L 0 14 Q 0 0 14 0 Z")',
+              }}
+            />
+          </div>
         </div>
       </div>
     </section>
