@@ -90,7 +90,7 @@ export default function ProcessSteps() {
                   <h3 className="mt-4 text-[16px] font-bold text-ink-strong">
                     {step.title}
                   </h3>
-                  <p className="mt-1.5 min-h-[3.2em] text-[16px] leading-[1.6] text-ink-strong">
+                  <p className="mt-1.5 min-h-[3.2em] max-w-[190px] text-[16px] leading-[1.6] text-ink-strong">
                     {step.desc}
                   </p>
                 </div>
