@@ -13,13 +13,12 @@ const toReq = (v: boolean | null): Req => (v === null ? "unset" : v ? "required"
 const fromReq = (v: Req): boolean | null => (v === "unset" ? null : v === "required");
 
 // Competition registration / edit (LIVE, organizer). Produces a valid
-// CompetitionEditSchema payload. Core fields + categories + age groups are
-// edited here; the detailed form fields / uploads / key dates / exhibition are
-// PRESERVED (round-tripped) from the loaded competition on edit and start empty
-// on create — a dedicated form-spec builder is a follow-up. Operational values
-// are entered by the operator; no defaults are invented here. Times are entered
-// in your browser's local time and saved as UTC (the competition timezone is a
-// separate field, shown to participants).
+// CompetitionEditSchema payload. Every editable field is covered: title, fee,
+// timezone, entry/payment windows, guidelines, key dates (schedule), exhibition,
+// and the form spec (age reference date, categories, age groups, fields,
+// uploads). Operational values are entered by the operator; no defaults are
+// invented here. Times are entered in your browser's local time and saved as UTC
+// (the competition timezone is a separate field, shown to participants).
 
 type Cat = { id: string; en: string; ko: string };
 type Age = { id: string; en: string; ko: string; min: string; max: string };
@@ -86,6 +85,7 @@ export default function CompetitionForm({
       };
     }),
   );
+  const [ageReferenceDate, setAgeReferenceDate] = useState(spec?.ageReferenceDate ?? "");
   const exh = content?.exhibition ?? null;
   const [exhOn, setExhOn] = useState(exh != null);
   const [exhApproval, setExhApproval] = useState<"pending" | "approved">(exh?.approvalStatus ?? "pending");
@@ -128,7 +128,7 @@ export default function CompetitionForm({
         })),
         formSpec: {
           version: spec?.version ?? "v1",
-          ageReferenceDate: spec?.ageReferenceDate ?? null,
+          ageReferenceDate: ageReferenceDate.trim() === "" ? null : ageReferenceDate,
           categories: categories.map((c) => ({ id: c.id.trim(), label: { en: c.en.trim(), ko: c.ko.trim() } })),
           ageGroups: ageGroups.map((a) => ({
             id: a.id.trim(), label: { en: a.en.trim(), ko: a.ko.trim() },
@@ -355,6 +355,11 @@ export default function CompetitionForm({
           <h3 className="font-title text-[18px] font-bold text-ink-strong">연령 부문</h3>
           <Button size="sm" variant="outline" onClick={() => setAgeGroups((a) => [...a, { id: "", en: "", ko: "", min: "", max: "" }])}>연령 추가</Button>
         </div>
+        <label className="mt-3 block sm:max-w-xs">
+          <span className={label}>나이 기준일 (age reference)</span>
+          <input className={field} type="date" value={ageReferenceDate} onChange={(e) => setAgeReferenceDate(e.target.value)} />
+          <span className="mt-1 block text-[15px] text-ink-strong/70">이 날짜 기준으로 참가자 나이를 계산해 연령 부문을 판정합니다. 접수 오픈(readiness)에 필요합니다.</span>
+        </label>
         {ageGroups.length === 0 && <p className="mt-3 text-[16px] text-ink-strong/70">연령 부문이 없습니다.</p>}
         <div className="mt-3 flex flex-col gap-3">
           {ageGroups.map((a, i) => (
