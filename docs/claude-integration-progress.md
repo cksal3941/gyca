@@ -13,7 +13,7 @@
 | 1 공유 기반 | ✅ 완료 | `5c3312c`,`20b294a`,`a5aac56` | 아래 검증 로그(모두 exit 0) | 없음 | 단계 2 |
 | 2 로컬 운영 계정 | ✅ 완료 | `scripts/seed-leipzig-dev.mjs`(안전장치) | 운영자 200/참가자 403/회수 403/재부여 200 실세션 확인 | organizer 부여는 로컬 dev 한정(운영은 사용자 승인) | 단계 3 |
 | 3 공모·접수 운영 | ✅ 대체로(3-A✅ 3-B UI✅) | +`CompetitionForm/Editor`,`LaunchControl`,admin/competitions{,/new,/[id]} | 목록·편집 로드·**create 폼→생성→리다이렉트 실검증**·오픈제어 readiness 표시 | 정책편집(submission/payment/retention)·동의문·fields/uploads 상세 편집기·open은 readiness/결정 게이팅 | 결정 수신 후 정책·오픈 / 단계 4~ |
-| 4 결제·참가자 흐름 | 진행(4-A 착수) | `index.ts`(beginCheckout),`submit-flow.ts` | checkout 라우트 404 정상·draft payment-options=[] 확인·tsc/eslint 0 | 실 주문→checkout→PG 해피패스는 S3·PG 인프라·사업자 대기 | 홈 Apply 라이브화·mock 잔재 감사·confirm/reconcile |
+| 4 결제·참가자 흐름 | 진행(4-A 착수·**mock 감사✅**) | `index.ts`(beginCheckout),`submit-flow.ts`,`docs/live-mock-remnants.md` | checkout 라우트 404 정상·draft payment-options=[]·**라이브 mock 잔재 전수 감사 문서화** | 실 주문→checkout→PG 해피패스는 S3·PG 인프라·사업자 대기 | confirm/reconcile(주문 후) |
 | 5 운영·보조 기능 | 진행(조회✅) | `ops.ts`(dashboard/health/reviews 어댑터),`admin/payments` | 대시보드 실데이터 렌더(계정·공모 카운트)·게이트·gross 주석 실검증 | accept-late/requeue/환불 mutations·인증서·마이페이지 보조·개인정보요청 미착수 | 결제 mutations·보조 기능 |
 | 6 심사·발표·인증서 | 진행(심사화면✅ 관리자 judges/rubric✅) | `ops.ts`(judge admin 어댑터),`admin/judges` | judges 목록·활성 표시·rubric set/get 200 실검증 | 배정 관리(제출 접수+S3 필요)·결과 발표·인증서 발급 미착수 | 결과 발표/인증서(엔트리·인프라 후) |
 | 7 공개 CMS·아카이브 | 진행(editorial 목록+상세+**수정**✅ partner관리+**수정**✅) | +`getEditorialPublic`,`NoticeDetailView`,notices/[slug],editorial/partner admin edit,`updatePartner` | editorial/partner **수정 폼→update→반영 실검증**(editorial 공개 API 최대 60s 캐시) / 생성·관계·발행·공개 검증 | 홈 PartnerMarquee·NewsUpdate(하드코딩 마케팅)·아카이브(신규 서버계약) 미착수 | 아카이브(대규모)·홈 마케팅 배선(선택) |
