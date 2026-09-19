@@ -116,3 +116,15 @@ pnpm dev
 ## 사용자 결정 필요 (요약 — 상세는 operator-decisions-needed.md)
 - **A. PG·통화(최우선):** 사업자 국가/법인, PG 계약 상태, 청구·정산 통화(EUR 가능 여부), 해외카드/국가, 환불.
 - B~G: 공모 기본정보 / 일정·접수성립·환불 / 폼·파일규격 / 법적문구·동의·보호자정책 / 외부계정(클라우드·DB·S3·메일) / 표시·자료(사업자정보·요강·아카이브).
+
+---
+
+## 코덱스 회고 검토 후속 (docs/backend/retrospective-decisions-2026-09-19.md) — 5단계
+
+코덱스가 회고의 계약 대기를 해소(migration 038·039, 아카이브·공모카드·프로필·보호자·동의 결정)하고 5단계 지시를 전달. 로컬 PGlite에 038·039 적용 완료(037→039).
+
+### 1단계: 공개 카드 연결 — ✅ 완료·검증
+- 어댑터: `listCompetitionCards`(index.ts, GET `/content/competition-cards`, CompetitionCardSchema), `getCompetitionPresentation`/`updateCompetitionPresentation`(ops.ts, admin GET/PUT).
+- `/contests` **dual-mode 재작성**: 라이브=카드, mock=기존 샘플. 공통 RowVM으로 정규화해 **디자인 마크업 그대로 유지**. presentation null 요소는 숨김(요약/도시/분류/표지), 접수기간=실제 opensAt–closesAt, Apply=서버 `start_entry`만.
+- 관리자 편집에 `PresentationEditor`(별도 저장 버튼·evidence 필수·revision·409 충돌 처리) 추가(CompetitionEditor).
+- **검증(operator, 라이브):** 카드 4건 렌더(Apply는 leipzig=start_entry만) / presentation 저장(revision 0→1) → 공개 카드에 summary·category 반영 / **city는 admin 저장되나 전시 미승인이라 공개 응답 null(승인 게이팅)** / 공개 /contests 페이지에 요약·분류 배지·Apply 렌더, city 숨김. (pglite 동시성으로 카드 목록이 일시 빈 응답 → 재조회 정상, 앱 무관.)

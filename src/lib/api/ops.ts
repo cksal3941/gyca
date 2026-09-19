@@ -42,6 +42,10 @@ import {
   AdminPrivacyRequestSchema,
   type ReviewPrivacyRequest,
 } from "@/contracts/privacy-requests";
+import {
+  AdminCompetitionPresentationSchema,
+  type CompetitionPresentationSchema,
+} from "@/contracts/competition-presentation";
 import { AdminDashboardSchema } from "@/contracts/admin-dashboard";
 import { PaymentHealthSchema } from "@/contracts/payment-health";
 import { PaymentReviewSchema } from "@/contracts/payment-admin";
@@ -879,4 +883,26 @@ export async function reviewPrivacyRequest(
 ): Promise<RequestState<AdminPrivacyRequest>> {
   if (!isLive) return cmsOff();
   return httpSend("POST", `/admin/privacy-requests/${encodeURIComponent(id)}/review`, AdminPrivacyRequestSchema, { body: input, signal: opts.signal });
+}
+
+/* ---- competition presentation (public card copy; LIVE, organizer) ---- */
+
+export type AdminCompetitionPresentation = z.infer<typeof AdminCompetitionPresentationSchema>;
+export type CompetitionPresentation = z.infer<typeof CompetitionPresentationSchema>;
+
+/** Card presentation copy for a competition (summary/category/city/cover). Live:
+ *  GET /admin/competitions/{id}/presentation. No data yet → revision 0, all null. */
+export async function getCompetitionPresentation(competitionId: string, opts: { signal?: AbortSignal } = {}): Promise<RequestState<AdminCompetitionPresentation>> {
+  if (!isLive) return cmsOff();
+  return httpGet(`/admin/competitions/${encodeURIComponent(competitionId)}/presentation`, AdminCompetitionPresentationSchema, opts.signal);
+}
+
+/** Save card presentation copy. Live: PUT /admin/competitions/{id}/presentation
+ *  with {expectedRevision, content, evidenceReference}. First save uses revision 0.
+ *  There is no actionId — on an unclear result GET to re-check; on 409 compare. */
+export async function updateCompetitionPresentation(
+  competitionId: string, input: { expectedRevision: number; content: CompetitionPresentation; evidenceReference: string }, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<AdminCompetitionPresentation>> {
+  if (!isLive) return cmsOff();
+  return httpSend("PUT", `/admin/competitions/${encodeURIComponent(competitionId)}/presentation`, AdminCompetitionPresentationSchema, { body: input, signal: opts.signal });
 }

@@ -64,6 +64,7 @@ import { SubmissionDownloadSchema } from "@/contracts/submission-download";
 import { EditorialPublicItemSchema } from "@/contracts/editorial-content";
 import { PrivacyRequestSchema, type PrivacyRequest } from "@/contracts/privacy-requests";
 import { CertificateDownloadSchema } from "@/contracts/certificates";
+import { CompetitionCardSchema } from "@/contracts/competition-presentation";
 import { isLive } from "./mode";
 import { httpGet, httpSend, httpList } from "./http";
 
@@ -444,6 +445,26 @@ export async function listCompetitions(
     if (r.kind === "success") seen.set(r.data.id, r.data);
   }
   return { kind: "success", data: { items: [...seen.values()], nextCursor: null } };
+}
+
+export type CompetitionCard = z.infer<typeof CompetitionCardSchema>;
+
+/** Public competition cards for the /contests list. Live: GET
+ *  /content/competition-cards — each card carries the server `competition`
+ *  (status/readiness/allowedActions drive Apply) plus optional `presentation`
+ *  copy (summary/category/city/cover, any of which may be null). Mock: not
+ *  available — the contests page keeps its curated sample rows in mock mode. */
+export async function listCompetitionCards(
+  opts: { cursor?: string | null; limit?: number; signal?: AbortSignal } = {},
+): Promise<RequestState<Page<CompetitionCard>>> {
+  if (isLive) {
+    const p = new URLSearchParams();
+    if (opts.cursor) p.set("cursor", opts.cursor);
+    p.set("limit", String(opts.limit ?? 20));
+    const r = await httpList(`/content/competition-cards?${p.toString()}`, CompetitionCardSchema, opts.signal);
+    return r.kind === "empty" ? { kind: "success", data: { items: [], nextCursor: null } } : (r as RequestState<Page<CompetitionCard>>);
+  }
+  return { kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 지원하지 않습니다.", retryable: false };
 }
 
 /** Published editorial content for the public site (notice/schedule/faq/news/press).
