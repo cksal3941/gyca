@@ -725,44 +725,22 @@ export default function MyPage() {
           </StateView>
         </TabPanel>
 
-        {/* 개인정보 (static preview; no profile contract yet — not wired) */}
+        {/* 개인정보 — 계정 설정은 /settings(Better Auth) 재사용, 접수 인적사항은 접수 시 입력 */}
         <TabPanel id="profile" active={tab === "profile"}>
-          <Message
-            tone="info"
-            className="mt-8 max-w-[46rem]"
-            title={ko ? "준비 중" : "Coming soon"}
-          >
-            {ko
-              ? "개인정보 편집은 아직 서버에 연결되지 않았습니다. 아래는 미리보기이며, 저장은 연결 후 제공됩니다."
-              : "Profile editing isn't connected to the server yet. The form below is a preview; saving will be available once it's wired."}
-          </Message>
-          <form className="mt-4 max-w-[46rem] rounded-2xl border border-line bg-white p-6">
-            <div className="flex flex-col gap-5">
-              {[
-                { label: ko ? "이름" : "Name", type: "text", placeholder: ko ? "홍길동" : "Jane Doe" },
-                { label: ko ? "이메일" : "Email", type: "email", placeholder: "you@example.com" },
-                { label: ko ? "연락처" : "Phone", type: "tel", placeholder: "010-0000-0000" },
-                {
-                  label: ko ? "비밀번호 변경" : "Change password",
-                  type: "password",
-                  placeholder: ko ? "새 비밀번호" : "New password",
-                },
-              ].map((f) => (
-                <label key={f.label} className="block">
-                  <span className="text-[16px] font-semibold text-ink-strong">{f.label}</span>
-                  <input
-                    type={f.type}
-                    placeholder={f.placeholder}
-                    disabled
-                    className="mt-2 w-full rounded-lg border border-field bg-surface px-4 py-3 text-[16px] text-ink-strong outline-none focus:border-brand-blue disabled:cursor-not-allowed disabled:opacity-70"
-                  />
-                </label>
-              ))}
-            </div>
-            <Button type="button" className="mt-6" disabled>
-              {ko ? "변경 사항 저장" : "Save changes"}
-            </Button>
-          </form>
+          <div className="mt-8 max-w-[46rem] rounded-2xl border border-line bg-white p-6">
+            <h2 className="font-title text-[18px] font-bold text-ink-strong">{ko ? "계정 설정" : "Account settings"}</h2>
+            <p className="mt-2 text-[16px] leading-[1.7] text-ink-strong">
+              {ko
+                ? "이름·프로필 사진·비밀번호 변경·로그인 기기·계정 삭제는 계정 설정에서 관리합니다."
+                : "Manage your name, profile photo, password, signed-in devices, and account deletion in account settings."}
+            </p>
+            <Button href="/settings" className="mt-4">{ko ? "계정 설정 열기" : "Open account settings"}</Button>
+            <p className="mt-4 border-t border-line pt-4 text-[15px] leading-[1.6] text-ink-strong/70">
+              {ko
+                ? "참가자 실명·영문명 등 접수용 인적사항은 계정 표시 이름과 별개이며, 각 공모 접수 단계에서 입력·수정합니다. 이미 제출한 접수의 표시값은 제출 당시 기록을 따릅니다."
+                : "Entry details such as your real and English name are separate from your account name; you enter them during each competition's submission. Values on a submitted entry follow the record captured at submission."}
+            </p>
+          </div>
 
           {isLive && <PrivacyRequestPanel ko={ko} />}
         </TabPanel>
