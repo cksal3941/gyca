@@ -15,6 +15,7 @@ import {
   listPrivacyRequests,
   createPrivacyRequest,
   cancelPrivacyRequest,
+  downloadCertificate,
   type RequestState,
   type ListScenario,
   type CertLifecycleState,
@@ -145,6 +146,27 @@ function PrivacyRequestPanel({ ko }: { ko: boolean }) {
           </div>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+// Certificate download — requests a fresh short-lived signed URL on click and
+// opens it. The URL is single-use and expires, so it is fetched per click and
+// never stored. A failure surfaces inline; it never silently no-ops.
+function CertDownloadButton({ certificateId, ko }: { certificateId: string; ko: boolean }) {
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const go = async () => {
+    setBusy(true); setFailed(false);
+    const r = await downloadCertificate(certificateId);
+    setBusy(false);
+    if (r.kind === "success" && typeof window !== "undefined") window.open(r.data.url, "_blank", "noopener,noreferrer");
+    else setFailed(true);
+  };
+  return (
+    <div className="flex flex-col items-end gap-1">
+      <Button size="sm" onClick={go} disabled={busy}>{busy ? (ko ? "준비 중…" : "Preparing…") : (ko ? "다운로드" : "Download")}</Button>
+      {failed && <span className="text-[15px] text-danger">{ko ? "다운로드에 실패했습니다. 다시 시도하세요." : "Download failed. Try again."}</span>}
     </div>
   );
 }
@@ -678,11 +700,7 @@ export default function MyPage() {
                         </p>
                       </div>
                       <div className="flex shrink-0 items-center gap-2">
-                        {canDownload && (
-                          <Button size="sm" href="#">
-                            {ko ? "다운로드" : "Download"}
-                          </Button>
-                        )}
+                        {canDownload && <CertDownloadButton certificateId={c.id} ko={ko} />}
                         {cstate === "error" && (
                           <Button size="sm" variant="outline" href="#">
                             {ko ? "다시 시도" : "Retry"}

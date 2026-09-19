@@ -63,6 +63,7 @@ import { SubmissionRecordSchema } from "@/contracts/submission-record";
 import { SubmissionDownloadSchema } from "@/contracts/submission-download";
 import { EditorialPublicItemSchema } from "@/contracts/editorial-content";
 import { PrivacyRequestSchema, type PrivacyRequest } from "@/contracts/privacy-requests";
+import { CertificateDownloadSchema } from "@/contracts/certificates";
 import { isLive } from "./mode";
 import { httpGet, httpSend, httpList } from "./http";
 
@@ -232,6 +233,31 @@ export async function downloadSubmissionAsset(
     kind: "error",
     code: "NOT_CONNECTED",
     message: "미리보기에서는 파일 다운로드를 지원하지 않습니다.",
+    retryable: false,
+  };
+}
+
+/** Short-lived signed download URL for an issued certificate. Live: POST
+ *  /certificates/{id}/download (no body; the server signs only an issued
+ *  certificate's file). A fresh URL is requested each time (URLs expire and are
+ *  not reused/logged). Mock: no real storage, so this is a live-only action. */
+export async function downloadCertificate(
+  certificateId: string,
+  opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<z.infer<typeof CertificateDownloadSchema>>> {
+  if (isLive)
+    // Send an empty JSON body so a Content-Type is set — this endpoint rejects a
+    // POST without it (415), unlike the submission-asset download endpoint.
+    return httpSend(
+      "POST",
+      `/certificates/${encodeURIComponent(certificateId)}/download`,
+      CertificateDownloadSchema,
+      { body: {}, signal: opts.signal },
+    );
+  return {
+    kind: "error",
+    code: "NOT_CONNECTED",
+    message: "미리보기에서는 인증서 다운로드를 지원하지 않습니다.",
     retryable: false,
   };
 }
