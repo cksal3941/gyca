@@ -128,3 +128,9 @@ pnpm dev
 - `/contests` **dual-mode 재작성**: 라이브=카드, mock=기존 샘플. 공통 RowVM으로 정규화해 **디자인 마크업 그대로 유지**. presentation null 요소는 숨김(요약/도시/분류/표지), 접수기간=실제 opensAt–closesAt, Apply=서버 `start_entry`만.
 - 관리자 편집에 `PresentationEditor`(별도 저장 버튼·evidence 필수·revision·409 충돌 처리) 추가(CompetitionEditor).
 - **검증(operator, 라이브):** 카드 4건 렌더(Apply는 leipzig=start_entry만) / presentation 저장(revision 0→1) → 공개 카드에 summary·category 반영 / **city는 admin 저장되나 전시 미승인이라 공개 응답 null(승인 게이팅)** / 공개 /contests 페이지에 요약·분류 배지·Apply 렌더, city 숨김. (pglite 동시성으로 카드 목록이 일시 빈 응답 → 재조회 정상, 앱 무관.)
+
+### 2단계: 완료 프로젝트 CMS + 공개 아카이브 — ✅ 완료·검증
+- **공개(2a):** `listProjects/getProject/listWinners/listExhibitions`(index.ts). `ProjectCollectionView`(프로젝트 단위 컬렉션 — per-winner 억지변환 안 함) + `ArchivePublicView`(섹션 렌더: intro/gallery/documents/quotes/stats, pending=제목+안내만). `/winners`·`/exhibitions` dual-mode(라이브=컬렉션, mock=기존 샘플), `/archive` 인덱스 + `/archive/[slug]` 상세.
+- **관리자(2b):** `listAdminProjects/getAdminProject/createProject/updateProject/publishProject/archiveProject`(ops.ts). `ArchiveForm`(hero + 1~10 섹션, 종류/순서 중복검사, ready 콘텐츠 요구, 미디어=사이트경로/https, ArchiveContentSchema 검증) + `ArchiveEditor`(발행 근거 입력·보관 확인 게이트·**발행본 수정=초안 강등 경고**). 목록/신규/편집 페이지 + admin 네비 링크.
+- **검증(operator, 라이브):** 데모 프로젝트 생성(API)→발행→`/content/projects·winners·exhibitions` 각 1건, 상세 3섹션(intro/선정작/전시·인용·통계) 공개 렌더 / 관리자 목록·편집 로드(공개 상태·보관 컨트롤·발행 컨트롤 숨김·수정 경고·3섹션) / **UI 신규 생성→편집 리다이렉트** / **UI 보관 확정→상태 보관→공개 상세 404**(터미널·비공개 검증).
+- 규칙 준수: 발행본 수정 시 초안 강등 안내, archived 복구불가 안내, 공개 pending 섹션 payload 서버 제거, 미디어 업로더 없음(승인된 URL만).
