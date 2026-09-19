@@ -11,7 +11,7 @@
 | 단계 | 상태 | 변경 파일/커밋 | 실행 명령·결과·증거 | 남은 차단 | 다음 작업 |
 | --- | --- | --- | --- | --- | --- |
 | 1 공유 기반 | ✅ 완료 | `5c3312c`,`20b294a`,`a5aac56` | 아래 검증 로그(모두 exit 0) | 없음 | 단계 2 |
-| 2 로컬 운영 계정 | 미착수 | | | | |
+| 2 로컬 운영 계정 | ✅ 완료 | `scripts/seed-leipzig-dev.mjs`(안전장치) | 운영자 200/참가자 403/회수 403/재부여 200 실세션 확인 | organizer 부여는 로컬 dev 한정(운영은 사용자 승인) | 단계 3 |
 | 3 공모·접수 운영 | 미착수 | | | | |
 | 4 결제·참가자 흐름 | 미착수 | | | | |
 | 5 운영·보조 기능 | 미착수 | | | | |
@@ -51,3 +51,47 @@
 
 ### 완료 기준 대비
 - ✅ 클린 체크아웃 import 누락 없음 · ✅ 필요한 파일 전부 추적 · ✅ 실행 명령·exit 0 기록.
+
+---
+
+## 단계 2 — 재현 가능한 로컬 운영자·심사 테스트 환경
+
+### 재현 절차 (개발 전용)
+```bash
+# 1) 프레시 로컬 DB (PGlite 소켓 서버, 멀티커넥션)
+rm -rf .pglite-data
+node_modules/.bin/pglite-server -d ./.pglite-data -p 5432 -h 127.0.0.1 -m 30   # 백그라운드
+
+# 2) .env.local: DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/postgres,
+#    BETTER_AUTH_SECRET=<random>, BETTER_AUTH_URL=http://localhost:3000, NEXT_PUBLIC_API_MODE=live
+#    GYCA_PAYMENT_PROVIDER/GYCA_STORAGE_PROVIDER/GYCA_EMAIL_PROVIDER=disabled
+
+# 3) 전체 마이그레이션 (auth + platform 001~037) — 다른 연결 없이 실행
+node --env-file=.env.local scripts/migrate-all.mjs      # 76개 테이블 생성
+
+# 4) 개발 공모 시드 (opt-in 필수)
+GYCA_DEV_SEED=1 node --env-file=.env.local scripts/seed-leipzig-dev.mjs
+
+# 5) 앱
+pnpm dev
+```
+- **클린 migrate-all 정상 확인:** 프레시 DB에 auth + 37개 플랫폼 마이그레이션 전부 적용, `pg_tables` 76개. (이전 세션의 flakiness는 dev 서버 동시 연결 중 마이그레이션한 수동 개입 탓; 단독 실행 시 정상.)
+- **seed 안전장치(단계 2.4):** `GYCA_DEV_SEED=1` opt-in + DATABASE_URL이 localhost/127.0.0.1 + `NODE_ENV!==production` 아니면 거부. 임의 접속 문자열 자동 시드 금지. (거부→성공 실증)
+
+### 테스트 계정 (Better Auth 실제 경로, 로컬 dev 전용)
+| 역할 | 이메일 | 준비 방법 |
+| --- | --- | --- |
+| 참가자 | participant@gyca.test | signup |
+| 운영자 | operator@gyca.test | signup → `emailVerified=true`(dev) → `manage-organizer.mjs --apply`(grant) |
+| 심사위원 | judge@gyca.test | signup → 운영자가 `PUT /admin/judges/{id}` active=true |
+- 공용 dev 테스트 비밀번호 `test1234pw`(로컬 throwaway DB 전용, 운영 비밀 아님).
+- **권한 게이트 주의:** organizer 부여/emailVerified 변경은 이 지시서(단계 2)가 명시 요구해 로컬 dev DB에서만 수행. 운영 계정 권한 부여는 사용자 승인 범위. seed/organizer 도구는 계정 대조·미리보기·감사(`gyca_organizer_access_audit`) 흐름 유지.
+
+### 검증 (실제 세션)
+| 확인 | 결과 |
+| --- | --- |
+| 운영자 GET `/admin/competitions` | **200** |
+| 참가자 GET `/admin/competitions` | **403** |
+| organizer 회수 후 운영자 GET | **403** |
+| 재부여 후 운영자 GET | **200** (operator 복구) |
+| 심사위원 활성화 `PUT /admin/judges/{id}` | **200** active:true |

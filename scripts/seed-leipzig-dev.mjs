@@ -1,9 +1,27 @@
 // Dev-only seed: one published, open Leipzig 2027 competition so the live
 // frontend can list it and start a draft. NOT for production.
+//
+// Safety: this writes competition rows directly, so it refuses to run unless
+//   1) DATABASE_URL is explicitly set,
+//   2) GYCA_DEV_SEED=1 opts in (a deliberate confirmation), and
+//   3) DATABASE_URL points at a local dev target (localhost / 127.0.0.1),
+//   4) NODE_ENV is not "production".
+// An arbitrary connection string never gets seeded automatically.
 import { Pool } from 'pg';
 
-if (!process.env.DATABASE_URL) {
+const url = process.env.DATABASE_URL;
+const isLocalTarget = /@(localhost|127\.0\.0\.1|\[::1\])(:\d+)?\//.test(url ?? '');
+if (!url) {
   console.error('DATABASE_URL must be configured.');
+  process.exit(1);
+} else if (process.env.NODE_ENV === 'production') {
+  console.error('Refusing: NODE_ENV=production. This dev seed must never run against production.');
+  process.exit(1);
+} else if (process.env.GYCA_DEV_SEED !== '1') {
+  console.error('Refusing: set GYCA_DEV_SEED=1 to confirm you are seeding a DEV database.');
+  process.exit(1);
+} else if (!isLocalTarget) {
+  console.error('Refusing: DATABASE_URL is not a local dev target (expected localhost/127.0.0.1). Refusing to seed a remote database.');
   process.exit(1);
 }
 
