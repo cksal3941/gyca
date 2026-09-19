@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import PageHeader from "@/components/site/PageHeader";
 import { Button, Message, StatusBadge, Stepper, type Tone } from "@/components/ds";
-import { getEntryDetail, getCompetitionSync, getEntryAssets, listEntryUploads, listCompetitions } from "@/lib/api";
+import { getEntryDetail, getCompetitionSync, getEntryAssets, listEntryUploads, listCompetitions, downloadSubmissionAsset } from "@/lib/api";
 import { REQUIRED_CONSENTS } from "@/lib/content/submit-consent";
 import {
   competitionTitleById,
@@ -147,6 +147,8 @@ export default function EntryDetailView({ id, locale }: { id: string; locale: Lo
   const [assetsError, setAssetsError] = useState(false);
   const [phase, setPhase] = useState<Phase>("loading");
   const [reloadKey, setReloadKey] = useState(0);
+  const [dlBusy, setDlBusy] = useState<string | null>(null);
+  const [dlError, setDlError] = useState<string | null>(null);
 
   // Loading is the initial state and is re-armed by the retry handler — never set
   // synchronously in the effect body (avoids cascading renders).
@@ -156,6 +158,23 @@ export default function EntryDetailView({ id, locale }: { id: string; locale: Lo
     setAssetsError(false);
     setPhase("loading");
     setReloadKey((k) => k + 1);
+  };
+
+  // Request a fresh 60s signed URL and open it. URLs expire and are single-use in
+  // practice, so we fetch on every click (never cache/store the URL).
+  const download = async (assetId: string) => {
+    if (!entry) return;
+    setDlBusy(assetId);
+    setDlError(null);
+    const r = await downloadSubmissionAsset(entry.id, assetId);
+    setDlBusy(null);
+    if (r.kind === "success") {
+      window.open(r.data.url, "_blank", "noopener,noreferrer");
+    } else {
+      setDlError(
+        r.kind === "error" ? r.message : ko ? "다운로드에 실패했습니다." : "Download failed.",
+      );
+    }
   };
 
   useEffect(() => {
@@ -396,19 +415,38 @@ export default function EntryDetailView({ id, locale }: { id: string; locale: Lo
                       {a.displayName} · {fmtBytes(a.sizeBytes)}
                       {a.pageCount != null ? ` · ${a.pageCount}${ko ? "쪽" : "pp"}` : ""}
                     </span>
-                    <StatusBadge tone={st.tone} className="ml-auto">
-                      {st.label[locale]}
-                      {a.rejectionCode ? ` · ${a.rejectionCode}` : ""}
-                    </StatusBadge>
+                    <div className="ml-auto flex items-center gap-2">
+                      <StatusBadge tone={st.tone}>
+                        {st.label[locale]}
+                        {a.rejectionCode ? ` · ${a.rejectionCode}` : ""}
+                      </StatusBadge>
+                      {isFrozen && a.state === "ready" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => download(a.id)}
+                          disabled={dlBusy === a.id}
+                        >
+                          {dlBusy === a.id
+                            ? ko ? "준비 중…" : "Preparing…"
+                            : ko ? "다운로드" : "Download"}
+                        </Button>
+                      )}
+                    </div>
                   </li>
                 );
               })}
             </ul>
           )}
+          {dlError && (
+            <Message tone="danger" className="mt-4" title={ko ? "다운로드 오류" : "Download error"}>
+              {dlError}
+            </Message>
+          )}
           <p className="mt-3 text-[16px] text-ink-strong">
             {ko
-              ? "PDF 페이지 수·검증 결과는 서버가 확정한 값입니다."
-              : "PDF page counts and validation are decided by the server."}
+              ? "PDF 페이지 수·검증 결과는 서버가 확정한 값입니다. 다운로드 링크는 약 60초간 유효합니다."
+              : "PDF page counts and validation are decided by the server. Download links are valid for ~60 seconds."}
           </p>
         </div>
 

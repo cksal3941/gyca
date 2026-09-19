@@ -60,6 +60,7 @@ import {
   type UploadSession,
 } from "@/contracts/uploads";
 import { SubmissionRecordSchema } from "@/contracts/submission-record";
+import { SubmissionDownloadSchema } from "@/contracts/submission-download";
 import { isLive } from "./mode";
 import { httpGet, httpSend, httpList } from "./http";
 
@@ -206,6 +207,31 @@ export async function getEntryAssets(
   }
   if (opts.delayMs) await wait(opts.delayMs);
   return { kind: "success", data: getEntryAssetsSync(id) };
+}
+
+/** Short-lived (60s) signed download URL for one submitted file. Live: POST
+ *  /entries/{id}/submission/assets/{assetId}/download (no body; the server signs
+ *  only the frozen snapshot's ready file). Draft files are NOT downloadable.
+ *  A fresh URL must be requested each time (URLs expire and are not reused/logged).
+ *  Mock: no real storage, so this is a live-only action. */
+export async function downloadSubmissionAsset(
+  entryId: string,
+  assetId: string,
+  opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<z.infer<typeof SubmissionDownloadSchema>>> {
+  if (isLive)
+    return httpSend(
+      "POST",
+      `/entries/${encodeURIComponent(entryId)}/submission/assets/${encodeURIComponent(assetId)}/download`,
+      SubmissionDownloadSchema,
+      { signal: opts.signal },
+    );
+  return {
+    kind: "error",
+    code: "NOT_CONNECTED",
+    message: "미리보기에서는 파일 다운로드를 지원하지 않습니다.",
+    retryable: false,
+  };
 }
 
 /* ---- entry draft lifecycle writes (LIVE-capable; no payment here) ---- */
@@ -409,9 +435,6 @@ export async function listMyOrders(
   scenario: ListScenario = "some",
   opts: { delayMs?: number; signal?: AbortSignal } = {},
 ): Promise<RequestState<Page<OrderSummary>>> {
-  // NOTE: /orders item schema is not yet confirmed OrderSummary-compatible
-  // (server may return PaymentOrder). A mismatch surfaces as VALIDATION_FAILED,
-  // which we record rather than fake — see docs/frontend-handoff.md.
   if (isLive) return httpList("/orders?limit=50", OrderSummarySchema, opts.signal);
   if (opts.delayMs) await wait(opts.delayMs);
   if (scenario === "error") {
