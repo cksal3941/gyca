@@ -17,13 +17,22 @@
 import type { RequestState } from "./index";
 import type { EntryStatus, ReviewStatus, PublishedResult, PaymentState } from "@/contracts";
 import { AdminAccessSchema, type AdminAccess } from "@/contracts/admin-access";
+import { AdminEntrySchema, AdminEntriesPageSchema } from "@/contracts/admin-entries";
 import {
   JudgeAssignmentsSchema,
   JudgeReviewContextSchema,
   JudgeReviewMutationSchema,
 } from "@/contracts/judge";
+import { z } from "zod";
 import { isLive } from "./mode";
 import { httpGet, httpSend } from "./http";
+
+// Published competitions an organizer can operate on (id/slug for the picker).
+const AdminCompetitionListSchema = z.object({
+  items: z.array(z.object({ id: z.string(), slug: z.string(), published: z.boolean() })).readonly(),
+  nextCursor: z.string().nullable(),
+});
+export type AdminCompetitionRef = { id: string; slug: string; published: boolean };
 
 const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
@@ -154,10 +163,72 @@ function applyQuery(all: AdminEntryView[], q: AdminQuery): AdminEntryView[] {
   return rows;
 }
 
+/** Published competitions the operator can act on. Live: GET /admin/competitions
+ *  (organizer only). Mock: the single Leipzig fixture. Used to pick a competitionId
+ *  for the entries list (the entries endpoint is per-competition). */
+export async function listAdminCompetitions(
+  opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<AdminCompetitionRef[]>> {
+  if (isLive) {
+    const r = await httpGet("/admin/competitions?limit=50", AdminCompetitionListSchema, opts.signal);
+    if (r.kind !== "success") return r;
+    return { kind: "success", data: r.data.items.map((c) => ({ id: c.id, slug: c.slug, published: c.published })) };
+  }
+  return { kind: "success", data: [{ id: "leipzig-2027", slug: "leipzig-2027", published: true }] };
+}
+
+// Map the server AdminEntry (contract) to the operator-screen view.
+function mapAdminEntry(a: z.infer<typeof AdminEntrySchema>): AdminEntryView {
+  return {
+    id: a.id,
+    receiptNumber: a.receiptNumber,
+    participantName: a.participantName ?? "—",
+    workTitle: a.workTitle ?? "—",
+    category: a.category ?? "—",
+    ageGroup: a.ageGroup ?? "—",
+    entryStatus: a.entryStatus,
+    reviewStatus: a.reviewStatus,
+    publishedResult: a.publishedResult,
+    fileState: a.fileState,
+    payment: a.payment
+      ? { state: a.payment.state, amountMinor: a.payment.money.amountMinor, needsReview: a.payment.needsReview }
+      : null,
+    createdAt: a.createdAt,
+    submittedAt: a.submittedAt,
+    certificateIssued: a.certificateIssued,
+  };
+}
+
 export async function listAdminEntries(
   query: AdminQuery = {},
-  opts: { scenario?: AdminScenario; delayMs?: number } = {},
+  opts: { competitionId?: string; scenario?: AdminScenario; delayMs?: number; signal?: AbortSignal } = {},
 ): Promise<RequestState<AdminEntriesPage>> {
+  // Live: GET /admin/competitions/{id}/entries with q/entryStatus/paymentState/
+  // publishedResult/sort/cursor/limit. The server returns an opaque cursor; the
+  // caller pages forward with it. The full AdminEntry contract is mapped 1:1.
+  if (isLive) {
+    if (!opts.competitionId)
+      return { kind: "error", code: "POLICY_NOT_CONFIGURED", message: "공모를 먼저 선택하세요.", retryable: false };
+    const p = new URLSearchParams();
+    if (query.search) p.set("q", query.search);
+    if (query.status && query.status !== "all") p.set("entryStatus", query.status);
+    if (query.payment && query.payment !== "all") p.set("paymentState", query.payment);
+    if (query.result && query.result !== "all") p.set("publishedResult", query.result);
+    if (query.sort) p.set("sort", query.sort);
+    if (query.cursor) p.set("cursor", query.cursor);
+    p.set("limit", String(query.pageSize ?? 8));
+    const r = await httpGet(
+      `/admin/competitions/${encodeURIComponent(opts.competitionId)}/entries?${p.toString()}`,
+      AdminEntriesPageSchema,
+      opts.signal,
+    );
+    if (r.kind !== "success") return r;
+    if (r.data.items.length === 0 && r.data.total === 0) return { kind: "empty" };
+    return {
+      kind: "success",
+      data: { items: r.data.items.map(mapAdminEntry), nextCursor: r.data.nextCursor, total: r.data.total },
+    };
+  }
   if (opts.delayMs) await wait(opts.delayMs);
   if (opts.scenario === "forbidden")
     return { kind: "error", code: "FORBIDDEN", message: "이 목록에 접근할 권한이 없습니다.", retryable: false };
