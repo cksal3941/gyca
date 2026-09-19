@@ -12,7 +12,7 @@
 | --- | --- | --- | --- | --- | --- |
 | 1 공유 기반 | ✅ 완료 | `5c3312c`,`20b294a`,`a5aac56` | 아래 검증 로그(모두 exit 0) | 없음 | 단계 2 |
 | 2 로컬 운영 계정 | ✅ 완료 | `scripts/seed-leipzig-dev.mjs`(안전장치) | 운영자 200/참가자 403/회수 403/재부여 200 실세션 확인 | organizer 부여는 로컬 dev 한정(운영은 사용자 승인) | 단계 3 |
-| 3 공모·접수 운영 | 진행(3-A✅) | `ops.ts`,`AdminEntryDetailLive.tsx`,admin/entries/[id]·admin/page | 상세 200(계약 shape)·CSV Blob·participant 403·브라우저 렌더 확인 | 3-B 공모 등록 미착수 | 3-B 공모 등록/정책/오픈 |
+| 3 공모·접수 운영 | 진행(3-A✅,3-B 착수) | `ops.ts`,`AdminEntryDetailLive.tsx`,admin/entries/[id]·admin/page,`operator-decisions-needed.md` | 상세 200·CSV Blob·403·렌더 / 공모 create 201·readiness·open 503 게이팅 실측 | 3-B UI(폼-빌더·정책편집·오픈제어)—상당수 운영 결정 게이팅 | 3-B UI + 결정 수신 후 정책/오픈 |
 | 4 결제·참가자 흐름 | 미착수 | | | | |
 | 5 운영·보조 기능 | 미착수 | | | | |
 | 6 심사·발표·인증서 | 미착수 | | | | |
@@ -95,3 +95,22 @@ pnpm dev
 | organizer 회수 후 운영자 GET | **403** |
 | 재부여 후 운영자 GET | **200** (operator 복구) |
 | 심사위원 활성화 `PUT /admin/judges/{id}` | **200** active:true |
+
+---
+
+## 단계 3 — 공모·접수 운영
+
+### 3-A 관리자 상세 + CSV ✅
+- `getAdminEntryDetail` → GET `/admin/competitions/{id}/entries/{entryId}`(AdminEntryDetailSchema). 신규 클라 `AdminEntryDetailLive`가 계약 그대로 렌더(files.displayName, guardianVerificationStatus, audit type/actorId/occurredAt ≤100, 인증서) — verified/작성자 날조 안 함. 목록→상세 competitionId 보존(URL `?competition=`).
+- `exportAdminEntriesCsv` → POST `.../entries/export`(전체 결과셋) → text/csv Blob 다운로드(개인정보 안내), 오류 JSON. 일괄 발표/인증서 live 비활성.
+- **검증(operator):** 상세 200 계약 shape, CSV attachment Blob(BOM+헤더), participant 403, 브라우저 전 섹션 렌더.
+- **후속:** 동의 전문/보호자 수동검증(mutation), 관리자 파일 열람 전용 API.
+
+### 3-B 공모 등록·오픈 (백엔드 흐름 실측 + 결정 요청)
+- **create→open 실측(operator, curl):** `POST /admin/competitions` → 201(revision 1, draft/payment=false). `GET /launch-readiness` → public_content·schedule=configured, published·form·consents·guardian_policy·payment_policy·payment_routes·storage·retention·live_payment_verification=missing. `POST /open-applications`(rev 1) → 503 POLICY_NOT_CONFIGURED(정확히 차단).
+- **결론:** 오픈은 readiness 전부 충족 필요 → 다수가 외부 검증·운영 정책 결정 게이팅(3-B.5 임의 충족 금지). `docs/operator-decisions-needed.md`로 결정 요청(A PG/통화 최우선 ~ G 자료).
+- **다음 증분(UI):** 공모 create/edit 폼(핵심 필드 + categories/ageGroups, fields/uploads는 edit 라운드트립) · 정책 편집(submission/payment/retention)+동의문 버전 · launch-readiness 표시 + verification 등록 · open/pause/resume. 상당수 입력값은 결정 수신 후.
+
+## 사용자 결정 필요 (요약 — 상세는 operator-decisions-needed.md)
+- **A. PG·통화(최우선):** 사업자 국가/법인, PG 계약 상태, 청구·정산 통화(EUR 가능 여부), 해외카드/국가, 환불.
+- B~G: 공모 기본정보 / 일정·접수성립·환불 / 폼·파일규격 / 법적문구·동의·보호자정책 / 외부계정(클라우드·DB·S3·메일) / 표시·자료(사업자정보·요강·아카이브).
