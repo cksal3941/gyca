@@ -7,6 +7,7 @@ import { isLive } from "@/lib/api/mode";
 import {
   listAdminEditorial,
   createEditorial,
+  updateEditorial,
   transitionEditorial,
   type EditorialAdminItem,
 } from "@/lib/api/ops";
@@ -31,7 +32,9 @@ export default function AdminEditorialPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // create form
+  // create / edit form. editId null = create; set = editing that item's content.
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editRevision, setEditRevision] = useState(0);
   const [category, setCategory] = useState<string>("notice");
   const [slug, setSlug] = useState("");
   const [titleEn, setTitleEn] = useState(""); const [titleKo, setTitleKo] = useState("");
@@ -47,7 +50,23 @@ export default function AdminEditorialPage() {
 
   const reload = () => { setState({ kind: "loading" }); setReloadKey((k) => k + 1); };
 
-  const create = async () => {
+  const resetForm = () => {
+    setEditId(null); setEditRevision(0); setCategory("notice"); setSlug("");
+    setTitleEn(""); setTitleKo(""); setSummaryEn(""); setSummaryKo(""); setBodyEn(""); setBodyKo(""); setDisplayDate("");
+  };
+
+  const loadForEdit = (it: EditorialAdminItem) => {
+    setError(null); setNotice(null);
+    setEditId(it.id); setEditRevision(it.revision);
+    setCategory(it.category); setSlug(it.slug);
+    setTitleEn(it.content.title.en); setTitleKo(it.content.title.ko);
+    setSummaryEn(it.content.summary.en); setSummaryKo(it.content.summary.ko);
+    setBodyEn(it.content.body.en); setBodyKo(it.content.body.ko);
+    setDisplayDate(it.content.displayDate);
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const save = async () => {
     setBusy(true); setError(null); setNotice(null);
     const parsed = EditorialBodySchema.safeParse({
       title: { en: titleEn.trim(), ko: titleKo.trim() },
@@ -60,14 +79,16 @@ export default function AdminEditorialPage() {
       setError(`입력값 확인: ${parsed.error.issues.map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`).join("; ")}`);
       return;
     }
-    const res = await createEditorial({ actionId: crypto.randomUUID(), slug: slug.trim(), category, content: parsed.data });
+    const res = editId
+      ? await updateEditorial(editId, { actionId: crypto.randomUUID(), expectedRevision: editRevision, content: parsed.data })
+      : await createEditorial({ actionId: crypto.randomUUID(), slug: slug.trim(), category, content: parsed.data });
     setBusy(false);
     if (res.kind === "success") {
-      setNotice("초안을 만들었습니다. 목록에서 공개할 수 있습니다.");
-      setSlug(""); setTitleEn(""); setTitleKo(""); setSummaryEn(""); setSummaryKo(""); setBodyEn(""); setBodyKo(""); setDisplayDate("");
+      setNotice(editId ? "수정 내용을 저장했습니다." : "초안을 만들었습니다. 목록에서 공개할 수 있습니다.");
+      resetForm();
       reload();
     } else {
-      setError(res.kind === "error" ? (res.code === "VALIDATION_FAILED" ? `입력값 확인: ${res.message}` : res.message) : "생성 실패");
+      setError(res.kind === "error" ? (res.code === "VALIDATION_FAILED" ? `입력값 확인: ${res.message}` : res.message) : (editId ? "저장 실패" : "생성 실패"));
     }
   };
 
@@ -91,17 +112,21 @@ export default function AdminEditorialPage() {
         {notice && <Message tone="success" className="mb-4">{notice}</Message>}
         {error && <Message tone="danger" className="mb-4" title="오류">{error}</Message>}
 
-        {/* create */}
+        {/* create / edit */}
         <div className="rounded-2xl border border-line bg-white p-6">
-          <h2 className="font-title text-[18px] font-bold text-ink-strong">새 콘텐츠 (초안)</h2>
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="font-title text-[18px] font-bold text-ink-strong">{editId ? `콘텐츠 수정 · ${slug}` : "새 콘텐츠 (초안)"}</h2>
+            {editId && <Button size="sm" variant="outline" onClick={resetForm} disabled={busy}>수정 취소</Button>}
+          </div>
+          {editId && <p className="mt-2 text-[15px] text-ink-strong/70">분류·슬러그는 변경할 수 없습니다. 본문 내용만 저장됩니다.</p>}
           <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_2fr_1fr]">
             <label className="block"><span className={label}>분류</span>
-              <Select value={category} onChange={(e) => setCategory(e.target.value)} className="mt-1">
+              <Select value={category} onChange={(e) => setCategory(e.target.value)} className="mt-1" disabled={!!editId}>
                 {EDITORIAL_CATEGORIES.map((c) => <option key={c} value={c}>{CAT_LABEL[c] ?? c}</option>)}
               </Select>
             </label>
             <label className="block"><span className={label}>슬러그</span>
-              <input className={field} value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="2027-schedule" />
+              <input className={field} value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="2027-schedule" disabled={!!editId} />
             </label>
             <label className="block"><span className={label}>표시 날짜</span>
               <input className={field} type="date" value={displayDate} onChange={(e) => setDisplayDate(e.target.value)} />
@@ -116,7 +141,7 @@ export default function AdminEditorialPage() {
             <label className="block"><span className={label}>본문 KO</span><Textarea rows={4} value={bodyKo} onChange={(e) => setBodyKo(e.target.value)} className="mt-1" /></label>
           </div>
           <p className="mt-3 text-[15px] text-ink-strong/70">본문은 일반 텍스트입니다(HTML 미지원). 초안 생성 후 목록에서 공개하세요.</p>
-          <Button className="mt-4" onClick={create} disabled={busy}>{busy ? "처리 중…" : "초안 생성"}</Button>
+          <Button className="mt-4" onClick={save} disabled={busy}>{busy ? "처리 중…" : editId ? "변경 사항 저장" : "초안 생성"}</Button>
         </div>
 
         {/* list */}
@@ -149,6 +174,9 @@ export default function AdminEditorialPage() {
                       <td className="px-5 py-4"><StatusBadge tone={STATUS_VIEW[it.status]?.tone ?? "neutral"}>{STATUS_VIEW[it.status]?.label ?? it.status}</StatusBadge></td>
                       <td className="px-5 py-4 text-right">
                         <div className="flex flex-wrap justify-end gap-2">
+                          {it.allowedActions.includes("edit") && (
+                            <Button size="sm" variant="outline" onClick={() => loadForEdit(it)} disabled={busy}>수정</Button>
+                          )}
                           {it.allowedActions.includes("publish") && (
                             <Button size="sm" onClick={() => act(it, "publish")} disabled={busy}>공개</Button>
                           )}
