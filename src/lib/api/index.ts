@@ -62,6 +62,7 @@ import {
 import { SubmissionRecordSchema } from "@/contracts/submission-record";
 import { SubmissionDownloadSchema } from "@/contracts/submission-download";
 import { EditorialPublicItemSchema } from "@/contracts/editorial-content";
+import { PrivacyRequestSchema, type PrivacyRequest } from "@/contracts/privacy-requests";
 import { isLive } from "./mode";
 import { httpGet, httpSend, httpList } from "./http";
 
@@ -483,6 +484,46 @@ export async function listMyCertificates(
     return { kind: "error", code: "INTERNAL_ERROR", message: "인증서를 불러오지 못했습니다.", retryable: true };
   }
   return parseList(CertificateSummarySchema, scenario === "empty" ? RAW_CERTIFICATES.empty : RAW_CERTIFICATES.some);
+}
+
+/* ---- privacy requests (account closure + data erasure; participant) ---- */
+
+const privacyOff = <T,>(): RequestState<T> =>
+  ({ kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 개인정보 요청을 지원하지 않습니다.", retryable: false });
+
+/** My privacy requests (account closure + erasure). Live: GET /privacy/requests.
+ *  Mock: unsupported (the profile tab shows a static notice). */
+export async function listPrivacyRequests(
+  opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<Page<PrivacyRequest>>> {
+  if (!isLive) return privacyOff();
+  const r = await httpList("/privacy/requests?limit=50", PrivacyRequestSchema, opts.signal);
+  return r as RequestState<Page<PrivacyRequest>>;
+}
+
+/** Open an account-closure + data-erasure request. Live: POST /privacy/requests.
+ *  Server queues it for review (retention holds may apply); this is a request,
+ *  not an immediate deletion. */
+export async function createPrivacyRequest(
+  opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<PrivacyRequest>> {
+  if (!isLive) return privacyOff();
+  return httpSend("POST", "/privacy/requests", PrivacyRequestSchema, {
+    body: { actionId: crypto.randomUUID(), kind: "account_closure_and_erasure" },
+    signal: opts.signal,
+  });
+}
+
+/** Cancel a still-cancellable request (state === "submitted"). Live:
+ *  POST /privacy/requests/{id}/cancel with the expected revision. */
+export async function cancelPrivacyRequest(
+  id: string, expectedRevision: number, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<PrivacyRequest>> {
+  if (!isLive) return privacyOff();
+  return httpSend("POST", `/privacy/requests/${encodeURIComponent(id)}/cancel`, PrivacyRequestSchema, {
+    body: { actionId: crypto.randomUUID(), expectedRevision },
+    signal: opts.signal,
+  });
 }
 
 /* ---- action gating helpers (drive CTAs off server-provided actions) ---- */

@@ -12,10 +12,14 @@ import {
   listCompetitions,
   getEntryWorkTitle,
   getCertState,
+  listPrivacyRequests,
+  createPrivacyRequest,
+  cancelPrivacyRequest,
   type RequestState,
   type ListScenario,
   type CertLifecycleState,
 } from "@/lib/api";
+import type { PrivacyRequest } from "@/contracts/privacy-requests";
 import {
   money,
   fmtDate,
@@ -43,6 +47,107 @@ import type { Bi, Locale } from "@/lib/i18n";
 //   2. Status text is presentation derived from server facts (entryStatus,
 //      reviewStatus, publishedResult, payment.state, blockingReasons) — we never
 //      re-decide those facts on the client.
+
+/* ---------------- privacy request (account closure + erasure) ---------------- */
+
+const PRIVACY_STATE_VIEW: Record<PrivacyRequest["state"], { label: Bi; tone: Tone }> = {
+  submitted: { label: { en: "Submitted", ko: "접수됨" }, tone: "info" },
+  under_review: { label: { en: "Under review", ko: "검토 중" }, tone: "warning" },
+  retention_hold: { label: { en: "Retention hold", ko: "보존 의무로 보류" }, tone: "warning" },
+  approved_for_execution: { label: { en: "Approved for erasure", ko: "파기 승인됨" }, tone: "danger" },
+  cancelled: { label: { en: "Cancelled", ko: "취소됨" }, tone: "neutral" },
+};
+
+// Account-closure + data-erasure request (live only). This opens a REQUEST that
+// the operator reviews (retention holds may apply) — it is not an immediate
+// deletion. The active request is the newest non-cancelled one.
+function PrivacyRequestPanel({ ko }: { ko: boolean }) {
+  const [items, setItems] = useState<readonly PrivacyRequest[] | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    listPrivacyRequests().then((r) => {
+      if (!alive) return;
+      if (r.kind === "success") setItems(r.data.items);
+      else if (r.kind === "empty") setItems([]);
+      else setLoadError(true);
+    });
+    return () => { alive = false; };
+  }, [reloadKey]);
+
+  const reload = () => setReloadKey((k) => k + 1);
+  const active = (items ?? []).find((it) => it.state !== "cancelled") ?? null;
+
+  const open = async () => {
+    setBusy(true); setError(null); setNotice(null);
+    const res = await createPrivacyRequest();
+    setBusy(false); setConfirming(false);
+    if (res.kind === "success") { setNotice(ko ? "계정 삭제·데이터 파기 요청을 접수했습니다. 검토 후 처리됩니다." : "Your account closure & erasure request was submitted for review."); reload(); }
+    else setError(res.kind === "error" ? res.message : (ko ? "요청에 실패했습니다." : "Request failed."));
+  };
+
+  const cancel = async (it: PrivacyRequest) => {
+    setBusy(true); setError(null); setNotice(null);
+    const res = await cancelPrivacyRequest(it.id, it.revision);
+    setBusy(false);
+    if (res.kind === "success") { setNotice(ko ? "요청을 취소했습니다." : "Request cancelled."); reload(); }
+    else setError(res.kind === "error" ? res.message : (ko ? "취소에 실패했습니다." : "Cancel failed."));
+  };
+
+  return (
+    <div className="mt-6 max-w-[46rem] rounded-2xl border border-line bg-white p-6">
+      <h3 className="font-title text-[18px] font-bold text-ink-strong">{ko ? "계정 삭제 · 데이터 파기 요청" : "Account closure & data erasure"}</h3>
+      <p className="mt-2 text-[16px] leading-[1.7] text-ink-strong">
+        {ko
+          ? "계정 삭제와 개인정보 파기를 요청할 수 있습니다. 요청은 운영자 검토를 거치며, 법적·결제 보존 의무가 있는 정보는 보존 기간이 지난 뒤 파기됩니다."
+          : "You can request account closure and erasure of your personal data. Requests are reviewed by the operator; data under legal or payment retention is erased once the retention period ends."}
+      </p>
+      {notice && <Message tone="success" className="mt-4">{notice}</Message>}
+      {error && <Message tone="danger" className="mt-4" title={ko ? "오류" : "Error"}>{error}</Message>}
+      {loadError && <Message tone="danger" className="mt-4">{ko ? "요청 내역을 불러오지 못했습니다." : "Could not load your requests."}</Message>}
+
+      {items === null && !loadError && <p className="mt-4 text-[16px] text-ink-strong">{ko ? "불러오는 중…" : "Loading…"}</p>}
+
+      {active ? (
+        <div className="mt-4 rounded-xl border border-line bg-surface p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <StatusBadge tone={PRIVACY_STATE_VIEW[active.state].tone}>{PRIVACY_STATE_VIEW[active.state].label[ko ? "ko" : "en"]}</StatusBadge>
+              <span className="text-[16px] text-ink-strong">{ko ? "요청일" : "Requested"} {fmtDate(active.requestedAt, ko)}</span>
+            </div>
+            {active.allowedActions.includes("cancel_privacy_request") && (
+              <Button size="sm" variant="outline" onClick={() => cancel(active)} disabled={busy}>{ko ? "요청 취소" : "Cancel request"}</Button>
+            )}
+          </div>
+          {!active.allowedActions.includes("cancel_privacy_request") && (
+            <p className="mt-3 text-[15px] text-ink-strong/70">{ko ? "검토가 시작된 요청은 취소할 수 없습니다." : "A request that is under review can no longer be cancelled."}</p>
+          )}
+        </div>
+      ) : items !== null && !confirming ? (
+        <Button type="button" variant="outline" className="mt-4" onClick={() => { setConfirming(true); setNotice(null); setError(null); }} disabled={busy}>
+          {ko ? "계정 삭제·파기 요청하기" : "Request account closure & erasure"}
+        </Button>
+      ) : items !== null && confirming ? (
+        <div className="mt-4 rounded-xl border border-danger/40 bg-danger/5 p-4">
+          <p className="text-[16px] font-semibold text-ink-strong">{ko ? "정말 요청하시겠어요?" : "Confirm your request"}</p>
+          <p className="mt-2 text-[15px] leading-[1.6] text-ink-strong">
+            {ko ? "요청 접수 후 검토가 시작되기 전까지는 취소할 수 있습니다." : "You can cancel this request until the operator starts the review."}
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button type="button" onClick={open} disabled={busy}>{busy ? (ko ? "처리 중…" : "Working…") : (ko ? "요청 접수" : "Submit request")}</Button>
+            <Button type="button" variant="outline" onClick={() => setConfirming(false)} disabled={busy}>{ko ? "취소" : "Back"}</Button>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 /* ---------------- action → CTA (driven off allowedActions) ---------------- */
 
@@ -640,6 +745,8 @@ export default function MyPage() {
               {ko ? "변경 사항 저장" : "Save changes"}
             </Button>
           </form>
+
+          {isLive && <PrivacyRequestPanel ko={ko} />}
         </TabPanel>
       </section>
     </>
