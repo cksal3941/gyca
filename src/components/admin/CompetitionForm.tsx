@@ -5,6 +5,12 @@ import { useRouter } from "next/navigation";
 import { Button, Message, Select } from "@/components/ds";
 import { createCompetition, updateCompetition, type AdminCompetition } from "@/lib/api/ops";
 import { CompetitionEditSchema } from "@/contracts/competition-admin";
+import { FORM_FIELD_PATHS, ASSET_PURPOSES } from "@/contracts";
+
+const INPUT_TYPES = ["text", "textarea", "choice", "date", "email"] as const;
+type Req = "required" | "optional" | "unset";
+const toReq = (v: boolean | null): Req => (v === null ? "unset" : v ? "required" : "optional");
+const fromReq = (v: Req): boolean | null => (v === "unset" ? null : v === "required");
 
 // Competition registration / edit (LIVE, organizer). Produces a valid
 // CompetitionEditSchema payload. Core fields + categories + age groups are
@@ -17,6 +23,8 @@ import { CompetitionEditSchema } from "@/contracts/competition-admin";
 
 type Cat = { id: string; en: string; ko: string };
 type Age = { id: string; en: string; ko: string; min: string; max: string };
+type Fld = { path: string; inputType: string; required: Req };
+type Upl = { purpose: string; required: Req; media: string; maxFiles: string; maxBytes: string; minPages: string };
 
 // ISO (UTC) → value for <input type="datetime-local">, in the browser's local tz.
 function toLocalInput(iso: string | null): string {
@@ -62,6 +70,15 @@ export default function CompetitionForm({
       id: a.id, en: a.label.en, ko: a.label.ko, min: String(a.minAgeInclusive), max: String(a.maxAgeInclusive),
     })),
   );
+  const [fields, setFields] = useState<Fld[]>(
+    (spec?.fields ?? []).map((f) => ({ path: f.path, inputType: f.inputType, required: toReq(f.requiredOnSubmit) })),
+  );
+  const [uploads, setUploads] = useState<Upl[]>(
+    (spec?.uploads ?? []).map((u) => ({
+      purpose: u.purpose, required: toReq(u.requiredOnSubmit), media: u.allowedMediaTypes.join(", "),
+      maxFiles: String(u.maxFiles), maxBytes: u.maxBytes == null ? "" : String(u.maxBytes), minPages: u.minPages == null ? "" : String(u.minPages),
+    })),
+  );
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,8 +102,15 @@ export default function CompetitionForm({
             id: a.id.trim(), label: { en: a.en.trim(), ko: a.ko.trim() },
             minAgeInclusive: Number(a.min), maxAgeInclusive: Number(a.max),
           })),
-          fields: spec?.fields ?? [],
-          uploads: spec?.uploads ?? [],
+          fields: fields.map((f) => ({ path: f.path, inputType: f.inputType, requiredOnSubmit: fromReq(f.required) })),
+          uploads: uploads.map((u) => ({
+            purpose: u.purpose,
+            requiredOnSubmit: fromReq(u.required),
+            allowedMediaTypes: u.media.split(",").map((s) => s.trim()).filter(Boolean),
+            maxFiles: Number(u.maxFiles) || 1,
+            maxBytes: u.maxBytes.trim() === "" ? null : Number(u.maxBytes),
+            minPages: u.minPages.trim() === "" ? null : Number(u.minPages),
+          })),
         },
         exhibition: content?.exhibition ?? null,
         guidelines: guidelinesUrl.trim() === ""
@@ -227,6 +251,66 @@ export default function CompetitionForm({
         </div>
       </div>
 
+      {/* 입력 필드 (formSpec.fields) */}
+      <div className="mt-6 rounded-2xl border border-line bg-white p-6">
+        <div className="flex items-center justify-between">
+          <h3 className="font-title text-[18px] font-bold text-ink-strong">입력 필드</h3>
+          <Button size="sm" variant="outline" onClick={() => setFields((f) => [...f, { path: FORM_FIELD_PATHS[0], inputType: "text", required: "required" }])}>필드 추가</Button>
+        </div>
+        {fields.length === 0 && <p className="mt-3 text-[16px] text-ink-strong/70">필드가 없습니다. 참가자가 입력할 항목을 추가하세요.</p>}
+        <div className="mt-3 flex flex-col gap-3">
+          {fields.map((f, i) => (
+            <div key={i} className="grid gap-2 sm:grid-cols-[2fr_1fr_1fr_auto]">
+              <Select value={f.path} onChange={(e) => setFields((v) => v.map((x, j) => j === i ? { ...x, path: e.target.value } : x))}>
+                {FORM_FIELD_PATHS.map((p) => <option key={p} value={p}>{p}</option>)}
+              </Select>
+              <Select value={f.inputType} onChange={(e) => setFields((v) => v.map((x, j) => j === i ? { ...x, inputType: e.target.value } : x))}>
+                {INPUT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+              </Select>
+              <Select value={f.required} onChange={(e) => setFields((v) => v.map((x, j) => j === i ? { ...x, required: e.target.value as Req } : x))}>
+                <option value="required">필수</option>
+                <option value="optional">선택</option>
+                <option value="unset">미정</option>
+              </Select>
+              <Button size="sm" variant="ghost" onClick={() => setFields((v) => v.filter((_, j) => j !== i))}>삭제</Button>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-[15px] text-ink-strong/70">미정 상태가 남아 있으면 접수를 열 수 없습니다(필수/선택을 지정해야 오픈 가능).</p>
+      </div>
+
+      {/* 업로드 규격 (formSpec.uploads) */}
+      <div className="mt-6 rounded-2xl border border-line bg-white p-6">
+        <div className="flex items-center justify-between">
+          <h3 className="font-title text-[18px] font-bold text-ink-strong">업로드 규격</h3>
+          <Button size="sm" variant="outline" onClick={() => setUploads((u) => [...u, { purpose: ASSET_PURPOSES[0], required: "required", media: "", maxFiles: "1", maxBytes: "", minPages: "" }])}>업로드 추가</Button>
+        </div>
+        {uploads.length === 0 && <p className="mt-3 text-[16px] text-ink-strong/70">업로드 규격이 없습니다.</p>}
+        <div className="mt-3 flex flex-col gap-4">
+          {uploads.map((u, i) => (
+            <div key={i} className="rounded-lg border border-line p-4">
+              <div className="grid gap-2 sm:grid-cols-[2fr_1fr_auto]">
+                <Select value={u.purpose} onChange={(e) => setUploads((v) => v.map((x, j) => j === i ? { ...x, purpose: e.target.value } : x))}>
+                  {ASSET_PURPOSES.map((p) => <option key={p} value={p}>{p}</option>)}
+                </Select>
+                <Select value={u.required} onChange={(e) => setUploads((v) => v.map((x, j) => j === i ? { ...x, required: e.target.value as Req } : x))}>
+                  <option value="required">필수</option>
+                  <option value="optional">선택</option>
+                  <option value="unset">미정</option>
+                </Select>
+                <Button size="sm" variant="ghost" onClick={() => setUploads((v) => v.filter((_, j) => j !== i))}>삭제</Button>
+              </div>
+              <div className="mt-2 grid gap-2 sm:grid-cols-[3fr_1fr_1fr_1fr]">
+                <input className={field} value={u.media} placeholder="허용 형식 (쉼표: image/jpeg, application/pdf)" onChange={(e) => setUploads((v) => v.map((x, j) => j === i ? { ...x, media: e.target.value } : x))} />
+                <input className={field} type="number" min={1} value={u.maxFiles} placeholder="최대 개수" onChange={(e) => setUploads((v) => v.map((x, j) => j === i ? { ...x, maxFiles: e.target.value } : x))} />
+                <input className={field} type="number" min={1} value={u.maxBytes} placeholder="최대 바이트(선택)" onChange={(e) => setUploads((v) => v.map((x, j) => j === i ? { ...x, maxBytes: e.target.value } : x))} />
+                <input className={field} type="number" min={1} value={u.minPages} placeholder="최소 페이지(선택)" onChange={(e) => setUploads((v) => v.map((x, j) => j === i ? { ...x, minPages: e.target.value } : x))} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* 요강 (guidelines) */}
       <div className="mt-6 rounded-2xl border border-line bg-white p-6">
         <h3 className="font-title text-[18px] font-bold text-ink-strong">요강 (선택)</h3>
@@ -251,7 +335,7 @@ export default function CompetitionForm({
 
       {mode === "edit" && (
         <p className="mt-4 text-[15px] text-ink-strong/70">
-          입력 필드·업로드 규격·주요 일정·전시 정보는 이 화면에서 보존됩니다(전용 편집기는 추후). 정책(제출/결제/보관)·동의문·오픈은 아래/별도에서 관리합니다.
+          주요 일정(keyDates)·전시 정보는 이 화면에서 보존됩니다(전용 편집기는 추후). 정책(제출/결제/보관)·동의문·오픈은 별도에서 관리합니다.
         </p>
       )}
 
