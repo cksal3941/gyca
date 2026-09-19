@@ -17,7 +17,7 @@
 | 5 운영·보조 기능 | 미착수 | | | | |
 | 6 심사·발표·인증서 | 미착수 | | | | |
 | 7 공개 CMS·아카이브 | 진행(editorial✅) | +`index.ts`(listEditorialPublic),notices/page(dual-mode) | 관리자 생성/공개 → **공개 /notices 노출 실검증** | 홈 NewsUpdate·notices 상세·partner CMS·아카이브 미착수 | partner CMS / 아카이브 / 단계 5·6 |
-| 8 스테이징·장애 검증 | 미착수 | | | | |
+| 8 스테이징·장애 검증 | 진행(준비✅) | `.env.example`,`docs/staging-readiness.md` | 프로덕션 빌드(webpack) HEAD exit 0·env 완비·준비 체크리스트 | 실 DB/S3/PG/메일 검증·Docker 기동·부하는 계정·사업자 대기 | 계정 확보 후 실검증 |
 | 9 운영 인계 | 미착수 | | | | |
 
 ---
