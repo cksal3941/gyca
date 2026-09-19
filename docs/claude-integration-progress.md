@@ -12,7 +12,7 @@
 | --- | --- | --- | --- | --- | --- |
 | 1 공유 기반 | ✅ 완료 | `5c3312c`,`20b294a`,`a5aac56` | 아래 검증 로그(모두 exit 0) | 없음 | 단계 2 |
 | 2 로컬 운영 계정 | ✅ 완료 | `scripts/seed-leipzig-dev.mjs`(안전장치) | 운영자 200/참가자 403/회수 403/재부여 200 실세션 확인 | organizer 부여는 로컬 dev 한정(운영은 사용자 승인) | 단계 3 |
-| 3 공모·접수 운영 | ✅ 대체로(3-A✅ 3-B UI✅ **일정표 편집✅**) | +`CompetitionForm/Editor`,`LaunchControl`,admin/competitions{,/new,/[id]} | create 폼→생성→리다이렉트 / **일정표(keyDates) 추가→저장→GET 영속→재로드 복원 실검증**(미정/날짜/기간/시각) | 정책편집(submission/payment/retention)·동의문·exhibition 편집기·open은 readiness/결정 게이팅 | 결정 수신 후 정책·오픈 / 단계 4~ |
+| 3 공모·접수 운영 | ✅ 대체로(3-A✅ 3-B UI✅ **일정표·전시 편집✅**) | +`CompetitionForm/Editor`,`LaunchControl`,admin/competitions{,/new,/[id]} | create→생성 / **일정표(keyDates) 추가→저장→영속→재로드 복원** / **전시(exhibition) 승인·장소·기간 저장 + 미승인시 장소 자동 비공개(refine) 실검증** | 정책편집(submission/payment/retention)·동의문·open은 readiness/결정 게이팅 | 결정 수신 후 정책·오픈 / 단계 4~ |
 | 4 결제·참가자 흐름 | 진행(4-A 착수·**mock 감사✅**) | `index.ts`(beginCheckout),`submit-flow.ts`,`docs/live-mock-remnants.md` | checkout 라우트 404 정상·draft payment-options=[]·**라이브 mock 잔재 전수 감사 문서화** | 실 주문→checkout→PG 해피패스는 S3·PG 인프라·사업자 대기 | confirm/reconcile(주문 후) |
 | 5 운영·보조 기능 | 진행(조회✅ **개인정보요청 E2E✅**) | `ops.ts`(dashboard/health/reviews,privacy admin),`admin/payments`,`admin/privacy`,`index.ts`(privacy),mypage privacy 패널 | 대시보드 실데이터·게이트·gross / **개인정보: 참가자 요청→취소, 운영자 검토시작→보존보류(증거)→재개 실검증(파기승인은 비가역이라 게이트만)** | accept-late/requeue/환불 mutations·인증서·프로필 편집(계약없음) 미착수 | 결제 mutations·보조 기능 |
 | 6 심사·발표·인증서 | 진행(심사화면✅ 관리자 judges/rubric✅ **인증서 다운로드 배선✅**) | `ops.ts`(judge admin),`admin/judges`,`index.ts`(downloadCertificate),mypage cert 버튼 | judges·rubric 실검증 / **인증서 다운로드 어댑터·버튼 배선**(엔드포인트 404 도달 실검증; 발급본은 S3·심사 후) | 배정 관리·결과 발표·인증서 발급(발급 데이터는 인프라·심사 대기) | 결과 발표(엔트리·인프라 후) |

@@ -86,6 +86,15 @@ export default function CompetitionForm({
       };
     }),
   );
+  const exh = content?.exhibition ?? null;
+  const [exhOn, setExhOn] = useState(exh != null);
+  const [exhApproval, setExhApproval] = useState<"pending" | "approved">(exh?.approvalStatus ?? "pending");
+  const [exhNameEn, setExhNameEn] = useState(exh?.displayName.en ?? "");
+  const [exhNameKo, setExhNameKo] = useState(exh?.displayName.ko ?? "");
+  const [exhVenue, setExhVenue] = useState(exh?.venueName ?? "");
+  const [exhLogo, setExhLogo] = useState(exh?.logoUrl ?? "");
+  const [exhStart, setExhStart] = useState(exh?.period?.startsOn ?? "");
+  const [exhEnd, setExhEnd] = useState(exh?.period?.endsOn ?? "");
   const [fields, setFields] = useState<Fld[]>(
     (spec?.fields ?? []).map((f) => ({ path: f.path, inputType: f.inputType, required: toReq(f.requiredOnSubmit) })),
   );
@@ -135,7 +144,14 @@ export default function CompetitionForm({
             minPages: u.minPages.trim() === "" ? null : Number(u.minPages),
           })),
         },
-        exhibition: content?.exhibition ?? null,
+        exhibition: !exhOn ? null : {
+          approvalStatus: exhApproval,
+          displayName: { en: exhNameEn.trim(), ko: exhNameKo.trim() },
+          // Unapproved venues must not be disclosed — venue/logo only when approved.
+          venueName: exhApproval === "approved" && exhVenue.trim() !== "" ? exhVenue.trim() : null,
+          logoUrl: exhApproval === "approved" && exhLogo.trim() !== "" ? exhLogo.trim() : null,
+          period: exhStart.trim() !== "" && exhEnd.trim() !== "" ? { startsOn: exhStart, endsOn: exhEnd } : null,
+        },
         guidelines: guidelinesUrl.trim() === ""
           ? null
           : { url: guidelinesUrl.trim(), locale: guidelinesLocale, version: guidelinesVersion.trim() || "v1" },
@@ -277,6 +293,41 @@ export default function CompetitionForm({
             </div>
           ))}
         </div>
+      </div>
+
+      {/* 전시 (exhibition) — 공개 상세의 전시 안내 */}
+      <div className="mt-6 rounded-2xl border border-line bg-white p-6">
+        <div className="flex items-center justify-between">
+          <h3 className="font-title text-[18px] font-bold text-ink-strong">전시 정보</h3>
+          <label className="flex items-center gap-2">
+            <input type="checkbox" checked={exhOn} onChange={(e) => setExhOn(e.target.checked)} className="h-4 w-4 accent-brand-blue" />
+            <span className={label}>전시 정보 포함</span>
+          </label>
+        </div>
+        {exhOn && (
+          <div className="mt-3 flex flex-col gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="block"><span className={label}>승인 상태</span>
+                <Select value={exhApproval} onChange={(e) => setExhApproval(e.target.value as "pending" | "approved")} className="mt-1">
+                  <option value="pending">미승인 (준비 중)</option>
+                  <option value="approved">승인됨</option>
+                </Select>
+              </label>
+              <div />
+              <label className="block"><span className={label}>전시명 EN</span><input className={field} value={exhNameEn} onChange={(e) => setExhNameEn(e.target.value)} /></label>
+              <label className="block"><span className={label}>전시명 KO</span><input className={field} value={exhNameKo} onChange={(e) => setExhNameKo(e.target.value)} /></label>
+              <label className="block"><span className={label}>장소명 {exhApproval !== "approved" && "(승인 후 입력)"}</span>
+                <input className={field} value={exhVenue} disabled={exhApproval !== "approved"} onChange={(e) => setExhVenue(e.target.value)} placeholder="예: Klimt Villa" />
+              </label>
+              <label className="block"><span className={label}>로고 URL (https) {exhApproval !== "approved" && "(승인 후 입력)"}</span>
+                <input className={field} value={exhLogo} disabled={exhApproval !== "approved"} onChange={(e) => setExhLogo(e.target.value)} placeholder="https://…" />
+              </label>
+              <label className="block"><span className={label}>전시 시작일</span><input className={field} type="date" value={exhStart} onChange={(e) => setExhStart(e.target.value)} /></label>
+              <label className="block"><span className={label}>전시 종료일</span><input className={field} type="date" value={exhEnd} onChange={(e) => setExhEnd(e.target.value)} /></label>
+            </div>
+            <p className="text-[15px] text-ink-strong/70">미승인 상태에서는 장소명·로고가 공개되지 않습니다(자동 비공개). 장소 승인 후 “승인됨”으로 바꾸고 장소명·로고를 입력하세요. 기간은 시작·종료를 모두 채워야 저장됩니다.</p>
+          </div>
+        )}
       </div>
 
       {/* 부문 (categories) */}
