@@ -273,6 +273,7 @@ export default function AdminEntriesPageView() {
           <div className="flex flex-wrap gap-2">
             <Button href="/admin/competitions" variant="outline">공모 관리</Button>
             <Button href="/admin/content/editorial" variant="outline">콘텐츠 관리</Button>
+            <Button href="/admin/content/partners" variant="outline">협력기관</Button>
             <Button href="/admin/judges" variant="outline">심사 운영</Button>
           </div>
         }

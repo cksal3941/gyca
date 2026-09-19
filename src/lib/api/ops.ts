@@ -34,6 +34,11 @@ import {
   type EditorialBody,
 } from "@/contracts/editorial-content";
 import {
+  PartnerAdminItemSchema,
+  PartnerAdminPageSchema,
+  type PartnerBody,
+} from "@/contracts/partner-content";
+import {
   JudgeAssignmentsSchema,
   JudgeReviewContextSchema,
   JudgeReviewMutationSchema,
@@ -237,6 +242,45 @@ export async function transitionEditorial(
 ): Promise<RequestState<EditorialAdminItem>> {
   if (!isLive) return { kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 CMS를 지원하지 않습니다.", retryable: false };
   return httpSend("POST", `/admin/content/editorial/${encodeURIComponent(id)}/${action}`, EditorialAdminItemSchema, { body: input, signal: opts.signal });
+}
+
+/* ---- partner content CMS (LIVE, organizer) ---- */
+
+export type PartnerAdminItem = z.infer<typeof PartnerAdminItemSchema>;
+const partnerOff = <T,>(): RequestState<T> => ({ kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 CMS를 지원하지 않습니다.", retryable: false });
+
+/** Partner list (draft/published + relationship pending/confirmed/revoked).
+ *  Live: GET /admin/content/partners. */
+export async function listAdminPartners(opts: { signal?: AbortSignal } = {}): Promise<RequestState<Page<PartnerAdminItem>>> {
+  if (!isLive) return partnerOff();
+  const r = await httpGet("/admin/content/partners?limit=50", PartnerAdminPageSchema, opts.signal);
+  return r as RequestState<Page<PartnerAdminItem>>;
+}
+
+/** Create a partner (draft). Live: POST /admin/content/partners. */
+export async function createPartner(
+  input: { actionId: string; slug: string; partnerType: string; content: PartnerBody }, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<PartnerAdminItem>> {
+  if (!isLive) return partnerOff();
+  return httpSend("POST", "/admin/content/partners", PartnerAdminItemSchema, { body: input, signal: opts.signal });
+}
+
+/** Confirm / revoke the partner relationship (evidence + reason required).
+ *  A partner cannot be published until the relationship is confirmed. */
+export async function partnerRelationship(
+  id: string, action: "confirm" | "revoke",
+  input: { actionId: string; expectedRevision: number; evidenceReference: string; reason: string }, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<PartnerAdminItem>> {
+  if (!isLive) return partnerOff();
+  return httpSend("POST", `/admin/content/partners/${encodeURIComponent(id)}/${action}`, PartnerAdminItemSchema, { body: input, signal: opts.signal });
+}
+
+/** Publish / archive a partner. Live: POST .../{id}/publish|archive. */
+export async function transitionPartner(
+  id: string, action: "publish" | "archive", input: { actionId: string; expectedRevision: number }, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<PartnerAdminItem>> {
+  if (!isLive) return partnerOff();
+  return httpSend("POST", `/admin/content/partners/${encodeURIComponent(id)}/${action}`, PartnerAdminItemSchema, { body: input, signal: opts.signal });
 }
 
 /* ---- judge admin: accounts + review rubric (LIVE, organizer) ---- */
