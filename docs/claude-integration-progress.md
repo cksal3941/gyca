@@ -109,7 +109,9 @@ pnpm dev
 ### 3-B 공모 등록·오픈 (백엔드 흐름 실측 + 결정 요청)
 - **create→open 실측(operator, curl):** `POST /admin/competitions` → 201(revision 1, draft/payment=false). `GET /launch-readiness` → public_content·schedule=configured, published·form·consents·guardian_policy·payment_policy·payment_routes·storage·retention·live_payment_verification=missing. `POST /open-applications`(rev 1) → 503 POLICY_NOT_CONFIGURED(정확히 차단).
 - **결론:** 오픈은 readiness 전부 충족 필요 → 다수가 외부 검증·운영 정책 결정 게이팅(3-B.5 임의 충족 금지). `docs/operator-decisions-needed.md`로 결정 요청(A PG/통화 최우선 ~ G 자료).
-- **다음 증분(UI):** 공모 create/edit 폼(핵심 필드 + categories/ageGroups, fields/uploads는 edit 라운드트립) · 정책 편집(submission/payment/retention)+동의문 버전 · launch-readiness 표시 + verification 등록 · open/pause/resume. 상당수 입력값은 결정 수신 후.
+- **어댑터 추가(데이터층):** `getAdminCompetition`/`createCompetition`/`updateCompetition`/`getLaunchReadiness`/`openApplications`/`pauseApplications`/`resumeApplications`(ops.ts, 계약 스키마 검증). tsc·eslint 0. 기반 엔드포인트는 create 201·readiness·open 503 실측 완료.
+- **다음 증분(UI):** 공모 create/edit 폼(핵심 필드 + categories/ageGroups, fields/uploads는 edit 라운드트립) · 정책 편집(submission/payment/retention)+동의문 버전 · launch-readiness 표시 + verification 등록 · open/pause/resume 버튼(어댑터 준비됨). 상당수 입력값은 결정 수신 후.
+- **4-A.1 홈 Apply:** ApplyCta를 실제 공모 응답(start_entry) 게이트로 전환(커밋 `a919416`).
 
 ## 사용자 결정 필요 (요약 — 상세는 operator-decisions-needed.md)
 - **A. PG·통화(최우선):** 사업자 국가/법인, PG 계약 상태, 청구·정산 통화(EUR 가능 여부), 해외카드/국가, 환불.

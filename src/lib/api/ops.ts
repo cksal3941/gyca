@@ -19,6 +19,15 @@ import type { EntryStatus, ReviewStatus, PublishedResult, PaymentState } from "@
 import { AdminAccessSchema, type AdminAccess } from "@/contracts/admin-access";
 import { AdminEntrySchema, AdminEntriesPageSchema } from "@/contracts/admin-entries";
 import { AdminEntryDetailSchema } from "@/contracts/admin-entry-detail";
+import { CompetitionEditSchema, type CompetitionEdit } from "@/contracts/competition-admin";
+import { LaunchReadinessSchema } from "@/contracts/launch-readiness";
+import { OpenApplicationsSchema, OpenedApplicationsSchema } from "@/contracts/launch-control";
+import {
+  PauseApplicationsSchema,
+  PausedApplicationsSchema,
+  ResumeApplicationsSchema,
+  ResumedApplicationsSchema,
+} from "@/contracts/application-pause";
 import {
   JudgeAssignmentsSchema,
   JudgeReviewContextSchema,
@@ -176,6 +185,88 @@ export async function listAdminCompetitions(
     return { kind: "success", data: r.data.items.map((c) => ({ id: c.id, slug: c.slug, published: c.published })) };
   }
   return { kind: "success", data: [{ id: "leipzig-2027", slug: "leipzig-2027", published: true }] };
+}
+
+/* ---- competition registration / launch control (LIVE, organizer) ---- */
+
+// One competition's admin record: edit input + revision + draft/payment flags.
+const AdminCompetitionSchema = z.object({
+  id: z.string(), revision: z.number().int().positive(),
+  draftEnabled: z.boolean(), paymentEnabled: z.boolean(), input: CompetitionEditSchema,
+});
+export type AdminCompetition = z.infer<typeof AdminCompetitionSchema>;
+
+const liveOnly = <T,>(): RequestState<T> => ({
+  kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 공모 운영 API를 지원하지 않습니다.", retryable: false,
+});
+
+/** One competition for editing. Live: GET /admin/competitions/{id}. */
+export async function getAdminCompetition(
+  id: string, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<AdminCompetition>> {
+  if (!isLive) return liveOnly();
+  return httpGet(`/admin/competitions/${encodeURIComponent(id)}`, AdminCompetitionSchema, opts.signal);
+}
+
+/** Register a competition. Live: POST /admin/competitions ({id, input}). The
+ *  server sets revision; publishing/opening are separate steps. */
+export async function createCompetition(
+  id: string, input: CompetitionEdit, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<AdminCompetition>> {
+  if (!isLive) return liveOnly();
+  return httpSend("POST", "/admin/competitions", AdminCompetitionSchema, { body: { id, input }, signal: opts.signal });
+}
+
+/** Edit a competition. Live: PATCH /admin/competitions/{id} ({revision, input}).
+ *  A stale revision is a 409 REVISION_CONFLICT (never auto-overwrite). */
+export async function updateCompetition(
+  id: string, revision: number, input: CompetitionEdit, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<AdminCompetition>> {
+  if (!isLive) return liveOnly();
+  return httpSend("PATCH", `/admin/competitions/${encodeURIComponent(id)}`, AdminCompetitionSchema, {
+    body: { revision, input }, signal: opts.signal,
+  });
+}
+
+/** Launch readiness checks + status (configured/missing/unverified). Live: GET
+ *  /admin/competitions/{id}/launch-readiness. Opening is blocked until all pass. */
+export async function getLaunchReadiness(
+  id: string, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<z.infer<typeof LaunchReadinessSchema>>> {
+  if (!isLive) return liveOnly();
+  return httpGet(`/admin/competitions/${encodeURIComponent(id)}/launch-readiness`, LaunchReadinessSchema, opts.signal);
+}
+
+/** Open applications (enables drafts + payment). Live: POST .../open-applications.
+ *  Server enforces launch-readiness — a 503 means readiness is not yet met. */
+export async function openApplications(
+  id: string, input: z.infer<typeof OpenApplicationsSchema>, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<z.infer<typeof OpenedApplicationsSchema>>> {
+  if (!isLive) return liveOnly();
+  return httpSend("POST", `/admin/competitions/${encodeURIComponent(id)}/open-applications`, OpenedApplicationsSchema, {
+    body: input, signal: opts.signal,
+  });
+}
+
+/** Pause new applications (existing submitted entries' payment policy unchanged).
+ *  Live: POST .../pause-applications ({revision, reason}). */
+export async function pauseApplications(
+  id: string, input: z.infer<typeof PauseApplicationsSchema>, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<z.infer<typeof PausedApplicationsSchema>>> {
+  if (!isLive) return liveOnly();
+  return httpSend("POST", `/admin/competitions/${encodeURIComponent(id)}/pause-applications`, PausedApplicationsSchema, {
+    body: input, signal: opts.signal,
+  });
+}
+
+/** Resume applications. Live: POST .../resume-applications ({revision, reason}). */
+export async function resumeApplications(
+  id: string, input: z.infer<typeof ResumeApplicationsSchema>, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<z.infer<typeof ResumedApplicationsSchema>>> {
+  if (!isLive) return liveOnly();
+  return httpSend("POST", `/admin/competitions/${encodeURIComponent(id)}/resume-applications`, ResumedApplicationsSchema, {
+    body: input, signal: opts.signal,
+  });
 }
 
 // Map the server AdminEntry (contract) to the operator-screen view.
