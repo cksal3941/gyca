@@ -277,6 +277,7 @@ export default function AdminEntriesPageView() {
             <Button href="/admin/content/partners" variant="outline">협력기관</Button>
             <Button href="/admin/content/projects" variant="outline">아카이브</Button>
             <Button href="/admin/judges" variant="outline">심사 운영</Button>
+            <Button href="/admin/results" variant="outline">결과·인증서</Button>
             <Button href="/admin/privacy" variant="outline">개인정보 요청</Button>
           </div>
         }

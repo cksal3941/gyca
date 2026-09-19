@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button, Message, StatusBadge, type Tone } from "@/components/ds";
-import { getAdminEntryDetail } from "@/lib/api/ops";
+import { Button, Message, StatusBadge, Select, type Tone } from "@/components/ds";
+import { getAdminEntryDetail, getReviewDecision, updateReviewDecision } from "@/lib/api/ops";
 import type { AdminEntryDetailSchema } from "@/contracts/admin-entry-detail";
 import type { z } from "zod";
 
@@ -68,6 +68,73 @@ const money = (m: { amountMinor: number; currency: string }) =>
 const fmtBytes = (n: number) => (n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1000))} KB`);
 const fmtDateTime = (iso: string) => new Date(iso).toLocaleString("ko-KR");
 
+// Per-entry review decision (LIVE, organizer). Sets reviewStatus + published
+// decision (a completed review requires a decision). Before the first publish
+// only official_selection is exposed publicly; finalist stays internal until the
+// finalist round. Self-hides if the review decision endpoint is unavailable.
+function ReviewDecisionEditor({ competitionId, entryId }: { competitionId: string; entryId: string }) {
+  const [rev, setRev] = useState<number | null>(null);
+  const [reviewStatus, setReviewStatus] = useState<"not_started" | "under_review" | "completed">("not_started");
+  const [decision, setDecision] = useState<"official_selection" | "finalist" | "not_selected" | "">("");
+  const [hidden, setHidden] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    getReviewDecision(competitionId, entryId).then((r) => {
+      if (!alive) return;
+      if (r.kind === "success") {
+        setRev(r.data.revision);
+        setReviewStatus(r.data.reviewStatus as "not_started" | "under_review" | "completed");
+        setDecision((r.data.decision ?? "") as "official_selection" | "finalist" | "not_selected" | "");
+      } else if (r.kind === "error" && (r.code === "NOT_CONNECTED" || r.code === "NOT_FOUND")) setHidden(true);
+      else setError("심사 결정을 불러오지 못했습니다.");
+    });
+    return () => { alive = false; };
+  }, [competitionId, entryId, reloadKey]);
+
+  if (hidden) return null;
+
+  const save = async () => {
+    if (rev == null) return;
+    if (reviewStatus === "completed" && decision === "") { setError("심사 완료 시 결과를 선택해야 합니다."); return; }
+    setBusy(true); setError(null); setNotice(null);
+    const res = await updateReviewDecision(competitionId, entryId, {
+      expectedRevision: rev, reviewStatus,
+      decision: reviewStatus === "completed" ? (decision as "official_selection" | "finalist" | "not_selected") : null,
+    });
+    setBusy(false);
+    if (res.kind === "success") { setRev(res.data.revision); setNotice("심사 결정을 저장했습니다."); }
+    else if (res.kind === "error" && res.code === "REVISION_CONFLICT") { setError("최신 상태가 아닙니다. 다시 불러옵니다."); setReloadKey((k) => k + 1); }
+    else setError(res.kind === "error" ? res.message : "저장 실패");
+  };
+
+  return (
+    <div className="mt-8 rounded-2xl border border-line bg-white p-6">
+      <h2 className="font-title text-[18px] font-bold text-ink-strong">심사 결정</h2>
+      <p className="mt-1 text-[15px] text-ink-strong/70">발표 전 finalist 결정은 내부에만 보관되고 공개되지 않습니다(1차는 Official Selection만 공개).</p>
+      {notice && <Message tone="success" className="mt-3">{notice}</Message>}
+      {error && <Message tone="danger" className="mt-3">{error}</Message>}
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <label className="block"><span className="text-[15px] font-semibold text-ink-strong">심사 상태</span>
+          <Select value={reviewStatus} onChange={(e) => setReviewStatus(e.target.value as "not_started" | "under_review" | "completed")} className="mt-1">
+            <option value="not_started">미심사</option><option value="under_review">심사 중</option><option value="completed">심사 완료</option>
+          </Select>
+        </label>
+        <label className="block"><span className="text-[15px] font-semibold text-ink-strong">결과 (완료 시 필수)</span>
+          <Select value={decision} onChange={(e) => setDecision(e.target.value as "official_selection" | "finalist" | "not_selected" | "")} className="mt-1" disabled={reviewStatus !== "completed"}>
+            <option value="">—</option><option value="official_selection">Official Selection</option><option value="finalist">Finalist(내부)</option><option value="not_selected">미선정</option>
+          </Select>
+        </label>
+      </div>
+      <Button className="mt-3" onClick={save} disabled={busy || rev == null}>{busy ? "저장 중…" : "심사 결정 저장"}</Button>
+    </div>
+  );
+}
+
 export default function AdminEntryDetailLive({ competitionId, entryId }: { competitionId: string; entryId: string }) {
   const [phase, setPhase] = useState<Phase>("loading");
   const [e, setE] = useState<Detail | null>(null);
@@ -124,6 +191,8 @@ export default function AdminEntryDetailLive({ competitionId, entryId }: { compe
         {d.publishedResult && <StatusBadge tone={RESULT_LABEL[d.publishedResult]?.tone ?? "neutral"}>{RESULT_LABEL[d.publishedResult]?.label ?? d.publishedResult}</StatusBadge>}
         {d.certificateIssued && <StatusBadge tone="success">인증서 발급됨</StatusBadge>}
       </div>
+
+      <ReviewDecisionEditor competitionId={competitionId} entryId={entryId} />
 
       <div className="mt-8 grid gap-8 lg:grid-cols-2">
         <div className="rounded-2xl border border-line bg-white p-6">

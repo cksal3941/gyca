@@ -61,6 +61,17 @@ import {
 } from "@/contracts/payment-admin";
 import { RefundOverviewSchema, type RequestRefund } from "@/contracts/refunds";
 import {
+  ReviewDecisionDetailSchema,
+  ResultRoundPublicationSchema,
+  type UpdateReviewDecisionSchema,
+  type AdminFinalParticipationSchema,
+  type FinalParticipationMutationSchema,
+} from "@/contracts/result-admin";
+import {
+  CertificateIssueResultSchema,
+  type IssueCertificatesRequestSchema,
+} from "@/contracts/certificates";
+import {
   JudgeAssignmentsSchema,
   JudgeReviewContextSchema,
   JudgeReviewMutationSchema,
@@ -1015,4 +1026,52 @@ export async function requestRefund(
 ): Promise<RequestState<RefundOverview>> {
   if (!isLive) return opsOff();
   return httpSend("POST", `/admin/competitions/${encodeURIComponent(competitionId)}/payments/${encodeURIComponent(orderId)}/refunds`, RefundOverviewSchema, { body: input, signal: opts.signal });
+}
+
+/* ---- results & certificates (LIVE, organizer) ---- */
+
+export type ReviewDecisionDetail = z.infer<typeof ReviewDecisionDetailSchema>;
+export type ResultRoundPublication = z.infer<typeof ResultRoundPublicationSchema>;
+export type CertificateIssueResult = z.infer<typeof CertificateIssueResultSchema>;
+export type UpdateReviewDecision = z.infer<typeof UpdateReviewDecisionSchema>;
+export type AdminFinalParticipation = z.infer<typeof AdminFinalParticipationSchema>;
+export type FinalParticipationMutation = z.infer<typeof FinalParticipationMutationSchema>;
+
+/** Per-entry review decision. Live: GET /admin/competitions/{id}/entries/{entryId}/review. */
+export async function getReviewDecision(competitionId: string, entryId: string, opts: { signal?: AbortSignal } = {}): Promise<RequestState<ReviewDecisionDetail>> {
+  if (!isLive) return cmsOff();
+  return httpGet(`/admin/competitions/${encodeURIComponent(competitionId)}/entries/${encodeURIComponent(entryId)}/review`, ReviewDecisionDetailSchema, opts.signal);
+}
+
+/** Set a review decision. Live: PUT .../entries/{entryId}/review. A completed
+ *  review requires a decision; before the first publish only official_selection
+ *  is exposed publicly (finalist stays internal). */
+export async function updateReviewDecision(
+  competitionId: string, entryId: string, input: UpdateReviewDecision, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<ReviewDecisionDetail>> {
+  if (!isLive) return cmsOff();
+  return httpSend("PUT", `/admin/competitions/${encodeURIComponent(competitionId)}/entries/${encodeURIComponent(entryId)}/review`, ReviewDecisionDetailSchema, { body: input, signal: opts.signal });
+}
+
+/** Publish a results round. Live: POST /results/publish (first, official_selection)
+ *  or /results/rounds/{round}/publish. Server checks all decisions made, no
+ *  payment-review submitted entries, deadline passed, retention policy set. */
+export async function publishResultsRound(
+  competitionId: string, round: "official_selection" | "finalist", competitionRevision: number, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<ResultRoundPublication>> {
+  if (!isLive) return cmsOff();
+  const path = round === "official_selection"
+    ? `/admin/competitions/${encodeURIComponent(competitionId)}/results/publish`
+    : `/admin/competitions/${encodeURIComponent(competitionId)}/results/rounds/${round}/publish`;
+  return httpSend("POST", path, ResultRoundPublicationSchema, { body: { competitionRevision }, signal: opts.signal });
+}
+
+/** Issue certificates for published-result entries. Live: POST
+ *  /admin/competitions/{id}/certificates/issue {entryIds, stage, actionId}.
+ *  202/pending is a reservation — the PDF worker completes issuance separately. */
+export async function issueCertificates(
+  competitionId: string, input: z.infer<typeof IssueCertificatesRequestSchema>, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<CertificateIssueResult>> {
+  if (!isLive) return cmsOff();
+  return httpSend("POST", `/admin/competitions/${encodeURIComponent(competitionId)}/certificates/issue`, CertificateIssueResultSchema, { body: input, signal: opts.signal });
 }

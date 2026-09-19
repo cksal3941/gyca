@@ -154,3 +154,12 @@ pnpm dev
   - **상태변경(요청→상태변경→재조회):** 실주문이 없어 미검증 — 격리 주문/복구/검토 fixture 시드 필요(코덱스 서버 테스트가 해피패스 커버). 완료 결제 임의 변경 UI 없음.
   - **실서비스:** 실 PG 승인/환불은 5단계.
 - **미착수(4단계 잔여):** 결과 발표(공개/라운드)·인증서 발급 화면 — received+심사완료 fixture 필요(깊은 파이프라인 시드).
+
+### 4단계: 남은 관리자 변경 — 4b 결과 발표·인증서·심사결정 ✅ (4단계 완료)
+- **어댑터(ops.ts):** `getReviewDecision`/`updateReviewDecision`(per-entry), `publishResultsRound`(official_selection/finalist), `issueCertificates`.
+- **UI:** `/admin/results`(공모 선택 → 공모 revision → 1차(Official Selection)/2차(Finalist) 발표 버튼 + 인증서 발급 폼[stage·entryIds]) + admin 네비 링크. 관리자 접수 상세(`AdminEntryDetailLive`)에 **심사 결정 편집기**(심사상태+결과, 완료 시 결과 필수, finalist는 발표 전 내부 보관 안내, 엔드포인트 없으면 자체 숨김).
+- **검증 등급:**
+  - **브라우저(엔드포인트 도달+게이팅):** publish official_selection → 409(precondition/concurrency), cert issue(가짜 entry) → 409 ENTRY_LOCKED, review GET(가짜 entry) → 404 — 모두 authz 통과한 서버 판정. results 페이지: revision·1차/2차 발표 버튼·인증서 폼 렌더.
+  - **상태변경(발표 성공·인증서 발급·결정 반영):** received+심사완료 접수 파이프라인이 없어 미검증 — 코덱스 서버 테스트(result-publication/certificates)가 해피패스 커버. 실제 발급 PDF는 S3 작업자(5단계).
+  - **실서비스:** 실 결과·인증서 발급은 5단계.
+- **4단계 요약:** 결제 mutation(4a) + 결과 발표·인증서·심사결정(4b) 화면·어댑터 완료. 상태변경 해피패스는 격리 파이프라인 시드/서버테스트 영역, 실 발급은 인프라 대기.
