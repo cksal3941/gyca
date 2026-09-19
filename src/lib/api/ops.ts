@@ -38,6 +38,9 @@ import {
   PartnerAdminPageSchema,
   type PartnerBody,
 } from "@/contracts/partner-content";
+import { AdminDashboardSchema } from "@/contracts/admin-dashboard";
+import { PaymentHealthSchema } from "@/contracts/payment-health";
+import { PaymentReviewSchema } from "@/contracts/payment-admin";
 import {
   JudgeAssignmentsSchema,
   JudgeReviewContextSchema,
@@ -48,7 +51,7 @@ import {
 } from "@/contracts/judge";
 import { z } from "zod";
 import { isLive } from "./mode";
-import { httpGet, httpSend } from "./http";
+import { httpGet, httpSend, httpList } from "./http";
 
 // Published competitions an organizer can operate on (id/slug for the picker).
 const AdminCompetitionListSchema = z.object({
@@ -242,6 +245,35 @@ export async function transitionEditorial(
 ): Promise<RequestState<EditorialAdminItem>> {
   if (!isLive) return { kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 CMS를 지원하지 않습니다.", retryable: false };
   return httpSend("POST", `/admin/content/editorial/${encodeURIComponent(id)}/${action}`, EditorialAdminItemSchema, { body: input, signal: opts.signal });
+}
+
+/* ---- payment operations (read; LIVE, organizer) ---- */
+
+export type AdminDashboard = z.infer<typeof AdminDashboardSchema>;
+export type PaymentHealth = z.infer<typeof PaymentHealthSchema>;
+export type PaymentReview = z.infer<typeof PaymentReviewSchema>;
+const opsOff = <T,>(): RequestState<T> => ({ kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 운영 조회를 지원하지 않습니다.", retryable: false });
+
+/** Operations dashboard (accounts, applicants, per-competition counts). Live:
+ *  GET /admin/dashboard. Approved amounts are gross (pre-refund), not settlement. */
+export async function getAdminDashboard(opts: { signal?: AbortSignal } = {}): Promise<RequestState<AdminDashboard>> {
+  if (!isLive) return opsOff();
+  return httpGet("/admin/dashboard", AdminDashboardSchema, opts.signal);
+}
+
+/** Payment health for a competition (order + recovery counts). Live: GET
+ *  /admin/competitions/{id}/payment-health. Overlapping buckets are not summed. */
+export async function getPaymentHealth(competitionId: string, opts: { signal?: AbortSignal } = {}): Promise<RequestState<PaymentHealth>> {
+  if (!isLive) return opsOff();
+  return httpGet(`/admin/competitions/${encodeURIComponent(competitionId)}/payment-health`, PaymentHealthSchema, opts.signal);
+}
+
+/** Orders that need review (NOT all orders). Live: GET
+ *  /admin/competitions/{id}/payment-reviews. */
+export async function listPaymentReviews(competitionId: string, opts: { signal?: AbortSignal } = {}): Promise<RequestState<Page<PaymentReview>>> {
+  if (!isLive) return opsOff();
+  const r = await httpList(`/admin/competitions/${encodeURIComponent(competitionId)}/payment-reviews?limit=50`, PaymentReviewSchema, opts.signal);
+  return r as RequestState<Page<PaymentReview>>;
 }
 
 /* ---- partner content CMS (LIVE, organizer) ---- */
