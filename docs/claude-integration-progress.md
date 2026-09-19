@@ -15,7 +15,7 @@
 | 3 공모·접수 운영 | ✅ 대체로(3-A✅ 3-B UI✅) | +`CompetitionForm/Editor`,`LaunchControl`,admin/competitions{,/new,/[id]} | 목록·편집 로드·**create 폼→생성→리다이렉트 실검증**·오픈제어 readiness 표시 | 정책편집(submission/payment/retention)·동의문·fields/uploads 상세 편집기·open은 readiness/결정 게이팅 | 결정 수신 후 정책·오픈 / 단계 4~ |
 | 4 결제·참가자 흐름 | 진행(4-A 착수) | `index.ts`(beginCheckout),`submit-flow.ts` | checkout 라우트 404 정상·draft payment-options=[] 확인·tsc/eslint 0 | 실 주문→checkout→PG 해피패스는 S3·PG 인프라·사업자 대기 | 홈 Apply 라이브화·mock 잔재 감사·confirm/reconcile |
 | 5 운영·보조 기능 | 미착수 | | | | |
-| 6 심사·발표·인증서 | 미착수 | | | | |
+| 6 심사·발표·인증서 | 진행(심사화면✅ 관리자 judges/rubric✅) | `ops.ts`(judge admin 어댑터),`admin/judges` | judges 목록·활성 표시·rubric set/get 200 실검증 | 배정 관리(제출 접수+S3 필요)·결과 발표·인증서 발급 미착수 | 결과 발표/인증서(엔트리·인프라 후) |
 | 7 공개 CMS·아카이브 | 진행(editorial✅) | +`index.ts`(listEditorialPublic),notices/page(dual-mode) | 관리자 생성/공개 → **공개 /notices 노출 실검증** | 홈 NewsUpdate·notices 상세·partner CMS·아카이브 미착수 | partner CMS / 아카이브 / 단계 5·6 |
 | 8 스테이징·장애 검증 | 진행(준비✅) | `.env.example`,`docs/staging-readiness.md` | 프로덕션 빌드(webpack) HEAD exit 0·env 완비·준비 체크리스트 | 실 DB/S3/PG/메일 검증·Docker 기동·부하는 계정·사업자 대기 | 계정 확보 후 실검증 |
 | 9 운영 인계 | 미착수 | | | | |

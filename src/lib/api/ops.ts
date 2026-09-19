@@ -37,6 +37,9 @@ import {
   JudgeAssignmentsSchema,
   JudgeReviewContextSchema,
   JudgeReviewMutationSchema,
+  JudgeAccountSchema,
+  JudgeAccountsSchema,
+  ReviewRubricDetailSchema,
 } from "@/contracts/judge";
 import { z } from "zod";
 import { isLive } from "./mode";
@@ -234,6 +237,45 @@ export async function transitionEditorial(
 ): Promise<RequestState<EditorialAdminItem>> {
   if (!isLive) return { kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 CMS를 지원하지 않습니다.", retryable: false };
   return httpSend("POST", `/admin/content/editorial/${encodeURIComponent(id)}/${action}`, EditorialAdminItemSchema, { body: input, signal: opts.signal });
+}
+
+/* ---- judge admin: accounts + review rubric (LIVE, organizer) ---- */
+
+export type JudgeAccount = z.infer<typeof JudgeAccountSchema>;
+export type ReviewRubricDetail = z.infer<typeof ReviewRubricDetailSchema>;
+const cmsOff = <T,>(): RequestState<T> => ({ kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 운영 API를 지원하지 않습니다.", retryable: false });
+
+/** Judge accounts (active/inactive, unfinished assignments). Live: GET /admin/judges. */
+export async function listJudges(opts: { signal?: AbortSignal } = {}): Promise<RequestState<JudgeAccount[]>> {
+  if (!isLive) return cmsOff();
+  const r = await httpGet("/admin/judges", JudgeAccountsSchema, opts.signal);
+  return r as RequestState<JudgeAccount[]>;
+}
+
+/** Activate/deactivate a judge. Live: PUT /admin/judges/{userId}. */
+export async function updateJudge(
+  userId: string, input: { expectedActive: boolean | null; active: boolean; reason: string }, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<JudgeAccount>> {
+  if (!isLive) return cmsOff();
+  return httpSend("PUT", `/admin/judges/${encodeURIComponent(userId)}`, JudgeAccountSchema, { body: input, signal: opts.signal });
+}
+
+/** Per-competition review rubric (criteria + max scores). Live: GET .../review-rubric. */
+export async function getReviewRubric(
+  competitionId: string, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<ReviewRubricDetail>> {
+  if (!isLive) return cmsOff();
+  return httpGet(`/admin/competitions/${encodeURIComponent(competitionId)}/review-rubric`, ReviewRubricDetailSchema, opts.signal);
+}
+
+/** Set the review rubric. Live: PUT .../review-rubric ({competitionRevision, rubric}). */
+export async function updateReviewRubric(
+  competitionId: string,
+  input: { competitionRevision: number; rubric: { version: string; criteria: { id: string; label: string; description: string; maxScore: number }[]; editableAfterSubmit: boolean } },
+  opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<ReviewRubricDetail>> {
+  if (!isLive) return cmsOff();
+  return httpSend("PUT", `/admin/competitions/${encodeURIComponent(competitionId)}/review-rubric`, ReviewRubricDetailSchema, { body: input, signal: opts.signal });
 }
 
 /* ---- competition registration / launch control (LIVE, organizer) ---- */
