@@ -171,3 +171,12 @@ pnpm dev
 - **환불 실행:** 결제 공급자 필요(로컬 GYCA_PAYMENT_PROVIDER=disabled) → 라이브 상태변경 미검증, 코덱스 refund 서버 테스트가 해피패스 커버. 엔드포인트 도달·게이팅은 확인.
 - **결과 발표·인증서·심사결정:** 심사 결정 PUT → 409 `ENTRY_LOCKED`(공모 단계·심사배정 완료 등 더 깊은 전제 필요) → 엔드포인트 도달·전제 게이팅 확인. 해피패스는 코덱스 result-publication/result-rounds/certificates 서버 테스트 커버.
 - **fixture 정리:** `gyca_submissions` 불변 트리거로 삭제 불가(의도된 evidence 무결성) → 시드 fixture는 격리 dev 데이터로 잔존. 시드 스크립트 `scripts/seed-late-payment-dev.mjs`(GYCA_DEV_SEED=1 + localhost 가드).
+
+### 4b 결과 파이프라인 상태변경 검증 (격리 fixture, 라이브 API) — 추가
+throwaway 공모(phase=judging, 마감 경과, retention 설정) + received 엔트리 시드 후 라이브 API로 검증:
+- **심사 결정(updateReviewDecision) — 상태변경 ✅:** completed+official_selection PUT → 200, 재조회 reviewStatus=completed·decision 반영(마감 경과+judging 단계 충족 시 ENTRY_LOCKED 해제).
+- **결과 발표(official_selection) — 상태변경 ✅:** POST results/publish → 200, round=official_selection·selectedCount=1·resultingRevision=2, 엔트리 publishedResult=official_selection.
+- **인증서 발급 — 미검증(500):** 최소 fixture의 빈 제출 스냅샷(`{}`)으로는 인증서 스냅샷 생성 불가 → 실 제출 파이프라인(스냅샷) 필요, 코덱스 certificates 서버 테스트가 해피패스 커버. 엔드포인트 도달은 확인.
+- **정리:** throwaway 공모는 공개 카드 노출 방지를 위해 published=false 처리. 시드 스크립트 `scripts/seed-results-dev.mjs`(GYCA_DEV_SEED=1 가드). submission 불변 트리거로 엔트리 완전 삭제는 불가(의도된 무결성).
+
+**4단계 상태변경 요약:** 공급자·실 스냅샷 불필요 mutation은 라이브 상태변경 검증 완료 — accept-late, requeue, **심사결정, 결과발표(official_selection)**. 미검증(외부 의존): 환불(공급자), 인증서 발급(실 스냅샷), finalist 라운드(official_selection 공개 후 결정 갱신 필요) — 모두 코덱스 서버 테스트 커버.
