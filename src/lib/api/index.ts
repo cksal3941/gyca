@@ -42,7 +42,7 @@ import {
   SelectPaymentRouteSchema,
   type PaymentOptions,
 } from "@/contracts/payment-options";
-import { PaymentOrderSchema, type PaymentOrder } from "@/contracts/payments";
+import { PaymentOrderSchema, PaymentCheckoutSessionSchema, type PaymentOrder } from "@/contracts/payments";
 import {
   SubmissionReadinessSchema,
   SubmissionResultSchema,
@@ -573,6 +573,25 @@ export async function getOrder(
   if (isLive) return httpGet(`/orders/${encodeURIComponent(orderId)}`, PaymentOrderSchema, opts.signal);
   if (opts.delayMs) await wait(opts.delayMs);
   return parseOne(PaymentOrderSchema, RAW_PAYMENT_ORDER);
+}
+
+/** Begin a hosted checkout for an order. Live: POST /orders/{id}/checkout with an
+ *  empty body → PaymentCheckoutSession (provider, test/live mode, and a redirect
+ *  launch URL). The caller redirects to `launch.url`; arriving back at a return
+ *  URL is NOT completion — poll getOrder / confirm on the server. Until a PG
+ *  provider is configured the server returns an error (e.g. PAYMENT_UNAVAILABLE),
+ *  which the UI shows as "결제창 준비 중" rather than faking success.
+ *  Mock: no real checkout — a live-only action. */
+export async function beginCheckout(
+  orderId: string,
+  opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<z.infer<typeof PaymentCheckoutSessionSchema>>> {
+  if (isLive)
+    return httpSend("POST", `/orders/${encodeURIComponent(orderId)}/checkout`, PaymentCheckoutSessionSchema, {
+      body: {},
+      signal: opts.signal,
+    });
+  return { kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 결제창을 지원하지 않습니다.", retryable: false };
 }
 
 /* ---- uploads (draft file lifecycle; the browser does the presigned transfer) ---- */

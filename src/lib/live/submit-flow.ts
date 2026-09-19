@@ -30,6 +30,7 @@ import {
   getEntryPaymentOptions,
   createEntryOrder,
   getOrder,
+  beginCheckout,
   getEntryDetail,
   newIdempotencyKey,
 } from "@/lib/api";
@@ -390,9 +391,28 @@ export function useLiveSubmitFlow({
       return;
     }
     orderIdRef.current = order.data.id;
-    // No PG redirect is wired yet; reflect the server order state and let the user
-    // re-check. A success URL would never be treated as completion regardless.
     dispatch({ type: "PAYMENT", state: mapPayment(order.data.state), amountMinor: order.data.money.amountMinor });
+    // If the order still needs payment, begin a hosted checkout and redirect to
+    // the provider. Arriving back at a return URL is NOT treated as completion —
+    // refreshPayment re-reads the server order. When no PG provider is configured
+    // the server errors; we surface an honest "결제창 준비 중" note and keep the
+    // order so the user can re-check, never faking success.
+    if (order.data.state === "pending") {
+      const checkout = await beginCheckout(order.data.id);
+      if (checkout.kind === "success") {
+        window.location.href = checkout.data.launch.url;
+        return;
+      }
+      dispatch({
+        type: "ERROR",
+        message:
+          checkout.kind === "error" && (checkout.code === "PAYMENT_UNAVAILABLE" || checkout.code === "NOT_CONNECTED")
+            ? "결제창이 아직 연결되지 않았습니다(PG 준비 중). 주문은 생성되었으며, 결제 연결 후 진행할 수 있습니다."
+            : checkout.kind === "error"
+              ? checkout.message
+              : "결제창을 여는 중 문제가 발생했습니다.",
+      });
+    }
   }, []);
 
   const refreshPayment = useCallback(async () => {
