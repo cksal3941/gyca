@@ -2,7 +2,17 @@
 
 검증일: 2026-09-19. 실행 환경: Windows, Node.js 24.15.0, 저장소에 설치된 의존성.
 
-## 최신 재검증: 파트너 CMS와 관계 확인 게이트 추가 후
+## 최신 재검증: 완료 프로젝트 아카이브·공모 카드 표시 정보
+
+2026-09-19 `node scripts/verify-backend.mjs` 실행 결과 **287개 테스트 통과, 실패/건너뜀 0**, 프로젝트 TypeScript 및 백엔드 ESLint 통과(exit 0). `pnpm.cmd build --webpack`도 성공(exit 0)했으며 새 Next.js API 라우트가 빌드 결과에 포함됐다.
+
+추가 테스트 18개는 migration 038·039, 초안 비노출, 발행 근거·pending payload 제거, 수정 후 비공개·재발행·보관, 권한·Origin·revision·동시 멱등 요청, 미디어 URL과 cursor 제한, 공모 카드 null 기본값과 미승인 도시 비노출, 운영 정책 불변·감사 이력을 검사한다. 아카이브 공개 조회는 실제 로컬 HTTP 서버도 거쳤다. 테스트 이름의 상세는 `tests/project-archive.test.mjs`, `tests/competition-presentation.test.mjs`를 참고한다.
+
+이 결과는 임시 PGlite 및 로컬 HTTP/빌드 검증이다. 실제 운영 DB에는 이번 migration을 적용하지 않았다. 프런트 화면 배선, 운영 PostgreSQL 동시성, S3·메일·PG 실서비스, 마감 부하·백업 복원 검증은 포함하지 않는다. 아래 이전 기록의 빌드 미수행 문구는 당시 범위이며 이번 빌드 결과와 구분한다.
+
+최종 [백엔드 검사 로그](verification-archive-presentation.log)를 보관했다. 재검토 중 카드 두 번째 저장의 INSERT 트리거 충돌을 회귀 테스트로 재현한 뒤, 최초 생성과 기존 행 수정을 구분해 수정했다. 새 코드 파일은 모두 200줄 이하이며 계약 검증·권한 경계·상태 전환·이력 저장을 자체 검토했다.
+
+## 이전 재검증: 파트너 CMS와 관계 확인 게이트 추가 후
 
 2026-09-19 `node scripts/verify-backend.mjs` 실행 결과 **269개 테스트 통과, 실패/건너뜀 0**, 프로젝트 TypeScript 및 서버 범위 ESLint 통과. 확인 전 파트너 비노출과 발행 차단, 증거 기반 관계 확인, 발행·수정·정렬·필터 cursor, 철회와 공개 제거, 운영 필드 비노출, 권한·Origin·revision·멱등성, 불변 이력과 DB 직접 변조 차단을 확인했다. migration 037과 기존 접수·결제·심사·개인정보 요청·공개 편집 콘텐츠 회귀 검증도 함께 통과했다.
 

@@ -16,6 +16,9 @@
 
 ## 문서
 
+- [2026-09-19 회고 결정과 후속 5단계](retrospective-decisions-2026-09-19.md) — Claude의 계약 대기 해소, 보호자·프로필 검증 경로와 남은 외부 작업.
+- [완료 프로젝트 아카이브](project-archive.md) — 출처·권리 근거 발행, 10종 섹션, 공개 프로젝트·Winners·Exhibitions API.
+- [공모 카드 표시 정보](competition-presentation.md) — 접수 정책과 분리한 summary/category/city/cover 편집과 공개 카드 목록.
 - [Claude 통합 인계](claude-handoff.md) — 이후 화면 연동 변경의 단일 진입 문서.
 - [공모전 등록·수정·공개 API](competition-admin-implementation.md) — 주최 측 등록·공개와 접수 활성화 분리, 화면 미연결.
 - [결제 경로의 주문 고정](routed-orders-implementation.md) — 선택 경로 검증·환불 안내 수락 증적·원자적 주문 생성.
