@@ -163,3 +163,11 @@ pnpm dev
   - **상태변경(발표 성공·인증서 발급·결정 반영):** received+심사완료 접수 파이프라인이 없어 미검증 — 코덱스 서버 테스트(result-publication/certificates)가 해피패스 커버. 실제 발급 PDF는 S3 작업자(5단계).
   - **실서비스:** 실 결과·인증서 발급은 5단계.
 - **4단계 요약:** 결제 mutation(4a) + 결과 발표·인증서·심사결정(4b) 화면·어댑터 완료. 상태변경 해피패스는 격리 파이프라인 시드/서버테스트 영역, 실 발급은 인프라 대기.
+
+### 4단계 상태변경 검증 (격리 fixture, 라이브 API) — 추가 완료
+지시서 요구("격리 접수·주문·심사 fixture로 성공/거절/중복 검증, 외부 계정 없이 로컬 검증 미루지 않음")에 따라 개발 DB에 격리 fixture를 시드해 **요청→상태변경→재조회**를 라이브 API로 검증(공급자 불필요 mutation).
+- **지연 승인(accept_late_payment) — 상태변경 ✅:** 마감 후 승인 주문 시드(order succeeded+needs_review, payment_events outcome=review, paidAt>마감) → payment-reviews에 `reviewReasons=[APPROVED_AFTER_DEADLINE]`·`allowedActions=[accept_late_payment]` → POST accept-late → **200 receipt_issued(접수번호 발급)**, **엔트리 status=received·received_at 기록**, 불변 감사기록(action=accept_late_payment), 목록에서 제거. **멱등**: 동일 actionId+본문 재요청 동일 결과.
+- **복구 재큐(requeue_recovery) — 상태변경 ✅:** stalled 복구 주문 시드 → `allowedActions=[requeue_recovery]` → POST requeue → **200 recovery_queued**, **복구 state stalled→pending·attempts 0 리셋**, 불변 감사기록.
+- **환불 실행:** 결제 공급자 필요(로컬 GYCA_PAYMENT_PROVIDER=disabled) → 라이브 상태변경 미검증, 코덱스 refund 서버 테스트가 해피패스 커버. 엔드포인트 도달·게이팅은 확인.
+- **결과 발표·인증서·심사결정:** 심사 결정 PUT → 409 `ENTRY_LOCKED`(공모 단계·심사배정 완료 등 더 깊은 전제 필요) → 엔드포인트 도달·전제 게이팅 확인. 해피패스는 코덱스 result-publication/result-rounds/certificates 서버 테스트 커버.
+- **fixture 정리:** `gyca_submissions` 불변 트리거로 삭제 불가(의도된 evidence 무결성) → 시드 fixture는 격리 dev 데이터로 잔존. 시드 스크립트 `scripts/seed-late-payment-dev.mjs`(GYCA_DEV_SEED=1 + localhost 가드).
