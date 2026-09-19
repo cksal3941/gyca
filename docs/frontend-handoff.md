@@ -1,6 +1,6 @@
 # 프런트엔드 인계 — Claude → Codex (통합 단일 진입 문서)
 
-최종 갱신: 2026-09-17. 프런트(화면·상태표시·mock)는 Claude, 서버·DB·인증·결제·PDF·권한은 Codex.
+최종 갱신: 2026-09-19. 프런트(화면·상태표시·mock)는 Claude, 서버·DB·인증·결제·PDF·권한은 Codex.
 **현재 접수/결제/관리자/심사 관련 실 연결은 0** — better-auth 로그인/세션만 실제. 나머지는 mock 어댑터.
 상세 계약 제안: [submit-flow-contract-proposal.md](./submit-flow-contract-proposal.md),
 [admin-judge-contract-proposal.md](./admin-judge-contract-proposal.md),
@@ -20,9 +20,18 @@
 | `listMyEntries` | GET `/entries?limit=50` (EntrySummary) | ✅ 연결 |
 | `getEntryDetail` | GET `/entries/{id}` (EntryDetail) | ✅ 연결 — 마이페이지 접수 상세를 async 서버컴포넌트로. 미존재/미소유=404→notFound() |
 | `getEntryAssets` | GET `/entries/{id}/submission` (SubmissionRecord) | ✅ 연결 — **frozen 스냅샷의 assets만**(전부 accepted→`ready` Asset으로 매핑). 초안=스냅샷 없음(404→파일 없음, 오류 아님) |
-| `getCompetitionBySlug` | GET `/competitions/{slug}` (Competition) | ✅ 연결 — Leipzig 2027 상세 페이지 async. Apply CTA는 `allowedActions`(start_entry)로만 게이트. 미공개/미존재=404→"준비 중". (**ApplyCta 홈 프리뷰·mypage categoryLabel은 아직 mock — §5**) |
+| `getCompetitionBySlug` | GET `/competitions/{slug}` (Competition) | ✅ 연결 — Leipzig 2027 상세 페이지 async. Apply CTA는 `allowedActions`(start_entry)로만 게이트. 미공개/미존재=404→"준비 중". (홈 프리뷰 ApplyCta는 아직 mock — §5) |
 | `getAdminAccess` | GET `/admin/access` (AdminAccess) | ✅ 연결(`ops.ts`) — organizer 플래그 + 공모별 결제권한(viewer/operator). 관리자 surface 게이트. mock=organizer·권한 없음. **화면 배선(관리자 페이지가 이 게이트로 접근제어)은 목록 연결 시 함께 — 목록 갭 때문에 보류(§3)** |
-| `listAdminEntries` | GET `/admin/competitions/{id}/entries` | ⏸ **보류(mock 유지)** — 실 `AdminEntry` 계약 갭 때문(§3). 지어내지 않으려면 UI 축소 필요 → 사용자 결정으로 access만 먼저 연결하고 목록은 계약 확장 대기 |
+| `listAdminEntries` | GET `/admin/competitions/{id}/entries` | 🟡 **서버 계약 확장 완료, 어댑터/UI 전환 필요** — review/result/file/certificate/total 및 결제·결과 필터·정렬 제공. 실 payment shape와 불투명 cursor에 맞춰 mock offset 로직을 교체해야 함 |
+| `getAdminEntry` | GET `/admin/competitions/{competitionId}/entries/{entryId}` (AdminEntryDetail) | 🟡 **서버 구현 완료, 어댑터/UI 전환 필요** — 참가자·작품·파일·보호자 확인 상태·동의 요약·인증서·감사 이력. 제출 건은 동결 스냅샷이며 전문 동의/보호자 증적은 별도 API |
+| payment reviews | GET `/admin/competitions/{competitionId}/payment-reviews`, GET `/payments/{orderId}` | 🟡 `PaymentReview.reviewReasons[]`·`reviewedAt` 추가. `allowedActions=accept_late_payment`일 때만 마감 후 정상 승인 접수 확정 POST를 표시하고 `expectedReviewedAt`에 조회값 전달. 다른 사유의 승인/환불 버튼은 만들지 않음 |
+| refunds | GET/POST `/admin/competitions/{competitionId}/payments/{orderId}/refunds` | 🟡 서버 구현 완료. GET `RefundOverview.allowedActions`에 `request_refund`가 있을 때만 금액·사유 입력을 열고 POST `{actionId,amountMinor,reason}`. pending은 완료로 표시하지 않음. 참가자 `OrderSummary.refundSummary`도 실제 원장 집계 |
+| launch readiness/open | GET `/admin/competitions/{id}/launch-readiness`, POST `/launch-verifications`, POST `/open-applications` | 🟡 모든 check가 configured이고 `allowedActions=open_applications`일 때만 오픈 버튼. 검증 등록은 현재 revision·유효기간·내부 증거 참조 필요. open은 draft/payment를 함께 활성화. 현재 외부 계정이 없어 실제 환경에서는 계속 비활성 |
+| entry CSV export | POST `/admin/competitions/{id}/entries/export` | 🟡 서버 구현 완료. 현재 목록의 q/entryStatus/paymentState/publishedResult/sort를 JSON body로 전달. 성공은 봉투 없는 CSV이므로 `Blob` 다운로드, 오류만 `{error,meta}` JSON. 브라우저에서 CSV를 다시 만들지 않음. 최대 1만 행·20 MiB, 응답 헤더에 export ID/행 수 |
+| admin dashboard | GET `/admin/dashboard?limit=20&cursor=` | 🟡 서버 구현 완료. 총 계정, 접수 경험 계정의 최신 거주국 분포, 공모별 접수/결제/심사/결과 집계. `succeededAmountMinor`는 환불 전 총승인액이며 순매출 아님. 기관 수는 검증된 기관 모델이 없어 제공하지 않음. 응답의 `measuredAt`과 공모 cursor 사용 |
+| privacy requests | GET/POST `/privacy/requests`, POST `/{id}/cancel`; admin GET `/admin/privacy-requests`, POST `/{id}/review` | 🟡 요청·철회·운영 검토 서버 구현. 참가자는 `submitted`일 때만 취소 가능. 관리자는 allowedActions에 따라 검토/보관보류/재검토/실행승인. `approved_for_execution`은 삭제 완료가 아니며 completed UI 금지 |
+| editorial CMS | public GET `/content/editorial`, `/{slug}`; admin GET/POST/PATCH `/admin/content/editorial...`, POST publish/archive | 🟡 공지·일정·FAQ·News·Press 서버 구현. 공개 API는 published만 최신 발행순 반환. 정적 `NOTICES`를 교체할 때 body는 일반 텍스트로 렌더링하고 HTML 직접 삽입 금지. 상태 버튼은 allowedActions 사용. Exhibition/Archive 등은 아직 별도 계약 대기 |
+| partner CMS | public GET `/content/partners`, `/{slug}`; admin GET/POST/PATCH `/admin/content/partners...`, POST confirm/publish/archive/revoke | 🟡 confirmed + published만 공개. pending 기관은 공식 파트너로 표시 금지. 확인·철회는 증거 참조와 사유가 필요한 관리자 작업이며 버튼은 allowedActions 사용. revoke 성공 후 archived로 바뀌고 공개 API에서 제거됨. 정적 PartnerMarquee 교체와 관리자 화면 연결 필요 |
 | `createEntry` | POST `/entries` (EntryDetail, 201) | ✅ 어댑터 연결 — Idempotency-Key 필수(같은 키+body=원결과, 재시도 중복생성 방지). mock=draft 픽스처. **UI 소비자 아직 없음**(접수 6단계는 mock 상태머신 `useSubmitFlow` — 실 배선은 제출 UI 재작성 시) |
 | `updateEntry` | PATCH `/entries/{id}` (EntryDetail) | ✅ 어댑터 연결 — participant/work/guardian 초안만 저장(서버가 status/price/owner 불변). 저장 실패=오류 유지("저장됨" 금지). mock=현재 draft 반영. **UI 소비자 아직 없음** |
 | `getSubmissionReadiness` | GET `/entries/{id}/submission-readiness?locale=` (SubmissionReadiness) | ✅ 어댑터 연결 — 제출 게이트(allowedActions=submit)+policyToken+3동의문서. mock=필수3종+placeholder token. **UI 소비자 아직 없음** |
@@ -34,19 +43,19 @@
 | `createUpload` | POST `/entries/{id}/uploads` (UploadSession, 201) | ✅ 어댑터 연결 — Idempotency-Key 필수, body=UploadRequest(revision+purpose+filename+sizeBytes+mediaType). 응답=asset+새 revision+presigned target+만료. **응답만으로 저장/검증 완료 아님**. mock=target 없는 세션 |
 | `completeUpload` | POST `/entries/{id}/uploads/{assetId}/complete` (Asset) | ✅ 어댑터 연결 — 전송완료 통보. 검증은 큐잉(state=validating일 수 있음), **ready는 서버가 결정**. mock=validating asset |
 | `removeUpload` | DELETE `/entries/{id}/uploads/{assetId}` ({revision}) | ✅ 어댑터 연결 — body=현재 revision, 응답=새 revision. 고정된 제출 파일은 제거 불가(서버 강제). mock=next revision |
-| download/certificates | POST `/certificates/{id}/download`, GET `/entries/{id}/certificates` | ❌ **서버 라우트 미구현** → 연결 불가(NOT_CONNECTED, `listMyCertificates`와 동일). Codex 라우트 추가 필요 |
+| download/certificates | POST `/certificates/{id}/download`, GET `/entries/{id}/certificates` | 🟡 **서버 라우트 구현** — 본인 발급 완료 건만 조회/60초 URL 제공. 화면의 `href="#"` 다운로드 동작 연결 필요 |
 | httpSend 테스트 | — | ✅ `tests/frontend-api-http.test.mjs` 11개(기존 9 + POST body·Idempotency-Key 검증 + PATCH 키 생략·오류매핑). 제출 mock 픽스처 3종은 상대import 임시스크립트로 계약 refinement 통과 확인 |
-| `listMyOrders` | GET `/orders?limit=50` (OrderSummary로 검증) | ⚠️ 연결하되 **item 스키마 미확정**(서버가 PaymentOrder면 VALIDATION_FAILED로 표면화) → Codex 확인 필요 |
-| `listMyCertificates` | (없음) | ❌ **GET /certificates(mine) 엔드포인트 없음** → 라이브에서 `NOT_CONNECTED`. Codex에 신규 요청 |
+| `listMyOrders` | GET `/orders?limit=50` (OrderSummary) | ✅ 서버 계약 확정 — 동결 공모명·작품명, entry_fee, 금액·상태·생성시각, 현재 refundSummary=null. 단건 `/orders/{id}`는 PaymentOrder로 별도 |
+| `listMyCertificates` | GET `/certificates?limit=50` | ✅ 라이브 어댑터 연결. 발급 완료 건만 반환하며 pending은 목록에 나오지 않음 |
 
 **Codex 확인/보완 필요(계약 차이)**
-1. `/orders` 목록 item = OrderSummary인지 PaymentOrder인지 확정(UI는 OrderSummary 필요).
-2. **GET /certificates (mine)** 신규 — 마이페이지 인증서 탭 집계용(현재 서버는 entry별만).
-3. **관리자 접수 목록(GET `/admin/competitions/{id}/entries`) 계약 갭** — 실 `AdminEntrySchema`는 이제 `workTitle/category/ageGroup` 포함(Codex 반영됨). 그러나 **여전히 없음: `reviewStatus`·`publishedResult`·`fileState`·`certificateIssued`**(mock UI가 렌더하는 4개 컬럼). 또한 **응답에 `total`(총건수) 없음**(cursor 페이지네이션만). **쿼리는 `q`(검색)+`entryStatus`+`cursor`+`limit`만 지원** — mock UI의 **결제 필터·결과 필터·정렬(created/name)** 서버 미지원. payment 형태도 다름(실=`{id,state,money,needsReview,liveMode}`, mock=`{state,amountMinor,needsReview}`). → **결정: 지어내지 않기 위해 `getAdminAccess`만 실 연결하고 목록은 mock 유지.** 목록 실 연결하려면 Codex가 위 4개 컬럼 + total + (결제/결과 필터·정렬)을 계약에 추가하거나, 없으면 UI를 축소(컬럼/필터 숨김)해야 함. `admin/entries/[id]` 상세(`getAdminEntrySync`)도 동일 이유로 mock.
-4. ~~초안 assets 조회 경로 없음~~ **해소**: `GET /entries/{id}/uploads`가 초안 파일 목록(Asset[], 검증상태 포함)을 반환함(`listEntryUploads`로 연결). `GET /entries/{id}`(EntryDetail)엔 여전히 assets 미포함이고 제출 스냅샷은 `/submission`이지만, 초안 파일은 uploads 목록으로 조회 가능. 상세 화면은 아직 `getEntryAssets`(제출 스냅샷)만 쓰므로, 초안 파일 표시가 필요하면 `listEntryUploads`로 전환.
-5. **상세 화면 공모명·부문 라벨은 아직 mock**: `competitionTitleById`(entry-view)·`categoryLabel`(mypage 상세)·`ApplyCta`(홈 프리뷰)가 mock 공모 픽스처(`getCompetitionSync`) 기반 → live에서 실제 competitionId는 "—", 부문 라벨은 id 그대로. GET `/competitions/{slug}`는 slug 조회라 마이페이지(competitionId만 보유)에서 직접 못 씀 → id→공모 조회 경로(또는 EntrySummary에 공모 타이틀 포함)가 있으면 해소. Leipzig 상세 페이지는 slug로 연결 완료.
+1. ~~`/orders` 목록 item 계약~~ **해소**: 목록은 OrderSummary, 단건은 PaymentOrder.
+2. ~~GET /certificates (mine)~~ **해소**. 다운로드 버튼은 POST 응답 URL을 즉시 열도록 UI 연결 필요.
+3. **관리자 접수 목록·상세·CSV 서버 갭 해소** — 목록은 reviewStatus/publishedResult/fileState/certificateIssued/total, paymentState·publishedResult 필터, created/name 정렬을 제공한다. 상세 GET은 참가자·작품·파일·보호자 상태·동의 요약·인증서·감사 이력을 제공한다. CSV POST는 같은 목록 조건으로 서버가 생성하며 개인정보가 포함된다. 남은 프런트 작업은 competitionId 선택/전달, 실 payment `{id,state,money,needsReview,liveMode}` 매핑, offset 숫자 대신 서버 nextCursor 사용, `getAdminEntry` mock 교체와 `requestCsvExport`의 Blob 다운로드 전환이다.
+4. ~~초안 assets 조회 경로 없음~~ **해소 + 배선 완료**: `GET /entries/{id}/uploads`가 초안 파일 목록(Asset[], 검증상태 포함)을 반환(`listEntryUploads`). 마이페이지 상세(`mypage/entries/[id]`)는 이제 **제출/접수 건=frozen 스냅샷(`getEntryAssets`), 그 외(초안 등)=`listEntryUploads`**로 파일 표시(제목도 초안=업로드 파일 / 제출·접수=제출 파일). live에서 초안도 파일이 보임(mock은 두 경로 모두 같은 픽스처라 동일).
+5. **마이페이지 표시 계약 서버 해소, UI 소비 필요**: `EntrySummary`/`EntryDetail`에 `competitionTitle`, `workTitle`, `categoryLabel`이 추가됐다. 정상 제출 건은 immutable submission snapshot의 공모명·작품명·부문 라벨을, 초안과 snapshot 없는 legacy 건은 현재 공모/작품 값을 반환한다. live 마이페이지에서 `competitionTitleById`, `getEntryWorkTitle`, 로컬 `categoryLabel` 대신 이 필드를 직접 사용한다. 남은 mock 의존은 홈 프리뷰 `ApplyCta`다.
 
-**다음 연결 순서**: ~~본인 접수 상세 GET `/entries/{id}` + 제출기록 `/entries/{id}/submission`~~ ✅ · ~~공모 조회·Apply(GET `/competitions/{slug}`)~~ ✅ · ~~관리자 access(GET `/admin/access`)~~ ✅ · ~~쓰기 초안 생명주기(POST `/entries`, PATCH `/entries/{id}`)~~ ✅ · ~~제출(GET submission-readiness + POST submit)~~ ✅ · ~~결제 읽기/생성/폴링(GET payment-options, POST orders, GET orders/{id})~~ ✅ · ~~업로드(GET/POST uploads, complete, DELETE)~~ ✅ · ~~제출 6단계 UI 실 어댑터 배선(dual-mode)~~ ✅. **남은 것**: order confirm/reconcile(PG 콜백 paymentKey 필요·PG 미선정→보류), download/certificates(서버 라우트 미구현→Codex 대기), **live E2E 검증(DB·S3·PG 인프라 필요)**.
+**다음 연결 순서**: ~~본인 접수 상세 GET `/entries/{id}` + 제출기록 `/entries/{id}/submission`~~ ✅ · ~~공모 조회·Apply(GET `/competitions/{slug}`)~~ ✅ · ~~관리자 access(GET `/admin/access`)~~ ✅ · ~~쓰기 초안 생명주기(POST `/entries`, PATCH `/entries/{id}`)~~ ✅ · ~~제출(GET submission-readiness + POST submit)~~ ✅ · ~~결제 읽기/생성/폴링(GET payment-options, POST orders, GET orders/{id})~~ ✅ · ~~업로드(GET/POST uploads, complete, DELETE)~~ ✅ · ~~제출 6단계 UI 실 어댑터 배선(dual-mode)~~ ✅ · ~~인증서 목록 live adapter~~ ✅ · ~~관리자 목록·상세 서버 계약~~ ✅. **남은 것**: 인증서 다운로드 버튼, 관리자 목록/상세 live adapter와 cursor 전환, order confirm/reconcile(PG 콜백 paymentKey 필요·PG 미선정→보류), **live E2E 검증(DB·S3·PG 인프라 필요)**.
 
 ## 0-B. 제출 6단계 UI 실 연결 (dual-mode, 2026-09-18)
 
@@ -56,6 +65,38 @@
 - **경계 준수**: 저장 실패=오류(“저장됨” 금지), ready/pageCount/결제/received는 서버 사실, 성공 URL≠완료, 민감데이터 localStorage 금지, 초안은 서버에 남아 재시도 시 유실 없음.
 - **`UploadField.onSelect`**를 `(file: File)`로 변경(실 바이트 필요) — mock은 name/size만 사용, 무해.
 - **⚠️ 미검증**: 라이브 경로는 tsc·eslint·mock 회귀만 확인. **실 E2E는 DB·S3(presigned)·PG 인프라 필요** → 붙은 뒤 검증. **결제는 PG 미선정이라 실 결제창 없음**(주문 생성 후 폴링만).
+
+---
+
+## 0-C. 라이브 QA 수정 + 심사·관리자 배선 (2026-09-19)
+
+로컬 라이브 환경(PGlite 소켓 서버 + `NEXT_PUBLIC_API_MODE=live` + seed 공모)에서 브라우저 QA로 검증하며 수정. 브랜치 `frontend/live-api-wiring`에 커밋·푸시(6개: `03168b4`,`3b2a8e9`,`39958c2`,`059b78c`,`c08ba93` 등).
+
+### 1) 변경 파일 → 연결한 실제 API
+- **SSR 어댑터 미동작 수정(핵심):** async 서버 컴포넌트가 `/api/v1`(상대 URL+same-origin 쿠키) 어댑터를 호출하면 SSR서 실패(상대 URL 파싱 불가+쿠키 미전달). 클라이언트 전환으로 해결:
+  - `contests/leipzig-2027/page.tsx` → Apply CTA를 클라 `components/site/LeipzigApplyButton.tsx`로 추출(`getCompetitionBySlug`+`canStartEntry`). 페이지는 서버 유지.
+  - `mypage/entries/[id]/page.tsx` → 얇은 서버 셸 + 클라 `components/mypage/EntryDetailView.tsx`(`getEntryDetail`+assets).
+  - `mypage/entries/[id]/payment/page.tsx` → 얇은 셸 + `PaymentConfirm.tsx`가 `getEntryDetail` 클라 fetch(mock `getEntryByIdSync` 제거). live start_payment는 PG 미연결 정직 안내.
+- **§0-A #5 공모명 해소:** 신규 `listCompetitions()`(GET /competitions) → 마이페이지·접수상세가 competitionId→title 맵으로 표시(이전 "—").
+- **제출 파일 다운로드(§3.7):** 신규 `downloadSubmissionAsset()` → POST `/entries/{id}/submission/assets/{assetId}/download`(SubmissionDownloadSchema, 60초 URL). 접수상세 제출 파일에 다운로드 버튼(매 클릭 새 URL, 미캐시).
+- **심사(judge) 배선:** `listJudgeAssignments`→GET /judge/assignments, `getReviewContext`(신규)→GET /judge/reviews/{id}, `saveReviewDraft`→PUT .../draft, `submitReview`→POST .../submit(둘 다 {expectedRevision,draft}, revision 낙관적잠금). `ReviewEditor` async 전환, 리뷰 페이지 얇은 셸. `http.ts` PUT 허용.
+- **관리자 접수 목록 배선:** 신규 `listAdminCompetitions`→GET /admin/competitions, `listAdminEntries` live→GET /admin/competitions/{id}/entries(AdminEntry 1:1 매핑, q/entryStatus/paymentState/publishedResult/sort/cursor/limit). 관리자 페이지: 공모 선택+커서 스택 페이지네이션(mock/live 겸용).
+- 접수 페이지 인트로 문구 live/mock 분기, 개인정보 탭 "준비 중"+비활성, 각 화면 dev 시나리오 바 live 숨김.
+
+### 2) mock로 남은 구간(사유)
+- **관리자 상세**(`/admin/entries/[id]`) — 계약 `AdminEntryDetailSchema` shape 불일치(audit/allowedActions/guardianVerification 구조 상이)로 화면 재설계 필요 + 전면 organizer-gated 검증불가 + `admin-entry-detail.ts` tsc 타입에러(Codex). **보류.**
+- **관리자 일괄 발표/인증서 + CSV** — 서버 라우트는 있으나 프런트 미배선 → live서 비활성("준비 중"), mock 동작.
+- **결제창(PG)** — 미선정. 주문 생성·폴링만.
+
+### 3) 검증
+- tsc(비-server) 0·eslint 0(각 변경 파일). 백엔드 테스트 스위트 239 pass.
+- 라이브 실검증: 회원가입/로그인, 공모조회, 접수 생성·수정, 마이페이지 목록·상세, submission-readiness, 다운로드 엔드포인트 에러매핑, judge/admin 비권한 403 우아처리·리뷰 not-found.
+- **미검증(사유):** 업로드→제출→주문/채점 해피패스(S3·PG 인프라), organizer 해피패스(권한 게이트).
+
+### 4) Codex가 봐야 할 항목
+- `src/contracts/admin-entry-detail.ts` — `AdminEntrySchema.unwrap().extend(...)` tsc 타입에러(런타임 정상). 수정되면 관리자 상세 배선 가능.
+- 관리자 상세/일괄/CSV live 배선은 organizer 계정·검증 환경 붙은 뒤 진행.
+- **공유 파일 미커밋 의존성:** 프런트 브랜치가 `src/contracts/**`,`src/lib/api/mode.ts`,`src/lib/entry-view.ts`,mock fixtures 등에 의존. master 병합 시 함께 올려야 빌드됨(병합 순서 조율).
 
 ---
 
