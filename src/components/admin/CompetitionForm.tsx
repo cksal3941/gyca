@@ -25,6 +25,9 @@ type Cat = { id: string; en: string; ko: string };
 type Age = { id: string; en: string; ko: string; min: string; max: string };
 type Fld = { path: string; inputType: string; required: Req };
 type Upl = { purpose: string; required: Req; media: string; maxFiles: string; maxBytes: string; minPages: string };
+type KdKind = "tbd" | "date" | "date_range" | "instant";
+type Kd = { id: string; en: string; ko: string; timezone: string; kind: KdKind; date: string; startsOn: string; endsOn: string; at: string };
+const KD_KIND_LABEL: Record<KdKind, string> = { tbd: "미정", date: "날짜", date_range: "기간", instant: "시각" };
 
 // ISO (UTC) → value for <input type="datetime-local">, in the browser's local tz.
 function toLocalInput(iso: string | null): string {
@@ -70,6 +73,19 @@ export default function CompetitionForm({
       id: a.id, en: a.label.en, ko: a.label.ko, min: String(a.minAgeInclusive), max: String(a.maxAgeInclusive),
     })),
   );
+  const [keyDates, setKeyDates] = useState<Kd[]>(
+    (content?.keyDates ?? []).map((k) => {
+      const v = k.value;
+      return {
+        id: k.id, en: k.label.en, ko: k.label.ko, timezone: k.timezone,
+        kind: (v?.kind ?? "tbd") as KdKind,
+        date: v?.kind === "date" ? v.date : "",
+        startsOn: v?.kind === "date_range" ? v.startsOn : "",
+        endsOn: v?.kind === "date_range" ? v.endsOn : "",
+        at: v?.kind === "instant" ? toLocalInput(v.at) : "",
+      };
+    }),
+  );
   const [fields, setFields] = useState<Fld[]>(
     (spec?.fields ?? []).map((f) => ({ path: f.path, inputType: f.inputType, required: toReq(f.requiredOnSubmit) })),
   );
@@ -93,7 +109,14 @@ export default function CompetitionForm({
         title: { en: titleEn.trim(), ko: titleKo.trim() },
         fee: feeMinor.trim() === "" ? null : { amountMinor: Number(feeMinor), currency: "EUR" },
         timezone: timezone.trim(),
-        keyDates: content?.keyDates ?? [],
+        keyDates: keyDates.map((k) => ({
+          id: k.id.trim(), label: { en: k.en.trim(), ko: k.ko.trim() }, timezone: k.timezone.trim(),
+          value:
+            k.kind === "date" ? { kind: "date", date: k.date }
+            : k.kind === "date_range" ? { kind: "date_range", startsOn: k.startsOn, endsOn: k.endsOn }
+            : k.kind === "instant" ? { kind: "instant", at: toIso(k.at) }
+            : null,
+        })),
         formSpec: {
           version: spec?.version ?? "v1",
           ageReferenceDate: spec?.ageReferenceDate ?? null,
@@ -209,6 +232,51 @@ export default function CompetitionForm({
           <span className={label}>공개(published)</span>
           <span className="text-[15px] text-ink-strong/70">— 공개는 노출일 뿐, 실제 접수 오픈은 아래 오픈 제어에서 별도입니다.</span>
         </label>
+      </div>
+
+      {/* 일정표 (keyDates) — 공개 상세에 노출되는 주요 일정 */}
+      <div className="mt-6 rounded-2xl border border-line bg-white p-6">
+        <div className="flex items-center justify-between">
+          <h3 className="font-title text-[18px] font-bold text-ink-strong">일정표</h3>
+          <Button size="sm" variant="outline" onClick={() => setKeyDates((k) => [...k, { id: "", en: "", ko: "", timezone: timezone.trim() || "Europe/Berlin", kind: "tbd", date: "", startsOn: "", endsOn: "", at: "" }])}>일정 추가</Button>
+        </div>
+        <p className="mt-2 text-[15px] text-ink-strong/70">공개 상세 페이지의 일정 안내입니다. 확정 전 항목은 “미정”으로 두면 “준비 중”으로 표시됩니다. 날짜/기간은 위 공모 시간대 기준으로 표시됩니다.</p>
+        {keyDates.length === 0 && <p className="mt-3 text-[16px] text-ink-strong/70">등록된 일정이 없습니다.</p>}
+        <div className="mt-3 flex flex-col gap-4">
+          {keyDates.map((k, i) => (
+            <div key={i} className="rounded-xl border border-line bg-surface p-3">
+              <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+                <input className={field} value={k.en} placeholder="일정명 EN (예: Submission opens)" onChange={(e) => setKeyDates((v) => v.map((x, j) => j === i ? { ...x, en: e.target.value } : x))} />
+                <input className={field} value={k.ko} placeholder="일정명 KO (예: 접수 시작)" onChange={(e) => setKeyDates((v) => v.map((x, j) => j === i ? { ...x, ko: e.target.value } : x))} />
+                <Button size="sm" variant="ghost" onClick={() => setKeyDates((v) => v.filter((_, j) => j !== i))}>삭제</Button>
+              </div>
+              <div className="mt-2 grid gap-2 sm:grid-cols-[minmax(0,9rem)_1fr_minmax(0,12rem)]">
+                <Select value={k.kind} onChange={(e) => setKeyDates((v) => v.map((x, j) => j === i ? { ...x, kind: e.target.value as KdKind } : x))}>
+                  {(Object.keys(KD_KIND_LABEL) as KdKind[]).map((kk) => <option key={kk} value={kk}>{KD_KIND_LABEL[kk]}</option>)}
+                </Select>
+                <div>
+                  {k.kind === "date" && (
+                    <input className={field} type="date" value={k.date} onChange={(e) => setKeyDates((v) => v.map((x, j) => j === i ? { ...x, date: e.target.value } : x))} />
+                  )}
+                  {k.kind === "date_range" && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <input className={field} type="date" value={k.startsOn} onChange={(e) => setKeyDates((v) => v.map((x, j) => j === i ? { ...x, startsOn: e.target.value } : x))} />
+                      <input className={field} type="date" value={k.endsOn} onChange={(e) => setKeyDates((v) => v.map((x, j) => j === i ? { ...x, endsOn: e.target.value } : x))} />
+                    </div>
+                  )}
+                  {k.kind === "instant" && (
+                    <input className={field} type="datetime-local" value={k.at} onChange={(e) => setKeyDates((v) => v.map((x, j) => j === i ? { ...x, at: e.target.value } : x))} />
+                  )}
+                  {k.kind === "tbd" && <span className="text-[15px] text-ink-strong/70">날짜 미정 (준비 중으로 표시)</span>}
+                </div>
+                <input className={field} value={k.timezone} placeholder="시간대 (IANA)" onChange={(e) => setKeyDates((v) => v.map((x, j) => j === i ? { ...x, timezone: e.target.value } : x))} />
+              </div>
+              <div className="mt-2">
+                <input className={field} value={k.id} placeholder="id (예: submission_opens)" onChange={(e) => setKeyDates((v) => v.map((x, j) => j === i ? { ...x, id: e.target.value } : x))} />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* 부문 (categories) */}
