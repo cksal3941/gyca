@@ -54,7 +54,7 @@ export default function NoticesPage() {
       if (r.kind === "success") {
         setItems(r.data.items.map((e) => ({
           key: e.id, catKey: e.category, title: e.content.title, body: e.content.body,
-          date: e.content.displayDate, href: null, // detail route not wired for live yet
+          date: e.content.displayDate, href: `/notices/${e.slug}`,
         })));
       }
       setLoading(false);

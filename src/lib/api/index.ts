@@ -437,6 +437,17 @@ export async function listEditorialPublic(
   return { kind: "success", data: { items: [], nextCursor: null } };
 }
 
+/** One published editorial item by slug. Live: GET /content/editorial/{slug}
+ *  (published only; unknown → NOT_FOUND). Mock: not available (public pages use
+ *  their static preview). */
+export async function getEditorialPublic(
+  slug: string,
+  opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<z.infer<typeof EditorialPublicItemSchema>>> {
+  if (isLive) return httpGet(`/content/editorial/${encodeURIComponent(slug)}`, EditorialPublicItemSchema, opts.signal);
+  return { kind: "error", code: "NOT_FOUND", message: "미리보기에서는 지원하지 않습니다.", retryable: false };
+}
+
 export async function listMyEntries(
   scenario: ListScenario = "some",
   opts: { delayMs?: number; signal?: AbortSignal } = {},
