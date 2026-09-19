@@ -17,8 +17,13 @@
 import type { RequestState } from "./index";
 import type { EntryStatus, ReviewStatus, PublishedResult, PaymentState } from "@/contracts";
 import { AdminAccessSchema, type AdminAccess } from "@/contracts/admin-access";
+import {
+  JudgeAssignmentsSchema,
+  JudgeReviewContextSchema,
+  JudgeReviewMutationSchema,
+} from "@/contracts/judge";
 import { isLive } from "./mode";
-import { httpGet } from "./http";
+import { httpGet, httpSend } from "./http";
 
 const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
@@ -309,8 +314,16 @@ const JUDGE_ASSIGNMENTS: JudgeAssignment[] = [
 ];
 
 export async function listJudgeAssignments(
-  opts: { scenario?: JudgeScenario; delayMs?: number } = {},
+  opts: { scenario?: JudgeScenario; delayMs?: number; signal?: AbortSignal } = {},
 ): Promise<RequestState<JudgeAssignment[]>> {
+  // Live: GET /judge/assignments — a bare array (blind: code + facets + state, no
+  // participant identity). An empty array becomes `empty` so the screen shows the
+  // "no assignments" view. Access is enforced by the server (401/403).
+  if (isLive) {
+    const r = await httpGet("/judge/assignments", JudgeAssignmentsSchema, opts.signal);
+    if (r.kind !== "success") return r;
+    return r.data.length === 0 ? { kind: "empty" } : { kind: "success", data: [...r.data] };
+  }
   if (opts.delayMs) await wait(opts.delayMs);
   if (opts.scenario === "forbidden")
     return { kind: "error", code: "FORBIDDEN", message: "배정된 심사가 없거나 접근 권한이 없습니다.", retryable: false };
@@ -338,7 +351,9 @@ export type ReviewContext = {
   submitted: boolean;
   editableAfterSubmit: boolean;
   revision: number;
-  pdf: { blindedName: string; url: string };
+  // The blinded PDF is null until the server has prepared it (see blockingReasons).
+  pdf: { blindedName: string; url: string; expiresAt?: string } | null;
+  blockingReasons: "BLINDED_FILE_NOT_READY"[];
 };
 
 export function getReviewContextSync(reviewId: string): RequestState<ReviewContext> {
@@ -363,31 +378,81 @@ export function getReviewContextSync(reviewId: string): RequestState<ReviewConte
       revision: 3,
       // Blinded filename — the server strips identifying info (see proposal doc).
       pdf: { blindedName: `${a.code}.pdf`, url: "#" },
+      blockingReasons: [],
     },
   };
+}
+
+/** Live-capable blind review context. Live: GET /judge/reviews/{id}
+ *  (JudgeReviewContext — assignment, rubric, saved draft, revision, blinded PDF
+ *  or a BLINDED_FILE_NOT_READY block). Access is enforced by the server; an
+ *  unassigned/unknown id resolves to a NOT_FOUND/FORBIDDEN error. Mock: fixture. */
+export async function getReviewContext(
+  reviewId: string,
+  opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<ReviewContext>> {
+  if (isLive) {
+    const r = await httpGet(`/judge/reviews/${encodeURIComponent(reviewId)}`, JudgeReviewContextSchema, opts.signal);
+    if (r.kind !== "success") return r;
+    const d = r.data;
+    return {
+      kind: "success",
+      data: {
+        assignment: { ...d.assignment },
+        rubric: d.rubric.map((c) => ({ ...c })),
+        draft: { scores: { ...d.draft.scores }, comment: d.draft.comment },
+        submitted: d.submitted,
+        editableAfterSubmit: d.editableAfterSubmit,
+        revision: d.revision,
+        pdf: d.pdf ? { blindedName: d.pdf.blindedName, url: d.pdf.url, expiresAt: d.pdf.expiresAt } : null,
+        blockingReasons: [...d.blockingReasons],
+      },
+    };
+  }
+  return getReviewContextSync(reviewId);
 }
 
 export type SaveScenario = "ok" | "fail";
 export type SubmitScenario = "ok" | "conflict";
 
 export async function saveReviewDraft(
-  _reviewId: string,
-  _draft: ReviewDraft,
-  opts: { scenario?: SaveScenario; delayMs?: number } = {},
-): Promise<RequestState<{ savedAt: string }>> {
+  reviewId: string,
+  draft: ReviewDraft,
+  opts: { expectedRevision: number; scenario?: SaveScenario; delayMs?: number; signal?: AbortSignal },
+): Promise<RequestState<{ savedAt: string; revision: number }>> {
+  // Live: PUT /judge/reviews/{id}/draft with {expectedRevision, draft}. The new
+  // revision is returned so the next save/submit can use it (optimistic-lock).
+  if (isLive) {
+    const r = await httpSend("PUT", `/judge/reviews/${encodeURIComponent(reviewId)}/draft`, JudgeReviewMutationSchema, {
+      body: { expectedRevision: opts.expectedRevision, draft },
+      signal: opts.signal,
+    });
+    if (r.kind !== "success") return r;
+    return { kind: "success", data: { savedAt: r.data.savedAt, revision: r.data.revision } };
+  }
   if (opts.delayMs) await wait(opts.delayMs);
   if (opts.scenario === "fail")
     return { kind: "error", code: "INTERNAL_ERROR", message: "임시저장에 실패했습니다. 다시 시도해 주세요.", retryable: true };
-  return { kind: "success", data: { savedAt: "2027-01-05T10:00:00Z" } };
+  return { kind: "success", data: { savedAt: "2027-01-05T10:00:00Z", revision: opts.expectedRevision + 1 } };
 }
 
 export async function submitReview(
-  _reviewId: string,
-  _draft: ReviewDraft,
-  opts: { expectedRevision: number; scenario?: SubmitScenario; delayMs?: number },
-): Promise<RequestState<{ submittedAt: string }>> {
+  reviewId: string,
+  draft: ReviewDraft,
+  opts: { expectedRevision: number; scenario?: SubmitScenario; delayMs?: number; signal?: AbortSignal },
+): Promise<RequestState<{ submittedAt: string; revision: number }>> {
+  // Live: POST /judge/reviews/{id}/submit with {expectedRevision, draft}. A
+  // REVISION_CONFLICT (409) means someone saved first — surfaced, never overwritten.
+  if (isLive) {
+    const r = await httpSend("POST", `/judge/reviews/${encodeURIComponent(reviewId)}/submit`, JudgeReviewMutationSchema, {
+      body: { expectedRevision: opts.expectedRevision, draft },
+      signal: opts.signal,
+    });
+    if (r.kind !== "success") return r;
+    return { kind: "success", data: { submittedAt: r.data.submittedAt ?? r.data.savedAt, revision: r.data.revision } };
+  }
   if (opts.delayMs) await wait(opts.delayMs);
   if (opts.scenario === "conflict")
     return { kind: "error", code: "REVISION_CONFLICT", message: "다른 기기에서 먼저 저장되었습니다. 최신 내용을 불러온 뒤 다시 제출하세요.", retryable: true };
-  return { kind: "success", data: { submittedAt: "2027-01-05T10:05:00Z" } };
+  return { kind: "success", data: { submittedAt: "2027-01-05T10:05:00Z", revision: opts.expectedRevision + 1 } };
 }
