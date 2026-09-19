@@ -10,6 +10,7 @@ import {
   exportAdminEntriesCsv,
   bulkPublishResult,
   bulkIssueCertificates,
+  issueCertificates,
   requestCsvExport,
   type AdminEntriesPage,
   type AdminQuery,
@@ -89,6 +90,7 @@ export default function AdminEntriesPageView() {
   // Modal + bulk outcome
   const [modal, setModal] = useState<null | "result" | "certificate">(null);
   const [bulkResult, setBulkResult] = useState<PublishedResult>("official_selection");
+  const [certStage, setCertStage] = useState<"official_selection" | "finalist">("official_selection");
   const [bulkSim, setBulkSim] = useState<BulkScenario>("ok");
   const [busy, setBusy] = useState(false);
   const [outcome, setOutcome] = useState<BulkOutcome | null>(null);
@@ -213,6 +215,19 @@ export default function AdminEntriesPageView() {
     setOutcome(null);
     const ids = [...selected];
     const actionId = crypto.randomUUID();
+    // Live certificate issue takes the selected entry ids + a stage. (Result
+    // publication is competition-wide rounds — the 결과 발표 button links to
+    // /admin/results in live, so only the certificate modal runs here in live.)
+    if (isLive && modal === "certificate" && competitionId) {
+      const res = await issueCertificates(competitionId, { entryIds: ids, stage: certStage, actionId });
+      setBusy(false);
+      if (res.kind === "success") {
+        const failed = res.data.items.filter((i) => i.state === "stalled");
+        const ok = res.data.items.filter((i) => i.state !== "stalled");
+        setOutcome({ requested: res.data.requested, succeeded: ok.map((i) => i.entryId), failed: failed.map((i) => ({ id: i.entryId, reason: "발급 지연(stalled)" })) });
+      } else { setNotice(res.kind === "error" ? res.message : "발급 실패"); setModal(null); }
+      return;
+    }
     const res =
       modal === "result"
         ? await bulkPublishResult(ids, bulkResult, { actionId, scenario: bulkSim, delayMs: 500 })
@@ -400,16 +415,18 @@ export default function AdminEntriesPageView() {
             )}
           </p>
           <div className="flex flex-wrap items-center gap-2">
-            {isLive && (
-              <span className="text-[15px] text-ink-strong/70">일괄 발표·인증서는 준비 중</span>
-            )}
             <Button size="sm" variant="outline" disabled={isLive && !competitionId} onClick={exportCsv}>
               CSV 내보내기
             </Button>
-            <Button size="sm" variant="outline" disabled={isLive || selected.size === 0} onClick={() => setModal("result")}>
-              결과 발표
-            </Button>
-            <Button size="sm" disabled={isLive || selected.size === 0} onClick={() => setModal("certificate")}>
+            {isLive ? (
+              // Result publication is competition-wide (rounds) — the dedicated screen.
+              <Button size="sm" variant="outline" href="/admin/results">결과 발표</Button>
+            ) : (
+              <Button size="sm" variant="outline" disabled={selected.size === 0} onClick={() => setModal("result")}>
+                결과 발표
+              </Button>
+            )}
+            <Button size="sm" disabled={selected.size === 0 || (isLive && !competitionId)} onClick={() => setModal("certificate")}>
               인증서 발급
             </Button>
           </div>
@@ -609,6 +626,16 @@ export default function AdminEntriesPageView() {
                 </Select>
               </label>
             )}
+            {modal === "certificate" && isLive && (
+              <label className="block">
+                <span className="text-[16px] font-semibold text-ink-strong">발급 단계</span>
+                <Select value={certStage} onChange={(e) => setCertStage(e.target.value as "official_selection" | "finalist")} className="mt-2">
+                  <option value="official_selection">Official Selection</option>
+                  <option value="finalist">Finalist</option>
+                </Select>
+                <span className="mt-1 block text-[15px] text-ink-strong/70">공개된 결과 증거가 있는 접수에만 발급됩니다. 예약(pending)은 PDF 발급 완료가 아닙니다.</span>
+              </label>
+            )}
             {/* Selected targets — 대상 확인 */}
             <p className="mt-4 text-[16px] font-semibold text-ink-strong">대상 {selectedItems.length}건</p>
             <ul className="mt-2 max-h-40 overflow-y-auto rounded-lg border border-line p-3">
@@ -618,17 +645,19 @@ export default function AdminEntriesPageView() {
                 </li>
               ))}
             </ul>
-            {/* Dev-only outcome simulation */}
-            <label className="mt-4 block">
-              <span className="text-[14px] font-bold uppercase tracking-[0.1em] text-ink-strong/70">
-                결과 시뮬레이션 (개발용)
-              </span>
-              <Select value={bulkSim} onChange={(e) => setBulkSim(e.target.value as BulkScenario)} className="mt-2">
-                <option value="ok">모두 성공</option>
-                <option value="partial">일부 실패</option>
-                <option value="forbidden">권한 없음</option>
-              </Select>
-            </label>
+            {/* Dev-only outcome simulation (mock mode only) */}
+            {!isLive && (
+              <label className="mt-4 block">
+                <span className="text-[14px] font-bold uppercase tracking-[0.1em] text-ink-strong/70">
+                  결과 시뮬레이션 (개발용)
+                </span>
+                <Select value={bulkSim} onChange={(e) => setBulkSim(e.target.value as BulkScenario)} className="mt-2">
+                  <option value="ok">모두 성공</option>
+                  <option value="partial">일부 실패</option>
+                  <option value="forbidden">권한 없음</option>
+                </Select>
+              </label>
+            )}
           </div>
         )}
       </Modal>
