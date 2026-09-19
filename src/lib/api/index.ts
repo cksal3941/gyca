@@ -61,6 +61,7 @@ import {
 } from "@/contracts/uploads";
 import { SubmissionRecordSchema } from "@/contracts/submission-record";
 import { SubmissionDownloadSchema } from "@/contracts/submission-download";
+import { EditorialPublicItemSchema } from "@/contracts/editorial-content";
 import { isLive } from "./mode";
 import { httpGet, httpSend, httpList } from "./http";
 
@@ -416,6 +417,24 @@ export async function listCompetitions(
     if (r.kind === "success") seen.set(r.data.id, r.data);
   }
   return { kind: "success", data: { items: [...seen.values()], nextCursor: null } };
+}
+
+/** Published editorial content for the public site (notice/schedule/faq/news/press).
+ *  Live: GET /content/editorial (only published items). Mock: empty — the public
+ *  pages fall back to their static preview content in mock mode. */
+export async function listEditorialPublic(
+  category: string | null = null,
+  opts: { cursor?: string | null; limit?: number; signal?: AbortSignal } = {},
+): Promise<RequestState<Page<z.infer<typeof EditorialPublicItemSchema>>>> {
+  if (isLive) {
+    const p = new URLSearchParams();
+    if (category) p.set("category", category);
+    if (opts.cursor) p.set("cursor", opts.cursor);
+    p.set("limit", String(opts.limit ?? 50));
+    const r = await httpList(`/content/editorial?${p.toString()}`, EditorialPublicItemSchema, opts.signal);
+    return r.kind === "empty" ? { kind: "success", data: { items: [], nextCursor: null } } : (r as RequestState<Page<z.infer<typeof EditorialPublicItemSchema>>>);
+  }
+  return { kind: "success", data: { items: [], nextCursor: null } };
 }
 
 export async function listMyEntries(
