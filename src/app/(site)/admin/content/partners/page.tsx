@@ -5,7 +5,7 @@ import PageHeader from "@/components/site/PageHeader";
 import { Button, Message, StatusBadge, Select, Textarea, type Tone } from "@/components/ds";
 import { isLive } from "@/lib/api/mode";
 import {
-  listAdminPartners, createPartner, partnerRelationship, transitionPartner,
+  listAdminPartners, createPartner, updatePartner, partnerRelationship, transitionPartner,
   type PartnerAdminItem,
 } from "@/lib/api/ops";
 import { PARTNER_TYPES, PartnerBodySchema } from "@/contracts/partner-content";
@@ -36,6 +36,9 @@ export default function AdminPartnersPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // create / edit form. editId null = create; set = editing that partner's content.
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editRevision, setEditRevision] = useState(0);
   const [partnerType, setPartnerType] = useState<string>("venue");
   const [slug, setSlug] = useState("");
   const [nameEn, setNameEn] = useState(""); const [nameKo, setNameKo] = useState("");
@@ -53,7 +56,22 @@ export default function AdminPartnersPage() {
 
   const reload = () => { setState({ kind: "loading" }); setReloadKey((k) => k + 1); };
 
-  const create = async () => {
+  const resetForm = () => {
+    setEditId(null); setEditRevision(0); setPartnerType("venue"); setSlug("");
+    setNameEn(""); setNameKo(""); setDescEn(""); setDescKo(""); setDisplayOrder("0"); setWebsiteUrl("");
+  };
+
+  const loadForEdit = (it: PartnerAdminItem) => {
+    setError(null); setNotice(null);
+    setEditId(it.id); setEditRevision(it.revision);
+    setPartnerType(it.partnerType); setSlug(it.slug);
+    setNameEn(it.content.name.en); setNameKo(it.content.name.ko);
+    setDescEn(it.content.description.en); setDescKo(it.content.description.ko);
+    setDisplayOrder(String(it.content.displayOrder)); setWebsiteUrl(it.content.websiteUrl ?? "");
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const save = async () => {
     setBusy(true); setError(null); setNotice(null);
     const body = PartnerBodySchema.safeParse({
       name: { en: nameEn.trim(), ko: nameKo.trim() },
@@ -67,13 +85,15 @@ export default function AdminPartnersPage() {
       setError(`입력값 확인: ${body.error.issues.map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`).join("; ")}`);
       return;
     }
-    const res = await createPartner({ actionId: crypto.randomUUID(), slug: slug.trim(), partnerType, content: body.data });
+    const res = editId
+      ? await updatePartner(editId, { actionId: crypto.randomUUID(), expectedRevision: editRevision, content: body.data })
+      : await createPartner({ actionId: crypto.randomUUID(), slug: slug.trim(), partnerType, content: body.data });
     setBusy(false);
     if (res.kind === "success") {
-      setNotice("파트너 초안을 만들었습니다. 관계 확인 후 공개하세요.");
-      setSlug(""); setNameEn(""); setNameKo(""); setDescEn(""); setDescKo(""); setDisplayOrder("0"); setWebsiteUrl("");
+      setNotice(editId ? "협력기관 내용을 저장했습니다." : "파트너 초안을 만들었습니다. 관계 확인 후 공개하세요.");
+      resetForm();
       reload();
-    } else setError(res.kind === "error" ? res.message : "생성 실패");
+    } else setError(res.kind === "error" ? res.message : (editId ? "저장 실패" : "생성 실패"));
   };
 
   const rel = async (it: PartnerAdminItem, action: "confirm" | "revoke") => {
@@ -102,14 +122,18 @@ export default function AdminPartnersPage() {
         {error && <Message tone="danger" className="mb-4" title="오류">{error}</Message>}
 
         <div className="rounded-2xl border border-line bg-white p-6">
-          <h2 className="font-title text-[18px] font-bold text-ink-strong">새 협력기관 (초안)</h2>
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="font-title text-[18px] font-bold text-ink-strong">{editId ? `협력기관 수정 · ${slug}` : "새 협력기관 (초안)"}</h2>
+            {editId && <Button size="sm" variant="outline" onClick={resetForm} disabled={busy}>수정 취소</Button>}
+          </div>
+          {editId && <p className="mt-2 text-[15px] text-ink-strong/70">유형·슬러그는 변경할 수 없습니다. 내용만 저장됩니다.</p>}
           <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_1fr_1fr]">
             <label className="block"><span className={label}>유형</span>
-              <Select value={partnerType} onChange={(e) => setPartnerType(e.target.value)} className="mt-1">
+              <Select value={partnerType} onChange={(e) => setPartnerType(e.target.value)} className="mt-1" disabled={!!editId}>
                 {PARTNER_TYPES.map((t) => <option key={t} value={t}>{TYPE_LABEL[t] ?? t}</option>)}
               </Select>
             </label>
-            <label className="block"><span className={label}>슬러그</span><input className={field} value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="klimt-villa" /></label>
+            <label className="block"><span className={label}>슬러그</span><input className={field} value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="klimt-villa" disabled={!!editId} /></label>
             <label className="block"><span className={label}>표시 순서</span><input className={field} type="number" min={0} value={displayOrder} onChange={(e) => setDisplayOrder(e.target.value)} /></label>
           </div>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -119,7 +143,7 @@ export default function AdminPartnersPage() {
             <label className="block"><span className={label}>소개 KO</span><Textarea rows={3} value={descKo} onChange={(e) => setDescKo(e.target.value)} className="mt-1" /></label>
           </div>
           <label className="mt-4 block"><span className={label}>웹사이트 (https, 선택)</span><input className={field} value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} placeholder="https://…" /></label>
-          <Button className="mt-4" onClick={create} disabled={busy}>초안 생성</Button>
+          <Button className="mt-4" onClick={save} disabled={busy}>{busy ? "처리 중…" : editId ? "변경 사항 저장" : "초안 생성"}</Button>
         </div>
 
         {/* relationship evidence (for confirm/revoke) */}
@@ -151,6 +175,7 @@ export default function AdminPartnersPage() {
                       <td className="px-5 py-4"><StatusBadge tone={STATUS_VIEW[it.status]?.tone ?? "neutral"}>{STATUS_VIEW[it.status]?.label ?? it.status}</StatusBadge></td>
                       <td className="px-5 py-4 text-right">
                         <div className="flex flex-wrap justify-end gap-2">
+                          {it.allowedActions.includes("edit") && <Button size="sm" variant="outline" onClick={() => loadForEdit(it)} disabled={busy}>수정</Button>}
                           {it.allowedActions.includes("confirm_relationship") && <Button size="sm" onClick={() => rel(it, "confirm")} disabled={busy}>관계 확인</Button>}
                           {it.allowedActions.includes("revoke_relationship") && <Button size="sm" variant="outline" onClick={() => rel(it, "revoke")} disabled={busy}>관계 철회</Button>}
                           {it.allowedActions.includes("publish") && <Button size="sm" onClick={() => trans(it, "publish")} disabled={busy}>공개</Button>}

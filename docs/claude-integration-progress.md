@@ -16,7 +16,7 @@
 | 4 결제·참가자 흐름 | 진행(4-A 착수) | `index.ts`(beginCheckout),`submit-flow.ts` | checkout 라우트 404 정상·draft payment-options=[] 확인·tsc/eslint 0 | 실 주문→checkout→PG 해피패스는 S3·PG 인프라·사업자 대기 | 홈 Apply 라이브화·mock 잔재 감사·confirm/reconcile |
 | 5 운영·보조 기능 | 진행(조회✅) | `ops.ts`(dashboard/health/reviews 어댑터),`admin/payments` | 대시보드 실데이터 렌더(계정·공모 카운트)·게이트·gross 주석 실검증 | accept-late/requeue/환불 mutations·인증서·마이페이지 보조·개인정보요청 미착수 | 결제 mutations·보조 기능 |
 | 6 심사·발표·인증서 | 진행(심사화면✅ 관리자 judges/rubric✅) | `ops.ts`(judge admin 어댑터),`admin/judges` | judges 목록·활성 표시·rubric set/get 200 실검증 | 배정 관리(제출 접수+S3 필요)·결과 발표·인증서 발급 미착수 | 결과 발표/인증서(엔트리·인프라 후) |
-| 7 공개 CMS·아카이브 | 진행(editorial 목록+상세+**수정**✅ partner관리✅) | +`getEditorialPublic`,`NoticeDetailView`,notices/[slug],editorial admin edit | editorial 목록·상세 라이브 / **수정 폼→updateEditorial→공개 API 반영(최대 60s 캐시) 실검증** / partner 생성→확인→발행→공개 검증 | 홈 PartnerMarquee·NewsUpdate(하드코딩 마케팅)·아카이브(신규 서버계약)·partner 수정 UI 미착수 | 아카이브(대규모)·홈 마케팅 배선(선택) |
+| 7 공개 CMS·아카이브 | 진행(editorial 목록+상세+**수정**✅ partner관리+**수정**✅) | +`getEditorialPublic`,`NoticeDetailView`,notices/[slug],editorial/partner admin edit,`updatePartner` | editorial/partner **수정 폼→update→반영 실검증**(editorial 공개 API 최대 60s 캐시) / 생성·관계·발행·공개 검증 | 홈 PartnerMarquee·NewsUpdate(하드코딩 마케팅)·아카이브(신규 서버계약) 미착수 | 아카이브(대규모)·홈 마케팅 배선(선택) |
 | 8 스테이징·장애 검증 | 진행(준비✅) | `.env.example`,`docs/staging-readiness.md` | 프로덕션 빌드(webpack) HEAD exit 0·env 완비·준비 체크리스트 | 실 DB/S3/PG/메일 검증·Docker 기동·부하는 계정·사업자 대기 | 계정 확보 후 실검증 |
 | 9 운영 인계 | 진행(운영가이드✅) | `docs/operations-guide.md` | 구축 기능 기준 운영 가이드(권한·공모·접수·결제·심사·CMS·복구) | 출시 판단·최소출시 체크리스트·최종 검증 증거는 실검증/결정 후 | 최소출시 체크리스트(실검증 후) |
 

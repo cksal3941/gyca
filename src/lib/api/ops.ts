@@ -297,6 +297,14 @@ export async function createPartner(
   return httpSend("POST", "/admin/content/partners", PartnerAdminItemSchema, { body: input, signal: opts.signal });
 }
 
+/** Edit partner content. Live: PATCH /admin/content/partners/{id}. */
+export async function updatePartner(
+  id: string, input: { actionId: string; expectedRevision: number; content: PartnerBody }, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<PartnerAdminItem>> {
+  if (!isLive) return partnerOff();
+  return httpSend("PATCH", `/admin/content/partners/${encodeURIComponent(id)}`, PartnerAdminItemSchema, { body: input, signal: opts.signal });
+}
+
 /** Confirm / revoke the partner relationship (evidence + reason required).
  *  A partner cannot be published until the relationship is confirmed. */
 export async function partnerRelationship(
