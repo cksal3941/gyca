@@ -1,30 +1,36 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import type { Locale } from "@/lib/i18n";
 
 type Crumb = { label: string; href?: string };
 
-/** Airy editorial page intro — large serif title on white, matching the
- *  reference site's sub-page style. Used by content pages. */
+/** Airy page intro — large display title on white, in the reference site's
+ *  typographic language (Bebas for Latin, Pretendard for Korean). Used by
+ *  content pages so sub-pages read as one service with the home. */
 export default function EditorialHeader({
   eyebrow,
   title,
   description,
   crumbs,
   action,
+  locale = "en",
+  serif = false,
 }: {
   eyebrow?: string;
   title: string;
   description?: string;
   crumbs?: Crumb[];
   action?: ReactNode;
+  locale?: Locale;
+  serif?: boolean;
 }) {
   return (
-    <section className="border-b border-line">
-      <div className="mx-auto max-w-shell px-6 pb-10 pt-14 lg:pb-14 lg:pt-20">
+    <section>
+      <div className="mx-auto max-w-page border-b-[3px] border-black px-6 pb-8 pt-12 lg:pb-10 lg:pt-16">
         {crumbs && crumbs.length > 0 && (
           <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-[16px] text-ink-strong">
             <Link href="/" className="hover:text-brand-blue">
-              홈
+              {locale === "ko" ? "홈" : "Home"}
             </Link>
             {crumbs.map((c) => (
               <span key={c.label} className="flex items-center gap-1.5">
@@ -47,7 +53,13 @@ export default function EditorialHeader({
                 {eyebrow}
               </p>
             )}
-            <h1 className="font-serif text-[clamp(44px,5.6vw,72px)] leading-[1.04] tracking-[0.01em] text-ink-strong">
+            <h1
+              className={`text-[clamp(44px,5.6vw,72px)] leading-[1.05] text-ink-strong ${
+                serif
+                  ? "font-serif tracking-[0.005em]"
+                  : "font-title font-bold tracking-[0.02em]"
+              }`}
+            >
               {title}
             </h1>
             {description && (

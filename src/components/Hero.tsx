@@ -1,37 +1,58 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useLocale } from "@/components/i18n/LocaleProvider";
+import type { Bi, BiLines } from "@/lib/i18n";
 
 type Slide = {
-  title: string[];
-  desc: string;
+  title: BiLines;
+  desc: Bi;
   tag: string;
   image: string;
 };
 
-// Order matches the reference index (.01 IYAC6, .02 KAJAA, .03 LED wall).
+// First launch: Leipzig 2027 art book award (copy from the GYCA Leipzig 2027 brief).
 const SLIDES: Slide[] = [
   {
-    title: ["2026 6TH IYAC", "YOUTH ART CONTEST"],
-    desc: "뉴욕 대형 갤러리 Detour Gallery 수상작 전시 참여 기회가 제공되었으며, 세계적 큐레이터의 심사를 거칩니다.",
-    tag: "2026 IYAC6",
+    title: {
+      en: ["2027 GYCA INTERNATIONAL", "YOUTH ART BOOK AWARDS"],
+      ko: ["2027 GYCA 국제", "청소년 아트북 어워드"],
+    },
+    desc: {
+      en: "A global art book award for young creators aged 7–18. Submit one PDF of 20+ pages including the cover.",
+      ko: "전 세계 만 7–18세를 위한 국제 아트북 공모. 표지 포함 20쪽 이상 단일 PDF로 출품합니다.",
+    },
+    tag: "Leipzig 2027",
     image: "/images/hero/iyac.jpg",
   },
   {
-    title: ["2026 KAJAA YOUTH", "ART-FESTIVAL EXHIBITION"],
-    desc: "2026 KAJAA가 낳은 청소년기 대상과 성장의 존적을 수상작 전시회 제3전시에서 함께 만나 보세요.",
-    tag: "2026 KAJAA",
+    title: {
+      en: ["YOUR BOOK. YOUR STORY.", "NEXT STOP, LEIPZIG."],
+      ko: ["당신의 책, 당신의 이야기.", "다음 무대는 라이프치히."],
+    },
+    desc: {
+      en: "Pass the first international review to earn a GYCA Official Selection Certificate.",
+      ko: "1차 국제심사를 통과하면 GYCA Official Selection 인증서를 받습니다.",
+    },
+    tag: "Open Call",
     image: "/images/hero/kajaa.jpg",
   },
   {
-    title: ["AWARD-WINNING", "ART ON SCREEN"],
-    desc: "도심의 대형 스크린 위에 펼쳐진, 청소년 예술가들의 진심 어린 메시지를 만나보세요.",
-    tag: "LED wall",
+    title: {
+      en: ["FINALISTS GO", "TO LEIPZIG"],
+      ko: ["Finalist는", "라이프치히로"],
+    },
+    desc: {
+      en: "Up to 30 works advance to the Leipzig international exhibition.",
+      ko: "최대 30작품이 라이프치히 국제전시에 진출합니다.",
+    },
+    tag: "Finalist",
     image: "/images/hero/led-wall.jpg",
   },
 ];
 
 export default function Hero() {
+  const { locale } = useLocale();
   const [index, setIndex] = useState(0);
   const count = SLIDES.length;
 
@@ -47,7 +68,7 @@ export default function Hero() {
       {/* Background slides */}
       {SLIDES.map((s, i) => (
         <div
-          key={s.title.join("")}
+          key={s.tag}
           className="absolute inset-0 bg-cover bg-center transition-opacity duration-700 ease-[cubic-bezier(0.22,0.61,0.36,1)]"
           style={{
             backgroundImage: `url(${s.image})`,
@@ -61,10 +82,10 @@ export default function Hero() {
       <div className="relative flex h-full flex-col justify-center px-[8%]">
         <div className="flex max-w-[893px] flex-col items-start gap-6">
           <h1
-            key={index}
-            className="font-display text-[52px] leading-[0.95] tracking-[-1.5px] sm:text-[64px] md:text-[80px] md:tracking-[-2.4px]"
+            key={`${index}-${locale}`}
+            className="font-display text-[52px] leading-[0.95] tracking-[0.5px] sm:text-[64px] md:text-[80px] md:tracking-[1px]"
           >
-            {active.title.map((line, li) => (
+            {active.title[locale].map((line, li) => (
               <span key={li} className="block overflow-hidden">
                 <span
                   className="hero-word"
@@ -77,11 +98,11 @@ export default function Hero() {
           </h1>
 
           <p className="max-w-md text-[16px] leading-[1.7] text-white">
-            {active.desc}
+            {active.desc[locale]}
           </p>
 
           <button className="mt-2 flex h-11 items-center gap-2 rounded-[5px] border border-white/[0.28] bg-white/[0.12] px-[26px] text-[14px] font-bold text-white backdrop-blur-sm hover:bg-white/20">
-            View More
+            {locale === "ko" ? "자세히 보기" : "View More"}
             <span aria-hidden>›</span>
           </button>
         </div>

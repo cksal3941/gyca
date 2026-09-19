@@ -10,7 +10,10 @@
   --color-brand-orange: #e55100;
   --color-ink: #222222;
   --color-ink-strong: #111111;
-  --color-line: #eeeeee;
+  /* Divider / hairline borders — clearly visible (not a faint ghost line). */
+  --color-line: #d3d7dd;
+  /* Form control borders — a touch darker still, so inputs read as interactive. */
+  --color-field: #b9bec8;
 
   /* Reference (myslide.org) is monochrome + a single blue accent, so the
      former purple/teal accents collapse to the brand blue and backgrounds
@@ -20,12 +23,26 @@
   --color-canvas: #f7f7f8;
   --color-surface: #f1f1f2;
 
+  /* Status/semantic colors (additive — no existing utility changes). Text tones
+     are chosen for AA contrast on their soft background; status is always paired
+     with an icon + label in the UI, never conveyed by color alone. */
+  --color-success: #1a7f4b;
+  --color-success-soft: #e6f4ec;
+  --color-info: #0b05e2;
+  --color-info-soft: #e9e8fb;
+  --color-warning: #8a5a00;
+  --color-warning-soft: #f7edd6;
+  --color-danger: #b42318;
+  --color-danger-soft: #fbe9e7;
+
   /* Content max-width ~1000px */
   --container-content: 1000px;
   /* Landing shell — matches the reference's main content width: myslide.org
      uses a 1600px outer container with ~1570px inner content, which is the
      same 1570px the Header/EventSlider already use. */
   --container-shell: 1570px;
+  /* Unified content width for all sections except the site header & hero. */
+  --container-page: 1400px;
 
   /* Fonts (measured from myslide.org) */
   --font-display: var(--font-bebas), "Bebas Neue", sans-serif;
@@ -108,6 +125,9 @@ button {
    (mirrors the reference "Bebas Kai, NexonLv2Gothic" stack) */
 .font-title {
   font-family: var(--font-bebas), "Pretendard Variable", Pretendard, sans-serif;
+  /* Bebas is condensed — give titles a comfortable default letter-spacing so
+     English headings don't read cramped. Utilities can still override. */
+  letter-spacing: 0.02em;
 }
 
 /* Hero word-up reveal */

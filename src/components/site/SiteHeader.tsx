@@ -25,7 +25,7 @@ export default function SiteHeader() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-[1000] border-b border-line bg-white">
-      <div className="mx-auto flex h-[72px] max-w-shell items-center gap-8 px-6">
+      <div className="mx-auto flex h-[72px] max-w-page items-center gap-8 px-6">
         <Link
           href="/"
           className="text-[26px] font-extrabold tracking-[-0.02em] text-ink-strong"
@@ -86,7 +86,7 @@ export default function SiteHeader() {
       {/* Mobile drawer */}
       {open && (
         <div className="border-t border-line bg-white lg:hidden">
-          <nav className="mx-auto flex max-w-shell flex-col px-6 py-2">
+          <nav className="mx-auto flex max-w-page flex-col px-6 py-2">
             {session && (
               <div className="flex items-center justify-between border-b border-line py-3 text-[16px]">
                 <span className="font-semibold text-ink-strong">

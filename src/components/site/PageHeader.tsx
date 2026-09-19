@@ -20,7 +20,7 @@ export default function PageHeader({
 }) {
   return (
     <section className="border-b border-line bg-canvas">
-      <div className="mx-auto max-w-shell px-6 py-12 lg:py-16">
+      <div className="mx-auto max-w-page px-6 py-12 lg:py-16">
         {crumbs && crumbs.length > 0 && (
           <nav className="mb-4 flex flex-wrap items-center gap-1.5 text-[16px] text-ink-strong">
             <Link href="/" className="hover:text-brand-blue">
@@ -47,7 +47,7 @@ export default function PageHeader({
                 {eyebrow}
               </p>
             )}
-            <h1 className="mt-2 font-serif text-[34px] font-bold leading-tight tracking-[-0.01em] text-ink-strong">
+            <h1 className="mt-2 font-title text-[38px] font-bold leading-tight tracking-[0.02em] text-ink-strong">
               {title}
             </h1>
             {description && (
