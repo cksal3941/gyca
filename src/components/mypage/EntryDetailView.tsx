@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import PageHeader from "@/components/site/PageHeader";
 import { Button, Message, StatusBadge, Stepper, type Tone } from "@/components/ds";
-import { getEntryDetail, getCompetitionSync, getEntryAssets, listEntryUploads, listCompetitions, downloadSubmissionAsset } from "@/lib/api";
+import { getEntryDetail, getCompetitionSync, getEntryAssets, listEntryUploads, listCompetitions, downloadSubmissionAsset, getGuardianStatus, requestGuardianConsent, type GuardianStatus } from "@/lib/api";
 import { REQUIRED_CONSENTS } from "@/lib/content/submit-consent";
 import {
   competitionTitleById,
@@ -135,6 +135,70 @@ function actionHref(a: EntryAction, id: string): string | null {
     case "submit":
       return "/submit";
   }
+}
+
+const GUARDIAN_STATE_LABEL: Record<string, { en: string; ko: string }> = {
+  not_requested: { en: "Not requested", ko: "요청 전" },
+  pending: { en: "Email sent — awaiting guardian", ko: "이메일 발송됨 — 보호자 확인 대기" },
+  consented: { en: "Guardian consented — awaiting review", ko: "보호자 동의함 — 운영자 확인 대기" },
+  verified: { en: "Verified", ko: "확인 완료" },
+  expired: { en: "Expired — please resend", ko: "만료됨 — 재요청 필요" },
+  stale: { en: "Out of date — please resend", ko: "정보 변경됨 — 재요청 필요" },
+};
+
+// Guardian consent (minor participants). Self-hides when the feature is off
+// (503/NOT_CONNECTED). The email link + token are sent to the guardian's address;
+// the token is never shown here. Re-request is offered when expired/stale.
+function GuardianConsentPanel({ entryId, revision, guardianEmail, locale }: { entryId: string; revision: number; guardianEmail: string | null; locale: Locale }) {
+  const ko = locale === "ko";
+  const [status, setStatus] = useState<GuardianStatus | null>(null);
+  const [hidden, setHidden] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    getGuardianStatus(entryId).then((r) => {
+      if (!alive) return;
+      if (r.kind === "success") setStatus(r.data);
+      else if (r.kind === "error" && (r.code === "POLICY_NOT_CONFIGURED" || r.code === "NOT_CONNECTED")) setHidden(true);
+      // other errors: leave panel with no status (request button still allows a retry)
+    });
+    return () => { alive = false; };
+  }, [entryId, reloadKey]);
+
+  if (hidden) return null;
+
+  const state = status?.state ?? "not_requested";
+  const canRequest = state === "not_requested" || state === "expired" || state === "stale";
+  const label = GUARDIAN_STATE_LABEL[state] ?? { en: state, ko: state };
+
+  const request = async () => {
+    setBusy(true); setError(null); setNotice(null);
+    const r = await requestGuardianConsent(entryId, { revision, locale: ko ? "ko" : "en" });
+    setBusy(false);
+    if (r.kind === "success") { setNotice(ko ? "보호자에게 확인 이메일을 보냈습니다." : "A consent email was sent to the guardian."); setReloadKey((k) => k + 1); }
+    else if (r.kind === "error" && r.code === "RATE_LIMITED") setError(ko ? "요청이 너무 잦습니다. 잠시 후 다시 시도하세요." : "Too many requests. Please try again shortly.");
+    else if (r.kind === "error" && (r.code === "POLICY_NOT_CONFIGURED" || r.code === "NOT_CONNECTED")) setHidden(true);
+    else setError(r.kind === "error" ? r.message : (ko ? "요청에 실패했습니다." : "Request failed."));
+  };
+
+  return (
+    <div className="mt-6 rounded-2xl border border-line bg-white p-6">
+      <h2 className="font-title text-[17px] font-bold text-ink-strong">{ko ? "보호자 동의" : "Guardian consent"}</h2>
+      <p className="mt-2 text-[16px] text-ink-strong">{ko ? "상태" : "Status"}: <b>{label[ko ? "ko" : "en"]}</b></p>
+      {guardianEmail && <p className="mt-1 text-[15px] text-ink-strong/70">{ko ? "확인 이메일 수신" : "Consent email to"}: {guardianEmail}</p>}
+      {notice && <Message tone="success" className="mt-3">{notice}</Message>}
+      {error && <Message tone="danger" className="mt-3">{error}</Message>}
+      {canRequest && (
+        <button onClick={request} disabled={busy} className="mt-4 w-fit rounded-[7px] bg-black px-6 py-2.5 text-[14px] font-semibold text-white hover:opacity-90 disabled:opacity-60">
+          {busy ? (ko ? "처리 중…" : "Sending…") : state === "not_requested" ? (ko ? "보호자 동의 요청" : "Request guardian consent") : (ko ? "다시 요청" : "Resend")}
+        </button>
+      )}
+    </div>
+  );
 }
 
 type Phase = "loading" | "notfound" | "error" | "ready";
@@ -354,6 +418,10 @@ export default function EntryDetailView({ id, locale }: { id: string; locale: Lo
           <Message tone="info" className="mt-6" title={ko ? "다음 단계 안내" : "What's next"}>
             <span className="block">{guidance.join(" ")}</span>
           </Message>
+        )}
+
+        {e.guardianVerification.status !== "not_required" && (
+          <GuardianConsentPanel entryId={e.id} revision={e.revision} guardianEmail={e.guardian.email || null} locale={locale} />
         )}
 
         {/* Summary */}

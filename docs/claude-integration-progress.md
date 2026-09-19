@@ -134,3 +134,13 @@ pnpm dev
 - **관리자(2b):** `listAdminProjects/getAdminProject/createProject/updateProject/publishProject/archiveProject`(ops.ts). `ArchiveForm`(hero + 1~10 섹션, 종류/순서 중복검사, ready 콘텐츠 요구, 미디어=사이트경로/https, ArchiveContentSchema 검증) + `ArchiveEditor`(발행 근거 입력·보관 확인 게이트·**발행본 수정=초안 강등 경고**). 목록/신규/편집 페이지 + admin 네비 링크.
 - **검증(operator, 라이브):** 데모 프로젝트 생성(API)→발행→`/content/projects·winners·exhibitions` 각 1건, 상세 3섹션(intro/선정작/전시·인용·통계) 공개 렌더 / 관리자 목록·편집 로드(공개 상태·보관 컨트롤·발행 컨트롤 숨김·수정 경고·3섹션) / **UI 신규 생성→편집 리다이렉트** / **UI 보관 확정→상태 보관→공개 상세 404**(터미널·비공개 검증).
 - 규칙 준수: 발행본 수정 시 초안 강등 안내, archived 복구불가 안내, 공개 pending 섹션 payload 서버 제거, 미디어 업로더 없음(승인된 URL만).
+
+### 3단계: 보호자·프로필 마무리 — ✅ (프로필·보호자 페이지·오류 처리 완료 / 정상흐름=서버테스트)
+- **프로필:** mypage 개인정보 탭의 정적 "준비 중" 폼 제거 → `/settings`(Better Auth) 연결. 접수 인적사항은 접수 단계 입력임을 안내. **검증(브라우저):** `/settings` 이름 변경→"Profile updated"→세션 반영→원복.
+- **보호자 어댑터:** `getGuardianStatus`/`requestGuardianConsent`(참가자), `previewGuardianConsent`/`acceptGuardianConsent`(보호자, 토큰). 응답 계약 부재라 클라이언트 스키마로 방어 검증. 토큰은 응답에 노출 안 함(요청 body로만).
+- **보호자 페이지 `/guardian-consent`:** URL fragment 토큰(쿼리 아님) → preview(3동의문) → 성함+전체동의 → accept. 공개(로그인 불필요).
+- **참가자 패널(EntryDetailView):** 상태 표시 + 요청/재요청. 기능 OFF(503)면 자체 숨김.
+- **검증 등급 구분:**
+  - **서버 테스트 통과(정상 흐름):** `node --test tests/submission-api.test.mjs …` 20/20 — "guardian link records three consents without bypassing identity verification"(주입 mailer로 preview→accept 검증) + rate-limit/admin evidence.
+  - **브라우저 확인(오류 처리):** 기능 OFF→preview 503→페이지 "미활성"; 기능 ON→무효 토큰 404 NOT_FOUND→"무효 링크"; 무토큰→"무효 링크". 만료/stale은 동일 "무효" 매핑(서버 판정). 검증 후 플래그 기본값(OFF) 복원(로컬 메일러 없어 실요청 불가).
+  - **실서비스 확인(미완, 5단계):** 실제 이메일 링크로 보호자가 수락하는 브라우저 E2E는 로컬 HTTPS + 테스트 메일 수신함 구성 후. 운영 API 토큰 노출·HTTPS 해제는 하지 않음.

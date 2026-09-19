@@ -47,6 +47,8 @@ import {
   SubmissionReadinessSchema,
   SubmissionResultSchema,
   SubmitEntryRequestSchema,
+  ConsentDocumentSchema,
+  CONSENT_KINDS,
   type SubmissionReadiness,
   type SubmissionResult,
   type SubmitEntryRequest,
@@ -623,6 +625,67 @@ export async function cancelPrivacyRequest(
   if (!isLive) return privacyOff();
   return httpSend("POST", `/privacy/requests/${encodeURIComponent(id)}/cancel`, PrivacyRequestSchema, {
     body: { actionId: crypto.randomUUID(), expectedRevision },
+    signal: opts.signal,
+  });
+}
+
+/* ---- guardian consent (minor participants; email-token verification) ---- */
+
+// Response shapes are not in the shared contract (the server returns plain
+// objects); these client schemas validate them defensively.
+const GUARDIAN_STATES = ["not_requested", "pending", "consented", "verified", "expired", "stale"] as const;
+const GuardianStatusSchema = z.object({
+  state: z.enum(GUARDIAN_STATES),
+  requestId: z.string().optional(),
+  verificationStatus: z.string().optional(),
+}).loose();
+const GuardianRequestResultSchema = z.object({
+  requestId: z.string(), state: z.enum(GUARDIAN_STATES), expiresAt: z.string(),
+}).loose();
+const GuardianPreviewResultSchema = z.object({
+  requestId: z.string(), documents: z.array(ConsentDocumentSchema), expiresAt: z.string(),
+}).loose();
+const GuardianAcceptResultSchema = z.object({
+  requestId: z.string(), state: z.enum(GUARDIAN_STATES), verificationStatus: z.string().optional(),
+}).loose();
+
+export type GuardianStatus = z.infer<typeof GuardianStatusSchema>;
+export type GuardianPreview = z.infer<typeof GuardianPreviewResultSchema>;
+
+/** Guardian consent status for an entry (participant). Live: GET
+ *  /entries/{id}/guardian-consent. Feature-gated → 503 POLICY_NOT_CONFIGURED. */
+export async function getGuardianStatus(entryId: string, opts: { signal?: AbortSignal } = {}): Promise<RequestState<GuardianStatus>> {
+  if (!isLive) return { kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 지원하지 않습니다.", retryable: false };
+  return httpGet(`/entries/${encodeURIComponent(entryId)}/guardian-consent`, GuardianStatusSchema, opts.signal);
+}
+
+/** Request (or re-request) a guardian consent email. Live: POST
+ *  /entries/{id}/guardian-consent {revision, locale}. The token is emailed to the
+ *  guardian — it is never returned here. Feature-gated → 503. */
+export async function requestGuardianConsent(
+  entryId: string, input: { revision: number; locale: "en" | "ko" }, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<z.infer<typeof GuardianRequestResultSchema>>> {
+  if (!isLive) return { kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 지원하지 않습니다.", retryable: false };
+  return httpSend("POST", `/entries/${encodeURIComponent(entryId)}/guardian-consent`, GuardianRequestResultSchema, { body: input, signal: opts.signal });
+}
+
+/** Guardian-side preview of the consent documents for a token (from the email
+ *  link fragment). Live: POST /guardian-consent/preview {token}. No login — the
+ *  token is the authorization. Unknown/expired → NOT_FOUND / CONSENT_REQUIRED. */
+export async function previewGuardianConsent(token: string, opts: { signal?: AbortSignal } = {}): Promise<RequestState<GuardianPreview>> {
+  if (!isLive) return { kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 지원하지 않습니다.", retryable: false };
+  return httpSend("POST", "/guardian-consent/preview", GuardianPreviewResultSchema, { body: { token }, signal: opts.signal });
+}
+
+/** Guardian accepts all three consents. Live: POST /guardian-consent/accept
+ *  {token, guardianName, acceptedKinds:[3]}. Consent (not verification) — the
+ *  operator still confirms. Different name for the same token → IDEMPOTENCY_CONFLICT. */
+export async function acceptGuardianConsent(
+  input: { token: string; guardianName: string }, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<z.infer<typeof GuardianAcceptResultSchema>>> {
+  if (!isLive) return { kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 지원하지 않습니다.", retryable: false };
+  return httpSend("POST", "/guardian-consent/accept", GuardianAcceptResultSchema, {
+    body: { token: input.token, guardianName: input.guardianName, acceptedKinds: [...CONSENT_KINDS] },
     signal: opts.signal,
   });
 }
