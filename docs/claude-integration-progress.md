@@ -12,7 +12,7 @@
 | --- | --- | --- | --- | --- | --- |
 | 1 공유 기반 | ✅ 완료 | `5c3312c`,`20b294a`,`a5aac56` | 아래 검증 로그(모두 exit 0) | 없음 | 단계 2 |
 | 2 로컬 운영 계정 | ✅ 완료 | `scripts/seed-leipzig-dev.mjs`(안전장치) | 운영자 200/참가자 403/회수 403/재부여 200 실세션 확인 | organizer 부여는 로컬 dev 한정(운영은 사용자 승인) | 단계 3 |
-| 3 공모·접수 운영 | 진행(3-A✅,3-B 착수) | `ops.ts`,`AdminEntryDetailLive.tsx`,admin/entries/[id]·admin/page,`operator-decisions-needed.md` | 상세 200·CSV Blob·403·렌더 / 공모 create 201·readiness·open 503 게이팅 실측 | 3-B UI(폼-빌더·정책편집·오픈제어)—상당수 운영 결정 게이팅 | 3-B UI + 결정 수신 후 정책/오픈 |
+| 3 공모·접수 운영 | ✅ 대체로(3-A✅ 3-B UI✅) | +`CompetitionForm/Editor`,`LaunchControl`,admin/competitions{,/new,/[id]} | 목록·편집 로드·**create 폼→생성→리다이렉트 실검증**·오픈제어 readiness 표시 | 정책편집(submission/payment/retention)·동의문·fields/uploads 상세 편집기·open은 readiness/결정 게이팅 | 결정 수신 후 정책·오픈 / 단계 4~ |
 | 4 결제·참가자 흐름 | 진행(4-A 착수) | `index.ts`(beginCheckout),`submit-flow.ts` | checkout 라우트 404 정상·draft payment-options=[] 확인·tsc/eslint 0 | 실 주문→checkout→PG 해피패스는 S3·PG 인프라·사업자 대기 | 홈 Apply 라이브화·mock 잔재 감사·confirm/reconcile |
 | 5 운영·보조 기능 | 미착수 | | | | |
 | 6 심사·발표·인증서 | 미착수 | | | | |

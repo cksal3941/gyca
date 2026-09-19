@@ -269,6 +269,7 @@ export default function AdminEntriesPageView() {
         title="접수 관리"
         description="Leipzig 2027 접수를 검색·필터·정렬하고, 선택 건을 일괄 처리합니다."
         crumbs={[{ label: "관리자" }, { label: "접수 관리" }]}
+        action={<Button href="/admin/competitions" variant="outline">공모 관리</Button>}
       />
 
       <section className="mx-auto max-w-page px-6 py-12">

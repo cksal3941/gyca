@@ -1,0 +1,268 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button, Message, Select } from "@/components/ds";
+import { createCompetition, updateCompetition, type AdminCompetition } from "@/lib/api/ops";
+import { CompetitionEditSchema } from "@/contracts/competition-admin";
+
+// Competition registration / edit (LIVE, organizer). Produces a valid
+// CompetitionEditSchema payload. Core fields + categories + age groups are
+// edited here; the detailed form fields / uploads / key dates / exhibition are
+// PRESERVED (round-tripped) from the loaded competition on edit and start empty
+// on create — a dedicated form-spec builder is a follow-up. Operational values
+// are entered by the operator; no defaults are invented here. Times are entered
+// in your browser's local time and saved as UTC (the competition timezone is a
+// separate field, shown to participants).
+
+type Cat = { id: string; en: string; ko: string };
+type Age = { id: string; en: string; ko: string; min: string; max: string };
+
+// ISO (UTC) → value for <input type="datetime-local">, in the browser's local tz.
+function toLocalInput(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const off = d.getTimezoneOffset() * 60000;
+  return new Date(d.getTime() - off).toISOString().slice(0, 16);
+}
+function toIso(local: string): string | null {
+  if (!local) return null;
+  const t = new Date(local);
+  return Number.isNaN(t.getTime()) ? null : t.toISOString();
+}
+
+export default function CompetitionForm({
+  mode,
+  initial,
+}: {
+  mode: "create" | "edit";
+  initial: AdminCompetition | null;
+}) {
+  const router = useRouter();
+  const content = initial?.input.content;
+  const spec = content?.formSpec ?? null;
+
+  const [slug, setSlug] = useState(initial?.input.slug ?? "");
+  const [titleEn, setTitleEn] = useState(content?.title.en ?? "");
+  const [titleKo, setTitleKo] = useState(content?.title.ko ?? "");
+  const [feeMinor, setFeeMinor] = useState(content?.fee ? String(content.fee.amountMinor) : "");
+  const [timezone, setTimezone] = useState(content?.timezone ?? "Europe/Berlin");
+  const [opensAt, setOpensAt] = useState(toLocalInput(initial?.input.opensAt ?? null));
+  const [closesAt, setClosesAt] = useState(toLocalInput(initial?.input.closesAt ?? null));
+  const [paymentClosesAt, setPaymentClosesAt] = useState(toLocalInput(initial?.input.paymentClosesAt ?? null));
+  const [published, setPublished] = useState(initial?.input.published ?? false);
+  const [guidelinesUrl, setGuidelinesUrl] = useState(content?.guidelines?.url ?? "");
+  const [guidelinesLocale, setGuidelinesLocale] = useState<"en" | "ko">(content?.guidelines?.locale ?? "en");
+  const [guidelinesVersion, setGuidelinesVersion] = useState(content?.guidelines?.version ?? "");
+  const [categories, setCategories] = useState<Cat[]>(
+    (spec?.categories ?? []).map((c) => ({ id: c.id, en: c.label.en, ko: c.label.ko })),
+  );
+  const [ageGroups, setAgeGroups] = useState<Age[]>(
+    (spec?.ageGroups ?? []).map((a) => ({
+      id: a.id, en: a.label.en, ko: a.label.ko, min: String(a.minAgeInclusive), max: String(a.maxAgeInclusive),
+    })),
+  );
+
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const save = async () => {
+    setBusy(true);
+    setError(null);
+
+    const raw = {
+      slug: slug.trim(),
+      content: {
+        title: { en: titleEn.trim(), ko: titleKo.trim() },
+        fee: feeMinor.trim() === "" ? null : { amountMinor: Number(feeMinor), currency: "EUR" },
+        timezone: timezone.trim(),
+        keyDates: content?.keyDates ?? [],
+        formSpec: {
+          version: spec?.version ?? "v1",
+          ageReferenceDate: spec?.ageReferenceDate ?? null,
+          categories: categories.map((c) => ({ id: c.id.trim(), label: { en: c.en.trim(), ko: c.ko.trim() } })),
+          ageGroups: ageGroups.map((a) => ({
+            id: a.id.trim(), label: { en: a.en.trim(), ko: a.ko.trim() },
+            minAgeInclusive: Number(a.min), maxAgeInclusive: Number(a.max),
+          })),
+          fields: spec?.fields ?? [],
+          uploads: spec?.uploads ?? [],
+        },
+        exhibition: content?.exhibition ?? null,
+        guidelines: guidelinesUrl.trim() === ""
+          ? null
+          : { url: guidelinesUrl.trim(), locale: guidelinesLocale, version: guidelinesVersion.trim() || "v1" },
+      },
+      opensAt: toIso(opensAt),
+      closesAt: toIso(closesAt),
+      paymentClosesAt: toIso(paymentClosesAt),
+      published,
+    };
+
+    // Validate + brand client-side before sending; the server validates again.
+    const parsed = CompetitionEditSchema.safeParse(raw);
+    if (!parsed.success) {
+      setBusy(false);
+      setError(`입력값을 확인해 주세요: ${parsed.error.issues.map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`).join("; ")}`);
+      return;
+    }
+
+    const res =
+      mode === "create"
+        ? await createCompetition(crypto.randomUUID(), parsed.data)
+        : await updateCompetition(initial!.id, initial!.revision, parsed.data);
+    setBusy(false);
+
+    if (res.kind === "success") {
+      router.push(`/admin/competitions/${res.data.id}`);
+      router.refresh();
+    } else {
+      setError(
+        res.kind === "error" && res.code === "REVISION_CONFLICT"
+          ? "다른 곳에서 먼저 수정되었습니다. 새로고침 후 최신 내용으로 다시 저장해 주세요."
+          : res.kind === "error" && res.code === "VALIDATION_FAILED"
+            ? `입력값을 확인해 주세요: ${res.message}`
+            : res.kind === "error"
+              ? res.message
+              : "저장에 실패했습니다.",
+      );
+    }
+  };
+
+  const field = "mt-1 w-full rounded-lg border border-field bg-white px-4 py-2.5 text-[16px] text-ink-strong outline-none focus:border-brand-blue";
+  const label = "text-[16px] font-semibold text-ink-strong";
+
+  return (
+    <div className="max-w-[52rem]">
+      {mode === "edit" && initial && (
+        <p className="mb-4 text-[15px] text-ink-strong/70">
+          revision {initial.revision} · {initial.draftEnabled ? "접수 열림" : "접수 닫힘"}
+        </p>
+      )}
+
+      <div className="flex flex-col gap-5 rounded-2xl border border-line bg-white p-6">
+        <label className="block">
+          <span className={label}>슬러그 (URL, 소문자·하이픈)</span>
+          <input className={field} value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="leipzig-2027" />
+        </label>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block">
+            <span className={label}>제목 (EN)</span>
+            <input className={field} value={titleEn} onChange={(e) => setTitleEn(e.target.value)} />
+          </label>
+          <label className="block">
+            <span className={label}>제목 (KO)</span>
+            <input className={field} value={titleKo} onChange={(e) => setTitleKo(e.target.value)} />
+          </label>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block">
+            <span className={label}>참가비 (EUR, 최소단위 minor. 예: €70 → 7000. 비우면 미정)</span>
+            <input className={field} type="number" min={0} value={feeMinor} onChange={(e) => setFeeMinor(e.target.value)} />
+          </label>
+          <label className="block">
+            <span className={label}>시간대 (IANA)</span>
+            <input className={field} value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder="Europe/Berlin" />
+          </label>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <label className="block">
+            <span className={label}>접수 시작</span>
+            <input className={field} type="datetime-local" value={opensAt} onChange={(e) => setOpensAt(e.target.value)} />
+          </label>
+          <label className="block">
+            <span className={label}>접수 마감</span>
+            <input className={field} type="datetime-local" value={closesAt} onChange={(e) => setClosesAt(e.target.value)} />
+          </label>
+          <label className="block">
+            <span className={label}>결제 마감</span>
+            <input className={field} type="datetime-local" value={paymentClosesAt} onChange={(e) => setPaymentClosesAt(e.target.value)} />
+          </label>
+        </div>
+        <p className="text-[15px] text-ink-strong/70">일정은 브라우저 로컬 시간으로 입력되어 UTC로 저장됩니다. 참가자에게는 위 공모 시간대로 표시됩니다.</p>
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={published} onChange={(e) => setPublished(e.target.checked)} className="h-4 w-4 accent-brand-blue" />
+          <span className={label}>공개(published)</span>
+          <span className="text-[15px] text-ink-strong/70">— 공개는 노출일 뿐, 실제 접수 오픈은 아래 오픈 제어에서 별도입니다.</span>
+        </label>
+      </div>
+
+      {/* 부문 (categories) */}
+      <div className="mt-6 rounded-2xl border border-line bg-white p-6">
+        <div className="flex items-center justify-between">
+          <h3 className="font-title text-[18px] font-bold text-ink-strong">부문</h3>
+          <Button size="sm" variant="outline" onClick={() => setCategories((c) => [...c, { id: "", en: "", ko: "" }])}>부문 추가</Button>
+        </div>
+        {categories.length === 0 && <p className="mt-3 text-[16px] text-ink-strong/70">부문이 없습니다.</p>}
+        <div className="mt-3 flex flex-col gap-3">
+          {categories.map((c, i) => (
+            <div key={i} className="grid gap-2 sm:grid-cols-[1fr_1fr_1fr_auto]">
+              <input className={field} value={c.id} placeholder="id (예: picture_book)" onChange={(e) => setCategories((v) => v.map((x, j) => j === i ? { ...x, id: e.target.value } : x))} />
+              <input className={field} value={c.en} placeholder="EN" onChange={(e) => setCategories((v) => v.map((x, j) => j === i ? { ...x, en: e.target.value } : x))} />
+              <input className={field} value={c.ko} placeholder="KO" onChange={(e) => setCategories((v) => v.map((x, j) => j === i ? { ...x, ko: e.target.value } : x))} />
+              <Button size="sm" variant="ghost" onClick={() => setCategories((v) => v.filter((_, j) => j !== i))}>삭제</Button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 연령 부문 (ageGroups) */}
+      <div className="mt-6 rounded-2xl border border-line bg-white p-6">
+        <div className="flex items-center justify-between">
+          <h3 className="font-title text-[18px] font-bold text-ink-strong">연령 부문</h3>
+          <Button size="sm" variant="outline" onClick={() => setAgeGroups((a) => [...a, { id: "", en: "", ko: "", min: "", max: "" }])}>연령 추가</Button>
+        </div>
+        {ageGroups.length === 0 && <p className="mt-3 text-[16px] text-ink-strong/70">연령 부문이 없습니다.</p>}
+        <div className="mt-3 flex flex-col gap-3">
+          {ageGroups.map((a, i) => (
+            <div key={i} className="grid gap-2 sm:grid-cols-[1fr_1fr_1fr_5rem_5rem_auto]">
+              <input className={field} value={a.id} placeholder="id" onChange={(e) => setAgeGroups((v) => v.map((x, j) => j === i ? { ...x, id: e.target.value } : x))} />
+              <input className={field} value={a.en} placeholder="EN" onChange={(e) => setAgeGroups((v) => v.map((x, j) => j === i ? { ...x, en: e.target.value } : x))} />
+              <input className={field} value={a.ko} placeholder="KO" onChange={(e) => setAgeGroups((v) => v.map((x, j) => j === i ? { ...x, ko: e.target.value } : x))} />
+              <input className={field} type="number" min={0} value={a.min} placeholder="최소" onChange={(e) => setAgeGroups((v) => v.map((x, j) => j === i ? { ...x, min: e.target.value } : x))} />
+              <input className={field} type="number" min={0} value={a.max} placeholder="최대" onChange={(e) => setAgeGroups((v) => v.map((x, j) => j === i ? { ...x, max: e.target.value } : x))} />
+              <Button size="sm" variant="ghost" onClick={() => setAgeGroups((v) => v.filter((_, j) => j !== i))}>삭제</Button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 요강 (guidelines) */}
+      <div className="mt-6 rounded-2xl border border-line bg-white p-6">
+        <h3 className="font-title text-[18px] font-bold text-ink-strong">요강 (선택)</h3>
+        <div className="mt-3 grid gap-4 sm:grid-cols-[2fr_1fr_1fr]">
+          <label className="block">
+            <span className={label}>URL</span>
+            <input className={field} value={guidelinesUrl} onChange={(e) => setGuidelinesUrl(e.target.value)} placeholder="https://…" />
+          </label>
+          <label className="block">
+            <span className={label}>언어</span>
+            <Select value={guidelinesLocale} onChange={(e) => setGuidelinesLocale(e.target.value as "en" | "ko")} className="mt-1">
+              <option value="en">EN</option>
+              <option value="ko">KO</option>
+            </Select>
+          </label>
+          <label className="block">
+            <span className={label}>버전</span>
+            <input className={field} value={guidelinesVersion} onChange={(e) => setGuidelinesVersion(e.target.value)} placeholder="v1" />
+          </label>
+        </div>
+      </div>
+
+      {mode === "edit" && (
+        <p className="mt-4 text-[15px] text-ink-strong/70">
+          입력 필드·업로드 규격·주요 일정·전시 정보는 이 화면에서 보존됩니다(전용 편집기는 추후). 정책(제출/결제/보관)·동의문·오픈은 아래/별도에서 관리합니다.
+        </p>
+      )}
+
+      {error && (
+        <Message tone="danger" className="mt-4" title="저장 실패">{error}</Message>
+      )}
+
+      <div className="mt-6 flex flex-wrap gap-3">
+        <Button onClick={save} disabled={busy}>{busy ? "저장 중…" : mode === "create" ? "공모 등록" : "변경 저장"}</Button>
+        <Button href="/admin/competitions" variant="ghost">목록으로</Button>
+      </div>
+    </div>
+  );
+}
