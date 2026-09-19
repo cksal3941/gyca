@@ -60,7 +60,7 @@ import {
   type UploadSession,
 } from "@/contracts/uploads";
 import { SubmissionRecordSchema } from "@/contracts/submission-record";
-import { isLive, notConnected } from "./mode";
+import { isLive } from "./mode";
 import { httpGet, httpSend, httpList } from "./http";
 
 /* ---- UI request state (Claude-owned; not a transport type) ---- */
@@ -373,6 +373,25 @@ export async function getCompetitionBySlug(
   return getCompetitionSync("open-ready");
 }
 
+/** Published competitions (id + title etc.). Live: GET /competitions. Mock: the
+ *  fixture competitions, deduped by id. Used to resolve a competitionId → title
+ *  where the entry contracts only carry the id (see My Page cards / entry detail).
+ *  An empty list is a `success` page here (not `empty`) so callers get a map. */
+export async function listCompetitions(
+  opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<Page<Competition>>> {
+  if (isLive) {
+    const r = await httpList("/competitions?limit=50", CompetitionSchema, opts.signal);
+    return r.kind === "empty" ? { kind: "success", data: { items: [], nextCursor: null } } : r;
+  }
+  const seen = new Map<string, Competition>();
+  for (const s of ["open-ready", "upcoming", "archived"] as const) {
+    const r = getCompetitionSync(s);
+    if (r.kind === "success") seen.set(r.data.id, r.data);
+  }
+  return { kind: "success", data: { items: [...seen.values()], nextCursor: null } };
+}
+
 export async function listMyEntries(
   scenario: ListScenario = "some",
   opts: { delayMs?: number; signal?: AbortSignal } = {},
@@ -405,9 +424,7 @@ export async function listMyCertificates(
   scenario: ListScenario = "some",
   opts: { delayMs?: number; signal?: AbortSignal } = {},
 ): Promise<RequestState<Page<CertificateSummary>>> {
-  // No live endpoint yet: there is no GET /certificates (mine). Recorded as a
-  // contract gap in docs/frontend-handoff.md; never falls back to mock in live.
-  if (isLive) return notConnected();
+  if (isLive) return httpList("/certificates?limit=50", CertificateSummarySchema, opts.signal);
   if (opts.delayMs) await wait(opts.delayMs);
   if (scenario === "error") {
     return { kind: "error", code: "INTERNAL_ERROR", message: "인증서를 불러오지 못했습니다.", retryable: true };
@@ -535,10 +552,7 @@ export async function getOrder(
   return parseOne(PaymentOrderSchema, RAW_PAYMENT_ORDER);
 }
 
-/* ---- uploads (draft file lifecycle; the browser does the presigned transfer) ----
- * NOTE: certificate download (POST /certificates/{id}/download, GET
- * /entries/{id}/certificates) has no server route yet → not wired (like
- * listMyCertificates). */
+/* ---- uploads (draft file lifecycle; the browser does the presigned transfer) ---- */
 
 const RemoveUploadResultSchema = z.object({ revision: z.number().int().positive() }).readonly();
 

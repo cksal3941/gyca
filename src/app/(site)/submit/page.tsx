@@ -151,9 +151,13 @@ function SubmitForm({
       </div>
 
       <p className="mt-4 text-[15px] leading-[1.7] text-ink-strong">
-        {ko
-          ? "현재는 데모이며 서버 저장은 아직 연결되지 않았습니다(새로고침 시 초기화됩니다). 실제 연결 후에는 임시저장으로 서버에 보관되어 새로고침·재로그인 후 이어쓸 수 있으며, 민감한 지원서 데이터는 브라우저에 저장하지 않습니다."
-          : "This is a demo — server-side draft saving is not connected yet (a refresh resets it). Once connected, drafts are stored on the server so you can resume after a refresh or re-login, and sensitive application data is never kept in your browser."}
+        {isLive
+          ? ko
+            ? "임시저장하면 서버에 보관되어 새로고침·재로그인 후 이어서 작성할 수 있습니다. 민감한 지원서 데이터는 브라우저에 저장하지 않습니다."
+            : "Saved drafts are stored on the server so you can resume after a refresh or re-login. Sensitive application data is never kept in your browser."
+          : ko
+            ? "현재는 데모이며 서버 저장은 아직 연결되지 않았습니다(새로고침 시 초기화됩니다). 실제 연결 후에는 임시저장으로 서버에 보관되어 새로고침·재로그인 후 이어쓸 수 있으며, 민감한 지원서 데이터는 브라우저에 저장하지 않습니다."
+            : "This is a demo — server-side draft saving is not connected yet (a refresh resets it). Once connected, drafts are stored on the server so you can resume after a refresh or re-login, and sensitive application data is never kept in your browser."}
       </p>
 
       {state.saveStatus === "error" && (

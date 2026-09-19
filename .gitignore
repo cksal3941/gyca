@@ -13,6 +13,9 @@
 # testing
 /coverage
 
+# local PGlite dev database (live E2E harness)
+/.pglite-data
+
 # next.js
 /.next/
 /out/

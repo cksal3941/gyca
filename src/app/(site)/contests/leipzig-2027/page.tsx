@@ -1,7 +1,6 @@
-import Link from "next/link";
 import EditorialHeader from "@/components/site/EditorialHeader";
+import LeipzigApplyButton from "@/components/site/LeipzigApplyButton";
 import { getServerLocale } from "@/lib/i18n/server";
-import { getCompetitionBySlug, canStartEntry } from "@/lib/api";
 import type { Locale } from "@/lib/i18n";
 import {
   DETAIL_META,
@@ -14,7 +13,6 @@ import {
   EXHIBITION,
   FAQ,
   KEY_DATES,
-  LEIPZIG_SLUG,
   type I18n,
   type Maybe,
 } from "@/lib/content/leipzig-detail";
@@ -22,8 +20,6 @@ import {
 // Dedicated Leipzig 2027 detail. A static route segment, so it takes precedence
 // over the generic /contests/[slug] page. First-launch content is DOCX-structured
 // and marks any undecided policy as "준비 중" rather than inventing it.
-
-const APPLY_HREF = `/submit?contest=${LEIPZIG_SLUG}`;
 
 /** Render a confirmed value, or a clearly-marked "being finalized" chip. */
 function MaybeValue({ v, locale }: { v: Maybe; locale: Locale }) {
@@ -52,10 +48,9 @@ export default async function LeipzigDetailPage() {
   const t = (v: I18n) => v[locale];
 
   // Apply CTA is gated strictly on the server competition's allowedActions
-  // (start_entry). Live: GET /competitions/leipzig-2027; a lookup failure or a
-  // not-yet-open policy simply falls to the "준비 중" state — never a fake Apply.
-  const comp = await getCompetitionBySlug(LEIPZIG_SLUG);
-  const canApply = comp.kind === "success" && canStartEntry(comp.data);
+  // (start_entry), fetched client-side by <LeipzigApplyButton> so this page can
+  // stay a server component. A lookup failure or a not-yet-open policy falls to
+  // the "준비 중" state — never a fake Apply.
 
   return (
     <>
@@ -317,19 +312,7 @@ export default async function LeipzigDetailPage() {
               <p className="mt-1 text-[16px] text-ink-strong">
                 {ko ? "마감 2026.12.31" : "Deadline 31 Dec 2026"}
               </p>
-              {canApply ? (
-                <Link
-                  href={APPLY_HREF}
-                  className="mt-5 flex items-center justify-center gap-2 rounded-lg bg-black px-5 py-3 text-[16px] font-semibold text-white hover:opacity-90"
-                >
-                  {ko ? "작품 접수하기" : "Apply now"}
-                  <span aria-hidden>›</span>
-                </Link>
-              ) : (
-                <span className="mt-5 flex cursor-not-allowed items-center justify-center rounded-lg border border-line bg-surface px-5 py-3 text-[16px] font-semibold text-ink-strong opacity-70">
-                  {ko ? "접수 준비 중" : "Opening soon"}
-                </span>
-              )}
+              <LeipzigApplyButton locale={locale} variant="desktop" />
               <p className="mt-3 text-[15px] leading-[1.6] text-ink-strong">
                 {ko
                   ? "접수 시 결제는 €70뿐입니다. 본선 비용은 별도·선정 후 안내됩니다."
@@ -342,19 +325,7 @@ export default async function LeipzigDetailPage() {
 
       {/* Sticky CTA (mobile) */}
       <div className="sticky bottom-0 z-40 border-t border-line bg-white px-6 py-3 lg:hidden">
-        {canApply ? (
-          <Link
-            href={APPLY_HREF}
-            className="flex items-center justify-center gap-2 rounded-lg bg-black px-5 py-3 text-[16px] font-semibold text-white"
-          >
-            {ko ? "작품 접수하기 · €70" : "Apply now · €70"}
-            <span aria-hidden>›</span>
-          </Link>
-        ) : (
-          <span className="flex items-center justify-center rounded-lg border border-line bg-surface px-5 py-3 text-[16px] font-semibold text-ink-strong">
-            {ko ? "접수 준비 중" : "Opening soon"}
-          </span>
-        )}
+        <LeipzigApplyButton locale={locale} variant="mobile" />
       </div>
     </>
   );
