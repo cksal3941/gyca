@@ -38,6 +38,10 @@ import {
   PartnerAdminPageSchema,
   type PartnerBody,
 } from "@/contracts/partner-content";
+import {
+  AdminPrivacyRequestSchema,
+  type ReviewPrivacyRequest,
+} from "@/contracts/privacy-requests";
 import { AdminDashboardSchema } from "@/contracts/admin-dashboard";
 import { PaymentHealthSchema } from "@/contracts/payment-health";
 import { PaymentReviewSchema } from "@/contracts/payment-admin";
@@ -852,4 +856,27 @@ export async function submitReview(
   if (opts.scenario === "conflict")
     return { kind: "error", code: "REVISION_CONFLICT", message: "다른 기기에서 먼저 저장되었습니다. 최신 내용을 불러온 뒤 다시 제출하세요.", retryable: true };
   return { kind: "success", data: { submittedAt: "2027-01-05T10:05:00Z", revision: opts.expectedRevision + 1 } };
+}
+
+/* ---- privacy requests admin (account closure + erasure review; LIVE, organizer) ---- */
+
+export type AdminPrivacyRequest = z.infer<typeof AdminPrivacyRequestSchema>;
+
+/** Privacy requests queue (account closure + erasure). Live: GET
+ *  /admin/privacy-requests. */
+export async function listAdminPrivacyRequests(opts: { signal?: AbortSignal } = {}): Promise<RequestState<Page<AdminPrivacyRequest>>> {
+  if (!isLive) return cmsOff();
+  const r = await httpList("/admin/privacy-requests?limit=50", AdminPrivacyRequestSchema, opts.signal);
+  return r as RequestState<Page<AdminPrivacyRequest>>;
+}
+
+/** Transition a privacy request (start_review / place_retention_hold /
+ *  resume_review / approve_for_execution). Live: POST
+ *  /admin/privacy-requests/{id}/review. Approving execution is guarded and
+ *  irreversible — the caller confirms before invoking that decision. */
+export async function reviewPrivacyRequest(
+  id: string, input: ReviewPrivacyRequest, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<AdminPrivacyRequest>> {
+  if (!isLive) return cmsOff();
+  return httpSend("POST", `/admin/privacy-requests/${encodeURIComponent(id)}/review`, AdminPrivacyRequestSchema, { body: input, signal: opts.signal });
 }
