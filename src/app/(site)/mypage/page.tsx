@@ -602,9 +602,18 @@ export default function MyPage() {
           </StateView>
         </TabPanel>
 
-        {/* 개인정보 (static; no profile contract yet) */}
+        {/* 개인정보 (static preview; no profile contract yet — not wired) */}
         <TabPanel id="profile" active={tab === "profile"}>
-          <form className="mt-8 max-w-[46rem] rounded-2xl border border-line bg-white p-6">
+          <Message
+            tone="info"
+            className="mt-8 max-w-[46rem]"
+            title={ko ? "준비 중" : "Coming soon"}
+          >
+            {ko
+              ? "개인정보 편집은 아직 서버에 연결되지 않았습니다. 아래는 미리보기이며, 저장은 연결 후 제공됩니다."
+              : "Profile editing isn't connected to the server yet. The form below is a preview; saving will be available once it's wired."}
+          </Message>
+          <form className="mt-4 max-w-[46rem] rounded-2xl border border-line bg-white p-6">
             <div className="flex flex-col gap-5">
               {[
                 { label: ko ? "이름" : "Name", type: "text", placeholder: ko ? "홍길동" : "Jane Doe" },
@@ -621,12 +630,13 @@ export default function MyPage() {
                   <input
                     type={f.type}
                     placeholder={f.placeholder}
-                    className="mt-2 w-full rounded-lg border border-field bg-canvas px-4 py-3 text-[16px] text-ink-strong outline-none focus:border-brand-blue"
+                    disabled
+                    className="mt-2 w-full rounded-lg border border-field bg-surface px-4 py-3 text-[16px] text-ink-strong outline-none focus:border-brand-blue disabled:cursor-not-allowed disabled:opacity-70"
                   />
                 </label>
               ))}
             </div>
-            <Button type="button" className="mt-6">
+            <Button type="button" className="mt-6" disabled>
               {ko ? "변경 사항 저장" : "Save changes"}
             </Button>
           </form>
