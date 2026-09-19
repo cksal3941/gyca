@@ -46,6 +46,11 @@ import {
   AdminCompetitionPresentationSchema,
   type CompetitionPresentationSchema,
 } from "@/contracts/competition-presentation";
+import {
+  ArchiveAdminItemSchema,
+  type ArchiveContent,
+  type ArchivePublicationEvidenceSchema,
+} from "@/contracts/project-archive";
 import { AdminDashboardSchema } from "@/contracts/admin-dashboard";
 import { PaymentHealthSchema } from "@/contracts/payment-health";
 import { PaymentReviewSchema } from "@/contracts/payment-admin";
@@ -905,4 +910,60 @@ export async function updateCompetitionPresentation(
 ): Promise<RequestState<AdminCompetitionPresentation>> {
   if (!isLive) return cmsOff();
   return httpSend("PUT", `/admin/competitions/${encodeURIComponent(competitionId)}/presentation`, AdminCompetitionPresentationSchema, { body: input, signal: opts.signal });
+}
+
+/* ---- project archive CMS (completed projects; LIVE, organizer) ---- */
+
+export type ArchiveAdminItem = z.infer<typeof ArchiveAdminItemSchema>;
+export type ArchivePublicationEvidence = z.infer<typeof ArchivePublicationEvidenceSchema>;
+
+/** Archive projects (draft/published/archived). Live: GET /admin/content/projects. */
+export async function listAdminProjects(
+  status: string | null = null, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<Page<ArchiveAdminItem>>> {
+  if (!isLive) return cmsOff();
+  const p = new URLSearchParams();
+  if (status) p.set("status", status);
+  p.set("limit", "20");
+  const r = await httpList(`/admin/content/projects?${p.toString()}`, ArchiveAdminItemSchema, opts.signal);
+  return r as RequestState<Page<ArchiveAdminItem>>;
+}
+
+/** One archive project (admin). Live: GET /admin/content/projects/{id}. */
+export async function getAdminProject(id: string, opts: { signal?: AbortSignal } = {}): Promise<RequestState<ArchiveAdminItem>> {
+  if (!isLive) return cmsOff();
+  return httpGet(`/admin/content/projects/${encodeURIComponent(id)}`, ArchiveAdminItemSchema, opts.signal);
+}
+
+/** Create a draft project. Live: POST /admin/content/projects. */
+export async function createProject(
+  input: { actionId: string; slug: string; content: ArchiveContent }, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<ArchiveAdminItem>> {
+  if (!isLive) return cmsOff();
+  return httpSend("POST", "/admin/content/projects", ArchiveAdminItemSchema, { body: input, signal: opts.signal });
+}
+
+/** Edit a project (whole content). Live: PATCH /admin/content/projects/{id}.
+ *  Editing a PUBLISHED project reverts it to draft (removed from public). */
+export async function updateProject(
+  id: string, input: { actionId: string; expectedRevision: number; content: ArchiveContent }, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<ArchiveAdminItem>> {
+  if (!isLive) return cmsOff();
+  return httpSend("PATCH", `/admin/content/projects/${encodeURIComponent(id)}`, ArchiveAdminItemSchema, { body: input, signal: opts.signal });
+}
+
+/** Publish a draft (records publication evidence). Live: POST .../{id}/publish. */
+export async function publishProject(
+  id: string, input: { actionId: string; expectedRevision: number; evidence: ArchivePublicationEvidence }, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<ArchiveAdminItem>> {
+  if (!isLive) return cmsOff();
+  return httpSend("POST", `/admin/content/projects/${encodeURIComponent(id)}/publish`, ArchiveAdminItemSchema, { body: input, signal: opts.signal });
+}
+
+/** Archive a project (terminal — no restore). Live: POST .../{id}/archive. */
+export async function archiveProject(
+  id: string, input: { actionId: string; expectedRevision: number }, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<ArchiveAdminItem>> {
+  if (!isLive) return cmsOff();
+  return httpSend("POST", `/admin/content/projects/${encodeURIComponent(id)}/archive`, ArchiveAdminItemSchema, { body: input, signal: opts.signal });
 }

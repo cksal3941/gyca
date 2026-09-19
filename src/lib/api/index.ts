@@ -65,6 +65,8 @@ import { EditorialPublicItemSchema } from "@/contracts/editorial-content";
 import { PrivacyRequestSchema, type PrivacyRequest } from "@/contracts/privacy-requests";
 import { CertificateDownloadSchema } from "@/contracts/certificates";
 import { CompetitionCardSchema } from "@/contracts/competition-presentation";
+import { ArchivePublicItemSchema, type ArchivePublicItem } from "@/contracts/project-archive";
+export type { ArchivePublicItem };
 import { isLive } from "./mode";
 import { httpGet, httpSend, httpList } from "./http";
 
@@ -465,6 +467,58 @@ export async function listCompetitionCards(
     return r.kind === "empty" ? { kind: "success", data: { items: [], nextCursor: null } } : (r as RequestState<Page<CompetitionCard>>);
   }
   return { kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 지원하지 않습니다.", retryable: false };
+}
+
+/* ---- public project archive (completed projects / winners / exhibitions) ---- */
+
+const archiveEmpty = (): RequestState<Page<ArchivePublicItem>> => ({ kind: "success", data: { items: [], nextCursor: null } });
+
+/** Published completed-project archives. Live: GET /content/projects. Mock: empty
+ *  (the public archive pages fall back to their static content in mock mode). */
+export async function listProjects(
+  opts: { cursor?: string | null; limit?: number; signal?: AbortSignal } = {},
+): Promise<RequestState<Page<ArchivePublicItem>>> {
+  if (!isLive) return archiveEmpty();
+  const p = new URLSearchParams();
+  if (opts.cursor) p.set("cursor", opts.cursor);
+  p.set("limit", String(opts.limit ?? 20));
+  const r = await httpList(`/content/projects?${p.toString()}`, ArchivePublicItemSchema, opts.signal);
+  return r.kind === "empty" ? archiveEmpty() : (r as RequestState<Page<ArchivePublicItem>>);
+}
+
+/** One published project by slug. Live: GET /content/projects/{slug} (unpublished
+ *  / archived → NOT_FOUND). Mock: not available (static archive pages). */
+export async function getProject(
+  slug: string, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<ArchivePublicItem>> {
+  if (isLive) return httpGet(`/content/projects/${encodeURIComponent(slug)}`, ArchivePublicItemSchema, opts.signal);
+  return { kind: "error", code: "NOT_FOUND", message: "미리보기에서는 지원하지 않습니다.", retryable: false };
+}
+
+/** Projects whose `selection` section is ready (winners collections). Live: GET
+ *  /content/winners — a project-level collection, not per-winner rows. */
+export async function listWinners(
+  opts: { cursor?: string | null; limit?: number; signal?: AbortSignal } = {},
+): Promise<RequestState<Page<ArchivePublicItem>>> {
+  if (!isLive) return archiveEmpty();
+  const p = new URLSearchParams();
+  if (opts.cursor) p.set("cursor", opts.cursor);
+  p.set("limit", String(opts.limit ?? 20));
+  const r = await httpList(`/content/winners?${p.toString()}`, ArchivePublicItemSchema, opts.signal);
+  return r.kind === "empty" ? archiveEmpty() : (r as RequestState<Page<ArchivePublicItem>>);
+}
+
+/** Projects whose `exhibition_photos` section is ready. Live: GET
+ *  /content/exhibitions — a project-level collection. */
+export async function listExhibitions(
+  opts: { cursor?: string | null; limit?: number; signal?: AbortSignal } = {},
+): Promise<RequestState<Page<ArchivePublicItem>>> {
+  if (!isLive) return archiveEmpty();
+  const p = new URLSearchParams();
+  if (opts.cursor) p.set("cursor", opts.cursor);
+  p.set("limit", String(opts.limit ?? 20));
+  const r = await httpList(`/content/exhibitions?${p.toString()}`, ArchivePublicItemSchema, opts.signal);
+  return r.kind === "empty" ? archiveEmpty() : (r as RequestState<Page<ArchivePublicItem>>);
 }
 
 /** Published editorial content for the public site (notice/schedule/faq/news/press).

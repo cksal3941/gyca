@@ -16,6 +16,8 @@ import {
   type Winner,
 } from "@/lib/site-data";
 import type { Bi, Locale } from "@/lib/i18n";
+import { isLive } from "@/lib/api/mode";
+import ProjectCollectionView from "@/components/archive/ProjectCollectionView";
 
 /** Award pill for use over imagery (translucent, white text + colored dot).
  *  Carries a "sample" marker — these are demo placeholders, not real results. */
@@ -157,6 +159,13 @@ export default function WinnersPage() {
         crumbs={[{ label: locale === "ko" ? "수상작" : "Winners" }]}
         locale={locale}
       />
+      {isLive ? (
+        <ProjectCollectionView
+          kind="winners"
+          locale={locale}
+          emptyText={locale === "ko" ? "공개된 수상 프로젝트가 아직 없습니다." : "No winner projects published yet."}
+        />
+      ) : (
       <section className="mx-auto max-w-page px-6 pb-16">
         {/* Safety notice — these winners are demo placeholders, not real results */}
         <div className="mt-6 rounded-xl border border-line bg-surface px-4 py-3 text-[16px] leading-[1.6] text-ink-strong">
@@ -204,6 +213,7 @@ export default function WinnersPage() {
           </p>
         )}
       </section>
+      )}
     </>
   );
 }

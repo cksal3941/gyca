@@ -12,6 +12,8 @@ import {
   type Exhibition,
 } from "@/lib/site-data";
 import type { Locale } from "@/lib/i18n";
+import { isLive } from "@/lib/api/mode";
+import ProjectCollectionView from "@/components/archive/ProjectCollectionView";
 
 function ExhibitionRow({ e, flip, locale }: { e: Exhibition; flip: boolean; locale: Locale }) {
   return (
@@ -90,6 +92,13 @@ export default function ExhibitionsPage() {
         crumbs={[{ label: locale === "ko" ? "전시·공연" : "Exhibitions & Stages" }]}
         locale={locale}
       />
+      {isLive ? (
+        <ProjectCollectionView
+          kind="exhibitions"
+          locale={locale}
+          emptyText={locale === "ko" ? "공개된 전시 프로젝트가 아직 없습니다." : "No exhibition projects published yet."}
+        />
+      ) : (
       <section className="mx-auto max-w-page px-6">
         {/* Safety notice — these events are demo placeholders, not approved */}
         <div className="mt-6 rounded-xl border border-line bg-surface px-4 py-3 text-[16px] leading-[1.6] text-ink-strong">
@@ -128,6 +137,7 @@ export default function ExhibitionsPage() {
           </p>
         )}
       </section>
+      )}
     </>
   );
 }
