@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import PageHeader from "@/components/site/PageHeader";
 import { Button, Message, StatusBadge, type Tone } from "@/components/ds";
 import { getAdminEntrySync } from "@/lib/api/ops";
+import { isLive } from "@/lib/api/mode";
+import AdminEntryDetailLive from "@/components/admin/AdminEntryDetailLive";
 
 // Admin entry detail (MOCK, read-oriented). Shows participant/work/files/payment/
 // consents/audit. Actions come from server allowedActions; execution is a guarded
@@ -54,8 +56,47 @@ const money = (m: number) => `€${(m / 100).toFixed(0)}`;
 const fmtBytes = (n: number) => (n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)} MB` : `${Math.round(n / 1000)} KB`);
 const fmtDateTime = (iso: string) => new Date(iso).toLocaleString("ko-KR");
 
-export default async function AdminEntryDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminEntryDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ competition?: string | string[] }>;
+}) {
   const { id } = await params;
+
+  // Live: the detail endpoint is per-competition, so the list passes the
+  // competitionId in the URL. Render the client view (it forwards the session).
+  if (isLive) {
+    const sp = await searchParams;
+    const competitionId = typeof sp.competition === "string" ? sp.competition : null;
+    return (
+      <>
+        <PageHeader
+          eyebrow="Admin"
+          title="접수 상세"
+          crumbs={[
+            { label: "관리자", href: "/admin" },
+            { label: "접수 관리", href: "/admin" },
+            { label: "접수 상세" },
+          ]}
+        />
+        {competitionId ? (
+          <AdminEntryDetailLive competitionId={competitionId} entryId={id} />
+        ) : (
+          <section className="mx-auto max-w-page px-6 py-12">
+            <Message tone="danger" title="공모를 확인할 수 없습니다">
+              접수 상세는 공모를 통해 조회합니다. 접수 목록에서 다시 진입해 주세요.
+            </Message>
+            <div className="mt-6">
+              <Button href="/admin" variant="primary">목록으로</Button>
+            </div>
+          </section>
+        )}
+      </>
+    );
+  }
+
   const res = getAdminEntrySync(id);
   if (res.kind !== "success") notFound();
   const e = res.data;

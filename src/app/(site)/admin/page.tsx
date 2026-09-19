@@ -7,6 +7,7 @@ import { Button, Message, StatusBadge, Modal, Select, type Tone } from "@/compon
 import {
   listAdminEntries,
   listAdminCompetitions,
+  exportAdminEntriesCsv,
   bulkPublishResult,
   bulkIssueCertificates,
   requestCsvExport,
@@ -232,10 +233,31 @@ export default function AdminEntriesPageView() {
   };
 
   const exportCsv = async () => {
-    const r = await requestCsvExport(
-      { search, status, payment, result, sort, cursor: null, pageSize: PAGE_SIZE },
-      { delayMs: 300 },
-    );
+    const q: AdminQuery = { search, status, payment, result, sort, cursor: null, pageSize: PAGE_SIZE };
+    if (isLive) {
+      if (!competitionId) return;
+      const r = await exportAdminEntriesCsv(competitionId, q);
+      if (r.kind === "success") {
+        // Download the full result set as a file (personal data — handle with care).
+        const url = URL.createObjectURL(r.data);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "gyca-entries.csv";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        setNotice("CSV를 내려받았습니다. 개인정보가 포함되어 있으니 취급에 유의하세요.");
+      } else {
+        setNotice(
+          r.kind === "error" && (r.code === "FORBIDDEN" || r.code === "UNAUTHENTICATED")
+            ? "내보내기 권한이 없습니다."
+            : "CSV 내보내기에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+        );
+      }
+      return;
+    }
+    const r = await requestCsvExport(q, { delayMs: 300 });
     if (r.kind === "success")
       setNotice(`CSV 내보내기를 요청했습니다 (요청 ID: ${r.data.exportId}). 완료되면 알림이 제공됩니다.`);
   };
@@ -367,9 +389,9 @@ export default function AdminEntriesPageView() {
           </p>
           <div className="flex flex-wrap items-center gap-2">
             {isLive && (
-              <span className="text-[15px] text-ink-strong/70">일괄 처리·CSV는 준비 중</span>
+              <span className="text-[15px] text-ink-strong/70">일괄 발표·인증서는 준비 중</span>
             )}
-            <Button size="sm" variant="outline" disabled={isLive} onClick={exportCsv}>
+            <Button size="sm" variant="outline" disabled={isLive && !competitionId} onClick={exportCsv}>
               CSV 내보내기
             </Button>
             <Button size="sm" variant="outline" disabled={isLive || selected.size === 0} onClick={() => setModal("result")}>
@@ -480,7 +502,7 @@ export default function AdminEntriesPageView() {
                       </td>
                       <td className="px-4 py-3 text-right">
                         <Link
-                          href={`/admin/entries/${e.id}`}
+                          href={isLive && competitionId ? `/admin/entries/${e.id}?competition=${encodeURIComponent(competitionId)}` : `/admin/entries/${e.id}`}
                           className="text-[16px] font-semibold text-brand-blue hover:underline"
                         >
                           상세

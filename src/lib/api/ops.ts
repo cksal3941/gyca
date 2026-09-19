@@ -18,6 +18,7 @@ import type { RequestState } from "./index";
 import type { EntryStatus, ReviewStatus, PublishedResult, PaymentState } from "@/contracts";
 import { AdminAccessSchema, type AdminAccess } from "@/contracts/admin-access";
 import { AdminEntrySchema, AdminEntriesPageSchema } from "@/contracts/admin-entries";
+import { AdminEntryDetailSchema } from "@/contracts/admin-entry-detail";
 import {
   JudgeAssignmentsSchema,
   JudgeReviewContextSchema,
@@ -305,6 +306,65 @@ export function getAdminEntrySync(id: string): RequestState<AdminEntryDetail> {
     ],
   };
   return { kind: "success", data: detail };
+}
+
+/** Live admin entry detail (contract shape). GET
+ *  /admin/competitions/{competitionId}/entries/{entryId} → AdminEntryDetailSchema
+ *  (participant/work drafts, files with displayName, guardianVerificationStatus,
+ *  consents, certificates, and a ≤100-event audit). Rendered only in live mode;
+ *  mock mode uses getAdminEntrySync. */
+export async function getAdminEntryDetail(
+  competitionId: string,
+  entryId: string,
+  opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<z.infer<typeof AdminEntryDetailSchema>>> {
+  if (!isLive)
+    return { kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 관리자 상세 라이브 조회를 지원하지 않습니다.", retryable: false };
+  return httpGet(
+    `/admin/competitions/${encodeURIComponent(competitionId)}/entries/${encodeURIComponent(entryId)}`,
+    AdminEntryDetailSchema,
+    opts.signal,
+  );
+}
+
+/** Live CSV export for the current search/filter/sort. POST
+ *  /admin/competitions/{competitionId}/entries/export (EntryExportRequest body).
+ *  Success is a text/csv Blob (the full result set, NOT the current page); an
+ *  error is the JSON envelope. Returns the Blob for the caller to download. */
+export async function exportAdminEntriesCsv(
+  competitionId: string,
+  query: AdminQuery,
+  opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<Blob>> {
+  if (!isLive)
+    return { kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 CSV 내보내기를 지원하지 않습니다.", retryable: false };
+  const body: Record<string, unknown> = {};
+  if (query.search) body.q = query.search;
+  if (query.status && query.status !== "all") body.entryStatus = query.status;
+  if (query.payment && query.payment !== "all") body.paymentState = query.payment;
+  if (query.result && query.result !== "all") body.publishedResult = query.result;
+  if (query.sort) body.sort = query.sort;
+  let res: Response;
+  try {
+    res = await fetch(`/api/v1/admin/competitions/${encodeURIComponent(competitionId)}/entries/export`, {
+      method: "POST",
+      credentials: "same-origin",
+      cache: "no-store",
+      headers: { "Content-Type": "application/json", Accept: "text/csv" },
+      body: JSON.stringify(body),
+      signal: opts.signal,
+    });
+  } catch {
+    return { kind: "error", code: "NETWORK", message: "네트워크 오류입니다. 연결을 확인해 주세요.", retryable: true };
+  }
+  if (res.ok && (res.headers.get("content-type") ?? "").includes("csv")) {
+    return { kind: "success", data: await res.blob() };
+  }
+  const json = await res.json().catch(() => null);
+  const err = (json as { error?: { code: string; message: string; retryable: boolean } } | null)?.error;
+  if (err) return { kind: "error", code: err.code, message: err.message, retryable: err.retryable };
+  const byStatus: Record<number, string> = { 401: "UNAUTHENTICATED", 403: "FORBIDDEN", 404: "NOT_FOUND" };
+  return { kind: "error", code: byStatus[res.status] ?? "INTERNAL_ERROR", message: `내보내기 실패 (${res.status})`, retryable: res.status >= 500 };
 }
 
 /* ---- bulk operations (result publish / certificate issue) ---- */
