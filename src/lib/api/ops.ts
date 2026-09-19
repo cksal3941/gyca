@@ -53,7 +53,13 @@ import {
 } from "@/contracts/project-archive";
 import { AdminDashboardSchema } from "@/contracts/admin-dashboard";
 import { PaymentHealthSchema } from "@/contracts/payment-health";
-import { PaymentReviewSchema } from "@/contracts/payment-admin";
+import {
+  PaymentReviewSchema,
+  AcceptLatePaymentResultSchema,
+  type RequeueRecoveryRequest,
+  type AcceptLatePaymentRequest,
+} from "@/contracts/payment-admin";
+import { RefundOverviewSchema, type RequestRefund } from "@/contracts/refunds";
 import {
   JudgeAssignmentsSchema,
   JudgeReviewContextSchema,
@@ -966,4 +972,47 @@ export async function archiveProject(
 ): Promise<RequestState<ArchiveAdminItem>> {
   if (!isLive) return cmsOff();
   return httpSend("POST", `/admin/content/projects/${encodeURIComponent(id)}/archive`, ArchiveAdminItemSchema, { body: input, signal: opts.signal });
+}
+
+/* ---- payment operations mutations (LIVE, organizer/operator) ---- */
+
+const RequeueResultSchema = z.strictObject({ actionId: z.string(), outcome: z.literal("recovery_queued") });
+export type AcceptLatePaymentResult = z.infer<typeof AcceptLatePaymentResultSchema>;
+export type RefundOverview = z.infer<typeof RefundOverviewSchema>;
+
+/** Requeue a stalled PG recovery job. Live: POST
+ *  /admin/competitions/{id}/payment-reviews/{orderId}/requeue. Only when the
+ *  review's allowedActions include requeue_recovery. */
+export async function requeueRecovery(
+  competitionId: string, orderId: string, input: RequeueRecoveryRequest, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<z.infer<typeof RequeueResultSchema>>> {
+  if (!isLive) return opsOff();
+  return httpSend("POST", `/admin/competitions/${encodeURIComponent(competitionId)}/payment-reviews/${encodeURIComponent(orderId)}/requeue`, RequeueResultSchema, { body: input, signal: opts.signal });
+}
+
+/** Accept an after-deadline approved payment (issues the receipt). Live: POST
+ *  .../payment-reviews/{orderId}/accept-late-payment. Only when allowedActions
+ *  include accept_late_payment (sole review reason APPROVED_AFTER_DEADLINE). */
+export async function acceptLatePayment(
+  competitionId: string, orderId: string, input: AcceptLatePaymentRequest, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<AcceptLatePaymentResult>> {
+  if (!isLive) return opsOff();
+  return httpSend("POST", `/admin/competitions/${encodeURIComponent(competitionId)}/payment-reviews/${encodeURIComponent(orderId)}/accept-late-payment`, AcceptLatePaymentResultSchema, { body: input, signal: opts.signal });
+}
+
+/** Refund overview for an order. Live: GET
+ *  /admin/competitions/{id}/payments/{orderId}/refunds. */
+export async function getRefundOverview(competitionId: string, orderId: string, opts: { signal?: AbortSignal } = {}): Promise<RequestState<RefundOverview>> {
+  if (!isLive) return opsOff();
+  return httpGet(`/admin/competitions/${encodeURIComponent(competitionId)}/payments/${encodeURIComponent(orderId)}/refunds`, RefundOverviewSchema, opts.signal);
+}
+
+/** Request a refund (partial/full). Live: POST .../payments/{orderId}/refunds.
+ *  Only when overview.allowedActions include request_refund. Returns the updated
+ *  overview. A lost provider response stays pending — retry only with the same actionId. */
+export async function requestRefund(
+  competitionId: string, orderId: string, input: RequestRefund, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<RefundOverview>> {
+  if (!isLive) return opsOff();
+  return httpSend("POST", `/admin/competitions/${encodeURIComponent(competitionId)}/payments/${encodeURIComponent(orderId)}/refunds`, RefundOverviewSchema, { body: input, signal: opts.signal });
 }

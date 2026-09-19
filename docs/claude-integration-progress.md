@@ -144,3 +144,13 @@ pnpm dev
   - **서버 테스트 통과(정상 흐름):** `node --test tests/submission-api.test.mjs …` 20/20 — "guardian link records three consents without bypassing identity verification"(주입 mailer로 preview→accept 검증) + rate-limit/admin evidence.
   - **브라우저 확인(오류 처리):** 기능 OFF→preview 503→페이지 "미활성"; 기능 ON→무효 토큰 404 NOT_FOUND→"무효 링크"; 무토큰→"무효 링크". 만료/stale은 동일 "무효" 매핑(서버 판정). 검증 후 플래그 기본값(OFF) 복원(로컬 메일러 없어 실요청 불가).
   - **실서비스 확인(미완, 5단계):** 실제 이메일 링크로 보호자가 수락하는 브라우저 E2E는 로컬 HTTPS + 테스트 메일 수신함 구성 후. 운영 API 토큰 노출·HTTPS 해제는 하지 않음.
+
+### 4단계: 남은 관리자 변경 — 진행 (4a 결제 mutation ✅)
+- **어댑터(ops.ts):** `requeueRecovery`, `acceptLatePayment`(→AcceptLatePaymentResult), `getRefundOverview`, `requestRefund`(→RefundOverview). 모두 서버 allowedActions/권한 게이팅.
+- **UI(admin/payments):** 검토 주문 행에 `복구 재큐`·`지연 승인`(사유 인라인 입력, expectedUpdatedAt/expectedReviewedAt 낙관적 동시성) 버튼을 **allowedActions에만** 표시. 처리 후 원장 재조회. 주문별 `환불` 패널(조회→request_refund 있을 때만 요청). 브라우저 dialog 미사용(인라인 폼).
+- **격리 테스트 데이터:** `manage-payment-access.mjs --apply`로 operator@gyca.test에 leipzig-2027 결제 operator 권한 부여(dev, 감사 기록).
+- **검증 등급:**
+  - **브라우저(엔드포인트 도달+게이팅):** 권한 전 4개 엔드포인트 403 FORBIDDEN → 권한 부여 후 health/reviews 200, 가짜 주문 requeue·refund 404 NOT_FOUND(authz 통과, 존재만 없음). payments 페이지: health·검토목록(빈)·환불 패널 렌더, 조치 버튼은 allowedActions에만.
+  - **상태변경(요청→상태변경→재조회):** 실주문이 없어 미검증 — 격리 주문/복구/검토 fixture 시드 필요(코덱스 서버 테스트가 해피패스 커버). 완료 결제 임의 변경 UI 없음.
+  - **실서비스:** 실 PG 승인/환불은 5단계.
+- **미착수(4단계 잔여):** 결과 발표(공개/라운드)·인증서 발급 화면 — received+심사완료 fixture 필요(깊은 파이프라인 시드).
