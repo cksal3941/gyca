@@ -18,7 +18,7 @@
 | 6 심사·발표·인증서 | 진행(심사화면✅ 관리자 judges/rubric✅) | `ops.ts`(judge admin 어댑터),`admin/judges` | judges 목록·활성 표시·rubric set/get 200 실검증 | 배정 관리(제출 접수+S3 필요)·결과 발표·인증서 발급 미착수 | 결과 발표/인증서(엔트리·인프라 후) |
 | 7 공개 CMS·아카이브 | 진행(editorial✅ partner관리✅) | +`ops.ts`(partner 어댑터),`admin/content/partners` | editorial 공개 노출 / **partner 생성→관계확인→발행→공개 실검증** | 공개 partner 배선(PartnerMarquee)·홈 NewsUpdate·notices 상세·아카이브 미착수 | 공개 partner/NewsUpdate 배선·아카이브 |
 | 8 스테이징·장애 검증 | 진행(준비✅) | `.env.example`,`docs/staging-readiness.md` | 프로덕션 빌드(webpack) HEAD exit 0·env 완비·준비 체크리스트 | 실 DB/S3/PG/메일 검증·Docker 기동·부하는 계정·사업자 대기 | 계정 확보 후 실검증 |
-| 9 운영 인계 | 미착수 | | | | |
+| 9 운영 인계 | 진행(운영가이드✅) | `docs/operations-guide.md` | 구축 기능 기준 운영 가이드(권한·공모·접수·결제·심사·CMS·복구) | 출시 판단·최소출시 체크리스트·최종 검증 증거는 실검증/결정 후 | 최소출시 체크리스트(실검증 후) |
 
 ---
 
