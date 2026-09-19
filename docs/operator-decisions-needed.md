@@ -10,6 +10,8 @@
 ## 왜 지금 필요한가 — 공모 오픈 게이팅(실측)
 로컬에서 공모 생성→오픈을 실제로 돌려보니, `open-applications`는 아래 **launch-readiness 체크가 전부 충족**돼야만 열립니다(미충족 시 503로 정확히 차단됨). 굵은 항목이 사용자 결정에 달려 있습니다.
 
+> **입력 화면은 완비됨(2026-09-19).** 공모 등록/편집 폼이 제목·참가비·시간대·접수/결제창·요강·**일정표·전시·나이기준일·부문·연령·입력필드·업로드 규격**을 모두 편집합니다(실측: `public_content`·`schedule`·`form`·`guardian_verification` 는 UI만으로 configured 가능). 즉 **남은 게이트는 화면 부재가 아니라 (1) 입력할 값의 결정(B·C·D·E) + (2) 외부 계정·정책·검증(A·F: consents·guardian_policy·payment_policy·payment_routes·storage·checkout·retention·live_payment)** 입니다. 값이 정해지면 화면에 입력→오픈만 남습니다.
+
 | readiness 체크 | 의미 | 사용자 결정 필요? |
 | --- | --- | --- |
 | public_content | 제목·기간·시간대·참가비 등 | 값 확정 필요(아래 B) |
