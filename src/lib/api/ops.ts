@@ -15,7 +15,7 @@
 // labelled) — the UI renders whatever settings return and never fixes scores.
 
 import type { RequestState } from "./index";
-import type { EntryStatus, ReviewStatus, PublishedResult, PaymentState } from "@/contracts";
+import type { EntryStatus, ReviewStatus, PublishedResult, PaymentState, Page } from "@/contracts";
 import { AdminAccessSchema, type AdminAccess } from "@/contracts/admin-access";
 import { AdminEntrySchema, AdminEntriesPageSchema } from "@/contracts/admin-entries";
 import { AdminEntryDetailSchema } from "@/contracts/admin-entry-detail";
@@ -28,6 +28,11 @@ import {
   ResumeApplicationsSchema,
   ResumedApplicationsSchema,
 } from "@/contracts/application-pause";
+import {
+  EditorialAdminItemSchema,
+  EditorialAdminPageSchema,
+  type EditorialBody,
+} from "@/contracts/editorial-content";
 import {
   JudgeAssignmentsSchema,
   JudgeReviewContextSchema,
@@ -185,6 +190,50 @@ export async function listAdminCompetitions(
     return { kind: "success", data: r.data.items.map((c) => ({ id: c.id, slug: c.slug, published: c.published })) };
   }
   return { kind: "success", data: [{ id: "leipzig-2027", slug: "leipzig-2027", published: true }] };
+}
+
+/* ---- editorial content CMS (LIVE, organizer) ---- */
+
+export type EditorialAdminItem = z.infer<typeof EditorialAdminItemSchema>;
+export type EditorialAdminQuery = { category?: string | null; status?: string | null; cursor?: string | null; limit?: number };
+
+/** Admin editorial list (notice/schedule/faq/news/press · draft/published/archived).
+ *  Live: GET /admin/content/editorial. */
+export async function listAdminEditorial(
+  query: EditorialAdminQuery = {}, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<Page<EditorialAdminItem>>> {
+  if (!isLive) return { kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 CMS를 지원하지 않습니다.", retryable: false };
+  const p = new URLSearchParams();
+  if (query.category) p.set("category", query.category);
+  if (query.status) p.set("status", query.status);
+  if (query.cursor) p.set("cursor", query.cursor);
+  p.set("limit", String(query.limit ?? 50));
+  const r = await httpGet(`/admin/content/editorial?${p.toString()}`, EditorialAdminPageSchema, opts.signal);
+  return r as RequestState<Page<EditorialAdminItem>>;
+}
+
+/** Create editorial content (draft). Live: POST /admin/content/editorial. */
+export async function createEditorial(
+  input: { actionId: string; slug: string; category: string; content: EditorialBody }, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<EditorialAdminItem>> {
+  if (!isLive) return { kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 CMS를 지원하지 않습니다.", retryable: false };
+  return httpSend("POST", "/admin/content/editorial", EditorialAdminItemSchema, { body: input, signal: opts.signal });
+}
+
+/** Edit editorial content. Live: PATCH /admin/content/editorial/{id}. */
+export async function updateEditorial(
+  id: string, input: { actionId: string; expectedRevision: number; content: EditorialBody }, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<EditorialAdminItem>> {
+  if (!isLive) return { kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 CMS를 지원하지 않습니다.", retryable: false };
+  return httpSend("PATCH", `/admin/content/editorial/${encodeURIComponent(id)}`, EditorialAdminItemSchema, { body: input, signal: opts.signal });
+}
+
+/** Publish / archive a content item. Live: POST .../{id}/publish|archive. */
+export async function transitionEditorial(
+  id: string, action: "publish" | "archive", input: { actionId: string; expectedRevision: number }, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<EditorialAdminItem>> {
+  if (!isLive) return { kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 CMS를 지원하지 않습니다.", retryable: false };
+  return httpSend("POST", `/admin/content/editorial/${encodeURIComponent(id)}/${action}`, EditorialAdminItemSchema, { body: input, signal: opts.signal });
 }
 
 /* ---- competition registration / launch control (LIVE, organizer) ---- */
