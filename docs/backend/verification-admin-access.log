@@ -1,0 +1,344 @@
+Running: Backend tests
+✔ access CLIs reject unsafe invocation and malformed files before connecting (1096.4234ms)
+(node:10272) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/admin/access.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ own admin access is scoped, paginated, fresh and never grants participant permissions (1216.9531ms)
+(node:14856) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/entries/admin.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ organizer lists competition entries with independent payment and receipt states (1299.64ms)
+(node:19928) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/competitions/admin.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+▶ organizer competition registration and publication
+  ✔ requires explicit organizer permission and same-origin mutations (28.6397ms)
+  ✔ creates hidden content and publishes without opening applications or payments (39.657ms)
+  ✔ detects duplicate slug, stale edits and protects stable URLs (16.0212ms)
+  ✔ rejects input escalation, invalid timezone and reversed deadline (11.5386ms)
+  ✔ active or used competitions are locked against wholesale edits (16.6684ms)
+  ✔ audit is immutable and audit failure rolls back registration (15.4214ms)
+  ✔ lists unpublished competitions and reads editable values (15.1732ms)
+  ✔ launch diagnostics report gaps without granting opening actions or exposing policies (15.7456ms)
+✔ organizer competition registration and publication (1341.992ms)
+(node:11288) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/competitions/policy.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ projects current open status and permits drafts from configured policy (4.6724ms)
+✔ does not serve hidden competitions (0.0906ms)
+✔ archived overrides dates and disables application (0.2015ms)
+✔ exact exclusive closing time disables application (0.1747ms)
+✔ unset age policy fails closed for both public and entry gate (0.2651ms)
+✔ removes unapproved venue and logo from public response (0.5014ms)
+✔ public entry actions reject unsupported upload policy instead of allowing a blocked draft (0.943ms)
+✔ zero fee is not payment ready because current order creation requires a positive amount (0.2402ms)
+(node:21824) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/competitions/http.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+▶ public competition HTTP handlers use the same PostgreSQL policy as draft creation
+  ✔ filtered lists and individual projections agree for every status (26.183ms)
+  ✔ hidden competitions do not appear and detail returns 404 (2.8292ms)
+  ✔ pagination returns all public competitions without duplicates (2.8501ms)
+  ✔ public action and draft creation close together at deadline (4.6195ms)
+  ✔ invalid filters and limits are rejected (0.8233ms)
+✔ public competition HTTP handlers use the same PostgreSQL policy as draft creation (1176.5632ms)
+(node:18716) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/contracts/index.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ accepts successful payment while receipt confirmation is pending (2.6141ms)
+✔ rejects a receipt number before entry confirmation (0.4997ms)
+✔ rejects a new payment action after verified payment (0.2129ms)
+✔ accepts a confirmed receipt backed by verified payment (0.1422ms)
+✔ rejects received entries without verified payment (0.1637ms)
+✔ accepts a public competition while operating policies remain unresolved (1.6456ms)
+✔ rejects a download action without a published guidelines asset (0.1768ms)
+✔ rejects entry action on an archived competition (0.1474ms)
+✔ rejects readiness with unresolved application policy (0.1644ms)
+✔ rejects official venue disclosure before exhibition approval (0.5056ms)
+✔ rejects fractional minor units (0.2615ms)
+✔ rejects status escalation in a draft update (0.5712ms)
+✔ accepts incomplete draft without deciding name or age policy (0.3127ms)
+✔ database check detects missing schema and migration drift without changing records (1199.4317ms)
+✔ migration entrypoints refuse absent database (3104.0236ms)
+✔ deployment checks validate configuration without echoing credentials or connecting (480.3059ms)
+(node:9496) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/notifications/verification-email.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ verification email refuses missing configuration and binds links to the application (2.5841ms)
+✔ installed Better Auth gates password sign-in until a valid verification link is used (681.1367ms)
+✔ database-backed verification resend limiter rejects excess HTTP requests (1518.5578ms)
+(node:10536) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/entries/http.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+▶ entry HTTP handlers persist owner drafts and enforce boundaries using PostgreSQL
+  ✔ creates one draft for repeated creation keys (31.2395ms)
+  ✔ rejects reusing a key with another competition (1.941ms)
+  ✔ saves partial fields without losing previous fields (9.7863ms)
+  ✔ allows only one update against the same revision (4.07ms)
+  ✔ hides another owners draft for reads and writes (3.7863ms)
+  ✔ rejects anonymous and cross origin requests (0.3295ms)
+  ✔ rejects client status or owner escalation (1.0317ms)
+  ✔ returns private no-store responses without owner ids (2.9918ms)
+  ✔ paginates without duplicate items or another owners entries (7.079ms)
+  ✔ rejects malformed JSON and oversized input before saving (0.8314ms)
+  ✔ rejects invalid cursor and oversized list limits (0.5449ms)
+  ✔ locks submitted entries against edits (1.652ms)
+  ✔ blocks creation at the exclusive deadline (1.9991ms)
+  ✔ keeps unresolved competition policy closed (2.4222ms)
+✔ entry HTTP handlers persist owner drafts and enforce boundaries using PostgreSQL (1130.6236ms)
+(node:8308) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/notifications/guardian-admin.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ organizer reads bounded guardian evidence without granting verification (1286.2845ms)
+(node:6776) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/notifications/guardian-consent.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ guardian mail limit counts all entries for one owner and releases at the hour boundary (1243.3144ms)
+✔ organizer access requires exact verified account and atomically records changes (1197.1543ms)
+(node:6956) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/notifications/password-reset-email.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ password reset uses a fixed app link, single-use token and revokes existing sessions (277.2682ms)
+(node:21848) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/competitions/pause-applications.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Entry request failed { requestId: 'c46018d6-5273-41ad-a763-f0b7975c5a84' }
+✔ pausing applications preserves payment gate and atomically records operator reason (1325.4787ms)
+(node:3244) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/contracts/index.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ paused intake blocks drafts but preserves submitted payment and exactly one receipt (1312.9293ms)
+✔ payment access is competition scoped, audited and guarded by expected permission (1247.2397ms)
+(node:11516) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/payments/admin.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+▶ competition-scoped payment administration
+  ✔ anonymous is 401 and participant is 403; never trusts demo role (31.9095ms)
+  ✔ bounded scoped list excludes ordinary orders and private fields (30.1746ms)
+  ✔ requeue writes immutable actor audit, resets attempts and does not change receipt/payment (21.5578ms)
+  ✔ replay is idempotent and changed payload conflicts (23.0462ms)
+  ✔ audit remains readable after a case leaves the review list and respects scope (24.4317ms)
+  ✔ viewer, revoked permission and wrong competition cannot mutate (20.6454ms)
+  ✔ review flag, completed payment, changed version and non-stalled job refuse requeue (26.2306ms)
+  ✔ audit failure rolls back queue mutation (20.3801ms)
+  ✔ HTTP enforces origin, strict input and page limits (27.8135ms)
+✔ competition-scoped payment administration (1394.4631ms)
+(node:20096) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/payments/options.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+▶ payment route eligibility uses frozen submission and verified configuration
+  ✔ selected route creates one order and immutable accepted terms (52.6141ms)
+  ✔ changed terms, wrong country, disabled provider and foreign owner are refused before creating orders (19.8895ms)
+  ✔ route evidence failure rolls back the order and its idempotency key (22.0036ms)
+  ✔ runtime-style HTTP requires route and explicit refund acceptance (46.6515ms)
+  ✔ returns separate domestic and international candidate routes without currency conversion (14.0919ms)
+  ✔ unsupported countries and unavailable providers do not receive routes (18.6234ms)
+  ✔ missing, duplicate, disabled or unapproved policies fail closed (17.6753ms)
+  ✔ exact payment cutoff blocks routes (11.5228ms)
+  ✔ any existing order prevents switching even after a failed payment (12.9954ms)
+  ✔ authentication, ownership and frozen country cannot be bypassed via query parameters (13.1342ms)
+✔ payment route eligibility uses frozen submission and verified configuration (1421.7528ms)
+(node:17972) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/competitions/payment-policy-admin.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Entry request failed { requestId: '4c261796-aaad-4604-9829-54ffec2a1d39' }
+✔ payment policies require scoped operator permission and never activate checkout (1314.9075ms)
+(node:1020) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/payments/recovery.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+▶ durable recovery uses provider lookup and survives interrupted workers
+  ✔ discovers an order without a browser retry and recovers late notification (66.7316ms)
+  ✔ persists backoff across worker instances (33.3747ms)
+  ✔ does not count a participants recent lookup as a recovery failure (29.2386ms)
+  ✔ separates provider, merchant and test/live scopes (27.3946ms)
+  ✔ reclaims an expired lease and fences the stale worker completion (42.8823ms)
+  ✔ handles distinct jobs during overlapping worker execution (36.8469ms)
+  ✔ escalates after bounded retries without expiring the entry or blocking later payment evidence (93.5878ms)
+  ✔ escalates a worker that crashed on its final attempt (15.1331ms)
+  ✔ keeps the internal endpoint disabled or authenticated before work starts (12.0962ms)
+  ✔ does not discover or claim jobs without a configured provider (12.3652ms)
+  ✔ does not poll an order that has never started a payment (12.7881ms)
+✔ durable recovery uses provider lookup and survives interrupted workers (1534.6274ms)
+(node:22340) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/payments/service.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Payment webhook failed { requestId: '28dfe890-e405-460f-b717-9e79631035c9' }
+▶ payment ledger verifies evidence and atomically confirms entries
+  ✔ creates one order per submission across keys and concurrent requests (20.9425ms)
+  ✔ uses frozen fee and deadline even when the public competition changes (5.969ms)
+  ✔ rejects price tampering, unowned entries and reused key for another entry (19.8673ms)
+  ✔ blocks order creation at the exclusive payment deadline (4.7187ms)
+  ✔ keeps disabled providers and unconfigured policies closed (6.2393ms)
+  ✔ does not trust an unsigned webhook or a browser success claim (10.2778ms)
+  ✔ limits raw webhook bytes before processing (0.8038ms)
+  ✔ separates merchant accounts and test/live evidence (7.5367ms)
+  ✔ quarantines mismatched amount or currency instead of confirming receipt (26.4999ms)
+  ✔ confirms once with one receipt and one durable notification job (24.8155ms)
+  ✔ detects a changed payload under the same event identity (12.0082ms)
+  ✔ records a second successful charge without issuing a second receipt (17.194ms)
+  ✔ recovers a timely payment from a delayed notification under provider-time policy (9.9541ms)
+  ✔ prevents a provider payment identity from confirming two orders (20.2986ms)
+  ✔ recovers a verified success after a previous failure observation (12.1283ms)
+  ✔ records paid but unconfirmed when approval occurs at the cutoff (11.8999ms)
+  ✔ honors an explicitly configured server-verification deadline (9.2632ms)
+  ✔ rolls back approval, receipt and event if a durable job cannot be written (20.0058ms)
+  ✔ reconciles against the provider and enforces owner boundaries and cooldown (18.0601ms)
+  ✔ does not apply reconciliation to a different order (12.8461ms)
+  ✔ paginates only the current owners order history (4.6042ms)
+  ✔ confirms with one durable idempotency key across concurrent HTTP requests (21.954ms)
+  ✔ preserves the confirmation key after an ambiguous provider failure (15.243ms)
+  ✔ switches an ambiguous confirmation to lookup-only after the deadline (14.69ms)
+  ✔ never reissues an approval after the providers 15-day idempotency window (14.099ms)
+  ✔ rejects a fresh late confirmation and browser amount or identity escalation (12.2359ms)
+  ✔ records provider cancellation review without erasing a previously issued receipt (17.3899ms)
+  ✔ connects Toss-normalized approval through the actual ledger and HTTP handler (12.6684ms)
+✔ payment ledger verifies evidence and atomically confirms entries (1529.1519ms)
+(node:15856) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/competitions/policy-history.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ policy history respects distinct permissions and paginates frozen revisions (1297.5657ms)
+(node:20948) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/notifications/receipt-worker.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+▶ receipt email delivery is separate from receipt confirmation
+  ✔ organizer sees scoped delivery status without recipient or message payload (68.3376ms)
+  ✔ sends only confirmed receipt and records provider acceptance once (18.9427ms)
+  ✔ failed mail preserves receipt and retries frozen recipient with same idempotency key (20.52ms)
+  ✔ late retries beyond provider retention are stopped (15.9568ms)
+  ✔ expired lease is reclaimed and stale completion cannot overwrite the new result (16.3999ms)
+  ✔ attempt limit prevents indefinite sending (11.8435ms)
+  ✔ unverified email and disabled mailer cannot send (11.3556ms)
+  ✔ internal execution requires dedicated token (7.6093ms)
+✔ receipt email delivery is separate from receipt confirmation (1311.3335ms)
+✔ Resend adapter fixes endpoint and preserves payload and idempotency header (1.849ms)
+(node:2132) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/uploads/s3.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ S3 configuration is opt-in and incomplete credentials remain disabled (1.6981ms)
+✔ real AWS presigner binds create-only headers, size, owner and expiration (18.7547ms)
+✔ expired requests and non-quarantine keys never get URLs (1.3384ms)
+✔ public or unversioned buckets are rejected (1.7154ms)
+✔ reads bytes with the exact response version and closes stream (2.1644ms)
+✔ bounds both reported size and actual streamed bytes (1.9846ms)
+✔ missing versions and truncated streams never become validated assets (1.9958ms)
+✔ missing objects remain pending; service errors do not expose provider details (1.6997ms)
+✔ scheduled runner bounds work and never forwards secrets to redirects or logs (48.7202ms)
+(node:9956) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/entries/repository.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+▶ submission HTTP flow freezes evidence without issuing a receipt
+  ✔ returns server actions and separate consent documents (42.1542ms)
+  ✔ guardian link records three consents without bypassing identity verification (70.3305ms)
+  ✔ blocks missing English fields with field errors (10.7831ms)
+  ✔ blocks incomplete or altered files (46.5645ms)
+  ✔ requires trusted guardian verification and known country policy (7.349ms)
+  ✔ computes age at the birthday boundary (3.5791ms)
+  ✔ uses submission date for guardian age instead of the competition age reference (5.6142ms)
+  ✔ blocks an unresolved fee or payment deadline before freezing a submission (4.2586ms)
+  ✔ blocks unavailable consent translations (4.0206ms)
+  ✔ detects changed policy even with reused document version (9.5255ms)
+  ✔ rejects forged evidence and duplicate or unaccepted consents (4.769ms)
+  ✔ rejects wrong consent versions (7.9387ms)
+  ✔ enforces ownership, authentication and same origin (6.1927ms)
+  ✔ rejects stale revision and the exact exclusive deadline (13.1345ms)
+  ✔ rolls back snapshot when entry update fails (12.5539ms)
+  ✔ submits once, replays after deadline, freezes content and exposes no receipt (29.1147ms)
+  ✔ unconfigured submission policy remains closed (4.1403ms)
+✔ submission HTTP flow freezes evidence without issuing a receipt (1507.1115ms)
+(node:21728) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/competitions/submission-policy-admin.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Entry request failed { requestId: '5f0a15bf-bddd-4292-9388-39d5cf493c1b' }
+✔ organizer configures consent policy before entries exist with immutable audit (1399.5329ms)
+(node:20800) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/contracts/index.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ handoff scenarios cover full contract and reduced launch without enabling production (7.9564ms)
+(node:10800) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/payments/service.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ payment service exposes a server confirmation boundary (0.5811ms)
+✔ runtime requires explicit complete test configuration and never activates a live key (1.7261ms)
+▶ Toss transport and adapter validate real HTTP responses through a local test server
+  ✔ sends server amount, trailing-colon Basic auth and a stable confirmation key (10.5935ms)
+  ✔ converts fractional major units exactly without rounding fractions of a cent (4.1568ms)
+  ✔ requires explicit currency-unit terms rather than assuming merchant EUR support (1.5886ms)
+  ✔ rejects live/test key mismatch before making a request (0.2865ms)
+  ✔ ignores forged webhook status and amount and re-reads the order (2.4138ms)
+  ✔ rejects mismatched MID, currency, order and payment reference (2.5157ms)
+  ✔ does not treat authorization in progress as completed payment (0.7701ms)
+  ✔ marks partial or full cancellation for manual review (1.3732ms)
+  ✔ rejects unknown states, malformed data and success without approval time (1.9035ms)
+  ✔ does not follow redirects or retry an ambiguous approval automatically (0.9521ms)
+  ✔ bounds provider response size and rejects invalid JSON (1.939ms)
+✔ Toss transport and adapter validate real HTTP responses through a local test server (39.5402ms)
+(node:3980) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/uploads/inspect.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ validates real PDF pages and bytes in an isolated worker (164.2665ms)
+✔ rejects actual PDFs with fewer than required pages (157.8363ms)
+✔ rejects a renamed non-PDF and a corrupted PDF (309.7629ms)
+✔ rejects oversized bytes before parsing (0.5319ms)
+✔ decodes a real cover image (173.7859ms)
+(node:7140) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/competitions/launch-readiness.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ launch diagnostics reject upload policies beyond the actual inspection runtime (1138.8776ms)
+(node:18256) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/USER/Desktop/gyca/src/server/uploads/service.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\USER\Desktop\gyca\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+▶ upload lifecycle preserves ownership, immutable validation and slot limits
+  ✔ reserves a slot and repeats the same idempotent session (16.578ms)
+  ✔ rejects slot over-allocation and altered idempotent payloads (5.5486ms)
+  ✔ does not mark a missing object ready (4.1053ms)
+  ✔ validates stored bytes and retains immutable version identity (166.6647ms)
+  ✔ does not expose another owners assets (1.7703ms)
+  ✔ soft removal frees a slot but requires the current revision (4.4359ms)
+  ✔ unconfigured storage never issues a target (1.4515ms)
+  ✔ validates through authenticated HTTP and rejects client validation claims (15.6726ms)
+  ✔ inspection failure remains retryable without marking the file corrupted (167.0412ms)
+  ✔ removal during inspection cannot resurrect an asset (161.2784ms)
+  ✔ expires upload targets without marking a late file ready (6.3011ms)
+✔ upload lifecycle preserves ownership, immutable validation and slot limits (1607.6857ms)
+ℹ tests 202
+ℹ suites 0
+ℹ pass 202
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 24100.3356
+Passed: Backend tests
+Running: Project type check
+Passed: Project type check
+Running: Backend lint
+Passed: Backend lint
+Backend verification passed. Live DB, cloud storage, email delivery and payment approval remain unverified.

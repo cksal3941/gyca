@@ -16,6 +16,12 @@
 # local PGlite dev database (live E2E harness)
 /.pglite-data
 
+# local pnpm content-addressable store (not a dependency lock)
+/.pnpm-store
+
+# local QA screenshots (not product assets)
+/docs/e2e-*.png
+
 # next.js
 /.next/
 /out/

@@ -1,26 +1,19 @@
-// Better Auth DB 마이그레이션 (설치된 better-auth 버전 기준 스키마 적용)
-// 사용법: node --env-file=.env.local scripts/migrate.mjs
-import { getMigrations } from "better-auth/db/migration";
-import { betterAuth } from "better-auth";
-import { Pool } from "pg";
+import { getMigrations } from 'better-auth/db/migration';
+import { betterAuth } from 'better-auth';
+import { Pool } from 'pg';
 
-const auth = betterAuth({
-  database: new Pool({ connectionString: process.env.DATABASE_URL }),
-  emailAndPassword: { enabled: true },
-});
-
-const { toBeAdded, toBeCreated, runMigrations } = await getMigrations(
-  auth.options,
-);
-
-if (!toBeAdded.length && !toBeCreated.length) {
-  console.log("스키마가 이미 최신입니다.");
-  process.exit(0);
+if (!process.env.DATABASE_URL) {
+  console.error('DATABASE_URL must be configured. No auth migration was applied.');
+  process.exitCode = 1;
+} else {
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 1, connectionTimeoutMillis: 5000 });
+  try {
+    const auth = betterAuth({ database: pool, emailAndPassword: { enabled: true }, rateLimit: { enabled: true, storage: 'database' } });
+    const { runMigrations } = await getMigrations(auth.options);
+    await runMigrations();
+    console.log('Auth schema is current.');
+  } catch {
+    console.error('Auth migration failed. Check the database connection and migration permissions.');
+    process.exitCode = 1;
+  } finally { await pool.end(); }
 }
-
-for (const t of toBeCreated) console.log("생성:", t.table);
-for (const t of toBeAdded) console.log("컬럼 추가:", t.table, Object.keys(t.fields));
-
-await runMigrations();
-console.log("마이그레이션 완료");
-process.exit(0);
