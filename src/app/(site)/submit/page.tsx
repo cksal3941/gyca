@@ -176,10 +176,10 @@ function SubmitForm({
             <p className="mt-2 text-[15px] text-ink-strong">
               <span className="text-danger">*</span> {ko ? "표시는 제출 시 필수 항목입니다." : "marks fields required at submission."}
             </p>
-            <div className="mt-6 grid gap-5 sm:grid-cols-2">{participantFields.map(renderField)}</div>
+            <div className="mt-6 grid gap-5">{participantFields.map(renderField)}</div>
 
             <h3 className="mt-8 text-[18px] font-bold text-ink-strong">{ko ? "보호자" : "Guardian"}</h3>
-            <div className="mt-4 grid gap-5 sm:grid-cols-2">
+            <div className="mt-4 grid gap-5">
               <Field label={ko ? "보호자 이름" : "Guardian name"}>
                 {(c) => <TextInput {...c} value={state.guardian.name} onChange={(e) => flow.setGuardian("name", e.target.value)} />}
               </Field>
@@ -204,7 +204,7 @@ function SubmitForm({
             <p className="mt-2 text-[15px] text-ink-strong">
               {ko ? "영문 작품명·영문 작품 소개는 필수입니다." : "English work title and description are required."}
             </p>
-            <div className="mt-6 grid gap-5 sm:grid-cols-2">{workFields.map(renderField)}</div>
+            <div className="mt-6 grid gap-5">{workFields.map(renderField)}</div>
             {nav({ back: true, onNext: () => setStep(3) })}
           </div>
         )}
