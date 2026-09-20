@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import EditorialHeader from "@/components/site/EditorialHeader";
+import ContestDetailLive from "@/components/site/ContestDetailLive";
 import { getContest, CONTESTS, STATUS_LABEL, STATUS_COLOR } from "@/lib/site-data";
+import { isLive } from "@/lib/api/mode";
 import { getServerLocale } from "@/lib/i18n/server";
 import type { Bi, Locale } from "@/lib/i18n";
 
@@ -34,6 +36,11 @@ export default async function ContestDetail({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  // Live: real competitions come from the API. The list (competition-cards) links
+  // every published competition here, so the detail must resolve them live too —
+  // a thin client view forwards the session (a server component cannot). Mock: the
+  // curated sample rows below (design demo).
+  if (isLive) return <ContestDetailLive slug={slug} />;
   const locale: Locale = await getServerLocale();
   const c = getContest(slug);
   if (!c) notFound();
