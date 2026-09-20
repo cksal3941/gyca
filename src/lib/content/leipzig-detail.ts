@@ -32,8 +32,8 @@ export const DETAIL_META = {
     ko: "2027 GYCA 국제 청소년 아트북 어워드",
   } satisfies I18n,
   summary: {
-    en: "An international art book competition for creators aged 7–18. Enter one PDF; up to 30 finalists exhibit in Leipzig.",
-    ko: "만 7–18세 창작자를 위한 국제 아트북 공모입니다. PDF 한 편으로 접수하고, 최대 30작품이 라이프치히에서 전시됩니다.",
+    en: "An international art book competition for ages 7–18.",
+    ko: "만 7–18세를 위한 국제 아트북 공모.",
   } satisfies I18n,
 };
 

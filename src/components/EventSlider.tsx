@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocale } from "@/components/i18n/LocaleProvider";
 import type { Bi, BiLines, Locale } from "@/lib/i18n";
 
@@ -35,8 +35,8 @@ const EVENTS: EventItem[] = [
       ko: ["2027 GYCA 국제 청소년", "아트북 어워드"],
     },
     desc: {
-      en: "A global art book award for ages 7–18. Submit one PDF of 20+ pages including the cover; pass the first international review for an Official Selection Certificate, and up to 30 finalists exhibit in Leipzig. Entry fee €70 per work.",
-      ko: "전 세계 만 7–18세 대상 국제 아트북 공모. 표지 포함 20쪽 이상 단일 PDF로 출품하며, 1차 국제심사 통과 시 Official Selection 인증서, 최종 최대 30작품은 라이프치히 국제전시에 진출합니다. 참가비 작품당 €70.",
+      en: "The international award where creators aged 7–18 make their global debut. Earn recognition as an artist the world is watching, and see your book take the stage at the Leipzig international exhibition.",
+      ko: "만 7–18세 창작자가 자신의 아트북으로 세계 무대에 데뷔하는 국제 어워드. 세계가 주목하는 어린 작가로 인정받고, 당신의 책이 라이프치히 국제 전시의 주인공이 됩니다.",
     },
     posters: [
       "/images/posters/iyac-1.jpg",
@@ -54,7 +54,7 @@ const EVENTS: EventItem[] = [
     },
     desc: {
       en: "Dance, ballet, piano, strings and visual art rounds will open in stages, connecting preliminary and final rounds to overseas Grand Finals.",
-      ko: "무용·발레·피아노·현악·미술 등 다양한 분야를 예선 → 본선 → 해외 Grand Final로 연결하는 공모를 순차적으로 공개할 예정입니다.",
+      ko: "무용·발레·피아노·현악·미술 등 다양한 분야를 예선부터 본선, 해외 Grand Final까지 연결하는 공모를 순차적으로 공개할 예정입니다.",
     },
     posters: [
       "/images/posters/kajaa-1.jpg",
@@ -66,11 +66,11 @@ const EVENTS: EventItem[] = [
 
 function Arrow({ dir }: { dir: "left" | "right" }) {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden>
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden>
       <path
         d={dir === "left" ? "M15 5l-7 7 7 7" : "M9 5l7 7-7 7"}
         stroke="currentColor"
-        strokeWidth="1.4"
+        strokeWidth="1.8"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -81,10 +81,34 @@ function Arrow({ dir }: { dir: "left" | "right" }) {
 export default function EventSlider() {
   const { locale } = useLocale();
   const [index, setIndex] = useState(0);
+  const [shown, setShown] = useState(true);
   const count = EVENTS.length;
-  const go = (dir: number) => setIndex((i) => (i + dir + count) % count);
+
+  // Preload every poster so a slide change never flashes a gray placeholder.
+  useEffect(() => {
+    EVENTS.forEach((e) =>
+      e.posters.forEach((src) => {
+        const img = new Image();
+        img.src = src;
+      }),
+    );
+  }, []);
+
+  // Smooth cross-dissolve: fade the current content out, swap it while it is
+  // invisible, then fade the new content in — no hard cut / white flash.
+  const go = (d: number) => {
+    if (!shown) return; // ignore clicks mid-transition
+    setShown(false);
+    window.setTimeout(() => {
+      setIndex((i) => (i + d + count) % count);
+      setShown(true);
+    }, 260);
+  };
   const active = EVENTS[index];
   const l: Locale = locale;
+  const fadeCls = `transition-opacity duration-[260ms] ease-in-out ${
+    shown ? "opacity-100" : "opacity-0"
+  }`;
 
   return (
     <section className="overflow-hidden bg-white py-24 lg:py-28">
@@ -92,35 +116,43 @@ export default function EventSlider() {
         {/* Left column (426px) */}
         <div className="w-full shrink-0 lg:w-[426px]">
           {/* Counter + arrows */}
-          <div className="mb-8 flex items-center gap-3 text-neutral-400">
-            <button onClick={() => go(-1)} aria-label={l === "ko" ? "이전" : "Previous"} className="hover:text-ink">
+          <div className="mb-8 flex items-center gap-3 text-ink-strong">
+            <button onClick={() => go(-1)} aria-label={l === "ko" ? "이전" : "Previous"} className="hover:opacity-60">
               <Arrow dir="left" />
             </button>
-            <span className="text-[13px] tabular-nums tracking-wider">
+            <span className="text-[14px] font-semibold tabular-nums tracking-wider">
               {index + 1} / {count}
             </span>
-            <button onClick={() => go(1)} aria-label={l === "ko" ? "다음" : "Next"} className="hover:text-ink">
+            <button onClick={() => go(1)} aria-label={l === "ko" ? "다음" : "Next"} className="hover:opacity-60">
               <Arrow dir="right" />
             </button>
           </div>
 
+          <div className={fadeCls}>
           {/* Badges */}
           <div className="flex items-center gap-2">
             {active.latest && (
-              <span className="bg-brand-blue px-[17px] py-[10px] text-[11px] font-bold uppercase leading-none tracking-[0.3px] text-white">
+              <span className="bg-brand-blue px-[17px] py-[9px] text-[14px] font-bold uppercase leading-none tracking-[0.3px] text-white">
                 {UI.latest[l]}
               </span>
             )}
-            <span className="bg-brand-orange px-[17px] py-[10px] text-[11px] font-bold uppercase leading-none tracking-[0.3px] text-white">
+            <span className="bg-brand-orange px-[17px] py-[9px] text-[14px] font-bold uppercase leading-none tracking-[0.3px] text-white">
               {STATUS_LABEL[active.status][l]}
             </span>
           </div>
 
           {/* Date */}
-          <p className="mt-3 text-[14px] text-neutral-500">{active.date[l]}</p>
+          <p className="mt-3 text-[14px] font-medium text-ink-strong">{active.date[l]}</p>
 
-          {/* Title */}
-          <h2 className="mt-4 font-title text-[34px] leading-[1.2] tracking-[0.5px] text-ink-strong md:text-[40px] md:leading-[48px]">
+          {/* Title — Korean uses the Pretendard sans face (the Bebas display font
+              has no Hangul and reads disharmoniously); Latin keeps Bebas. */}
+          <h2
+            className={`mt-4 text-[34px] leading-[1.2] text-ink-strong md:text-[40px] md:leading-[48px] ${
+              l === "ko"
+                ? "font-sans font-bold tracking-[-0.01em]"
+                : "font-title tracking-[0.5px]"
+            }`}
+          >
             {active.title[l].map((line, i) => (
               <span key={i} className="block">
                 {line}
@@ -129,25 +161,26 @@ export default function EventSlider() {
           </h2>
 
           {/* Description */}
-          <p className="mt-7 text-[16px] leading-[1.6] text-neutral-700">
+          <p className="mt-7 text-[17px] leading-[1.7] text-ink-strong">
             {active.desc[l]}
           </p>
 
           {/* Buttons */}
           <div className="mt-8 flex flex-wrap gap-3">
-            <button className="flex h-11 w-[207px] items-center justify-center gap-[10px] rounded-[7px] bg-black text-[13px] text-white hover:opacity-90">
+            <button className="flex h-11 w-[207px] items-center justify-center gap-[10px] rounded-[7px] bg-black text-[14px] font-medium text-white hover:opacity-90">
               {UI.more[l]}
               <span aria-hidden>›</span>
             </button>
-            <button className="flex h-11 w-[207px] items-center justify-center gap-[10px] rounded-[7px] border border-black bg-white text-[13px] text-ink hover:bg-neutral-50">
+            <button className="flex h-11 w-[207px] items-center justify-center gap-[10px] rounded-[7px] border border-black bg-white text-[14px] font-medium text-ink-strong hover:bg-neutral-50">
               {UI.all[l]}
               <span aria-hidden>›</span>
             </button>
           </div>
+          </div>
         </div>
 
         {/* Right: poster track (5:7), overflows to the right */}
-        <div className="flex min-w-0 flex-1 gap-[29px]">
+        <div className={`${fadeCls} flex min-w-0 flex-1 gap-[29px]`}>
           {active.posters.map((src) => (
             <div
               key={src}

@@ -53,14 +53,17 @@ const PROJECTS: Project[] = [
   },
 ];
 
+// Every project here is a finished case → a "Completed" status label.
+const DONE: Bi = { en: "Completed", ko: "완료" };
+
 function LinkRow({ label, href }: { label: string; href: string }) {
   return (
     <Link
       href={href}
-      className="group flex items-center gap-3 border-b border-white/15 py-4 text-[15px] text-white transition-colors hover:text-white"
+      className="group flex items-center gap-3 border-b border-white/15 py-4 text-[16px] text-white transition-colors hover:text-white"
     >
       <span className="font-medium">{label}</span>
-      <span className="ml-auto translate-x-0 text-neutral-400 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-white">
+      <span className="ml-auto translate-x-0 text-white transition-transform duration-300 group-hover:translate-x-1">
         →
       </span>
     </Link>
@@ -80,24 +83,36 @@ function ProjectBlock({ p, locale }: { p: Project; locale: Locale }) {
             className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
           />
         </div>
-        <span className="absolute bottom-4 left-4 bg-black/60 px-3 py-1 text-[12px] tabular-nums text-white">
+        <span className="absolute bottom-4 left-4 bg-black/60 px-3 py-1 text-[14px] font-medium text-white">
           {p.badge[locale]}
         </span>
       </div>
 
       {/* Text */}
       <div className={p.reverse ? "md:order-1" : ""}>
-        <span className="inline-block bg-brand-blue px-[15px] py-[9px] text-[11px] font-bold uppercase leading-none tracking-wide text-white">
-          {p.badge[locale]}
-        </span>
-        <h3 className="mt-6 font-title text-[24px] leading-[1.25] tracking-[0.5px] text-white md:text-[30px]">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-block bg-brand-blue px-[15px] py-[9px] text-[14px] font-bold uppercase leading-none tracking-wide text-white">
+            {p.badge[locale]}
+          </span>
+          <span className="inline-block border border-white/50 px-[15px] py-[8px] text-[14px] font-bold uppercase leading-none tracking-wide text-white">
+            {DONE[locale]}
+          </span>
+        </div>
+        {/* Korean uses the Pretendard sans face (Bebas has no Hangul); Latin keeps Bebas. */}
+        <h3
+          className={`mt-6 text-[24px] leading-[1.25] text-white md:text-[30px] ${
+            locale === "ko"
+              ? "font-sans font-bold tracking-[-0.01em]"
+              : "font-title tracking-[0.5px]"
+          }`}
+        >
           {p.title[locale].map((line) => (
             <span key={line} className="block">
               {line}
             </span>
           ))}
         </h3>
-        <p className="mt-5 max-w-md text-[14px] leading-7 text-neutral-400">
+        <p className="mt-5 max-w-md text-[16px] leading-7 text-white">
           {p.desc[locale]}
         </p>
         <div className="mt-8 max-w-sm">

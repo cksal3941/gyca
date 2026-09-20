@@ -191,66 +191,118 @@ export const CITY_LABEL: Record<string, Bi> = {
   미국: { en: "USA", ko: "미국" },
 };
 
-export const EXHIBITION_TYPE_LABEL: Record<"전시" | "공연", Bi> = {
+export const EXHIBITION_TYPES = ["전시", "공연", "음악", "뮤지컬"] as const;
+export type ExhibitionType = (typeof EXHIBITION_TYPES)[number];
+
+export const EXHIBITION_TYPE_LABEL: Record<ExhibitionType, Bi> = {
   전시: { en: "Exhibition", ko: "전시" },
   공연: { en: "Performance", ko: "공연" },
+  음악: { en: "Concert", ko: "음악" },
+  뮤지컬: { en: "Musical", ko: "뮤지컬" },
 };
+
+// Type tabs for the exhibitions/stages page (전체 + each type).
+export const EXHIBITION_TYPE_FILTERS = ["전체", ...EXHIBITION_TYPES] as const;
 
 export type Exhibition = {
   slug: string;
   title: Bi;
-  city: (typeof EXHIBITION_FILTERS)[number];
+  city: Bi;
   date: string;
-  type: "전시" | "공연";
+  type: ExhibitionType;
   summary: Bi;
-  tint: string;
 };
 
+// PLACEHOLDER exhibitions & performances — realistic virtual events for design
+// preview. Not approved/confirmed; replace with real records before launch.
 export const EXHIBITIONS: Exhibition[] = [
   {
     slug: "seoul-touring-2026",
-    title: {
-      en: "2026 Art for Tomorrow — Seoul Touring Exhibition",
-      ko: "2026 Art for Tomorrow 서울 순회전",
-    },
-    city: "서울",
+    title: { en: "2026 Art for Tomorrow — Seoul Touring Exhibition", ko: "2026 Art for Tomorrow 서울 순회전" },
+    city: { en: "Seoul", ko: "서울" },
     date: "2026.09.10 ~ 09.24",
     type: "전시",
     summary: {
-      en: "An exhibition of winning and invited works at the Maru Art Center, Insadong.",
-      ko: "수상작 및 초청작 전시. 인사동 마루아트센터 특별관.",
+      en: "Winning and invited artworks shown across two floors of the Maru Art Center in Insadong, with a guided youth-docent program on weekends.",
+      ko: "수상작과 초청작을 인사동 마루아트센터 2개 층에 걸쳐 선보이는 전시. 주말에는 청소년 도슨트 투어를 함께 운영합니다.",
     },
-    tint: "linear-gradient(135deg,#a8dcd0,#f4c7cf)",
-  },
-  {
-    slug: "spoleto-stage-2026",
-    title: {
-      en: "Spoleto Youth Performance Night",
-      ko: "Spoleto Youth Performance Night",
-    },
-    city: "스폴레토",
-    date: "2026.10.02",
-    type: "공연",
-    summary: {
-      en: "A stage for music & performance finalists, in the Spoleto Festival program.",
-      ko: "음악·공연 본선 진출자 무대. 스폴레토 페스티벌 연계.",
-    },
-    tint: "linear-gradient(135deg,#6b4326,#161616)",
   },
   {
     slug: "newyork-exhibition-2025",
-    title: {
-      en: "2025 New York Winners Exhibition",
-      ko: "2025 뉴욕 수상작 전시",
-    },
-    city: "뉴욕",
+    title: { en: "2025 New York Winners Exhibition", ko: "2025 뉴욕 수상작 전시" },
+    city: { en: "New York", ko: "뉴욕" },
     date: "2025.11.05 ~ 11.19",
     type: "전시",
     summary: {
-      en: "A winners' exhibition at a gallery in Manhattan, New York.",
-      ko: "뉴욕 맨해튼 갤러리 수상작 전시.",
+      en: "A two-week showing of the year's grand-prize and gold works at a Chelsea gallery in Manhattan, opening with a young-artists' reception.",
+      ko: "그해 대상·금상 작품을 맨해튼 첼시 갤러리에서 2주간 선보인 전시. 어린 작가들을 위한 오프닝 리셉션으로 개막했습니다.",
     },
-    tint: "linear-gradient(135deg,#7a4b2b,#1b1b1b)",
+  },
+  {
+    slug: "frankfurt-artbook-2027",
+    title: { en: "Frankfurt Youth Art Book Showcase", ko: "프랑크푸르트 청소년 아트북 쇼케이스" },
+    city: { en: "Frankfurt", ko: "프랑크푸르트" },
+    date: "2027.10.13 ~ 10.17",
+    type: "전시",
+    summary: {
+      en: "Selected art books displayed as part of a youth program during the Frankfurt Book Fair week, with pages you can leaf through.",
+      ko: "프랑크푸르트 도서전 기간 청소년 프로그램의 일부로 선정 아트북을 전시. 관람객이 직접 책장을 넘겨볼 수 있게 구성했습니다.",
+    },
+  },
+  {
+    slug: "spoleto-stage-2026",
+    title: { en: "Spoleto Youth Performance Night", ko: "스폴레토 청소년 공연의 밤" },
+    city: { en: "Spoleto", ko: "스폴레토" },
+    date: "2026.10.02",
+    type: "공연",
+    summary: {
+      en: "An evening of dance and theater by finalists, staged within the Spoleto Festival program in a historic open-air venue.",
+      ko: "본선 진출자들의 무용·연극 무대. 스폴레토 페스티벌 연계로 유서 깊은 야외 극장에서 열립니다.",
+    },
+  },
+  {
+    slug: "seoul-dance-2026",
+    title: { en: "Youth Dance Stage — Prelude to Spring", ko: "청소년 무용 공연 〈봄의 서곡〉" },
+    city: { en: "Seoul", ko: "서울" },
+    date: "2026.05.18",
+    type: "공연",
+    summary: {
+      en: "An original contemporary dance piece created and performed by youth finalists on the theme of new beginnings.",
+      ko: "청소년 본선 진출자들이 '새로운 시작'을 주제로 직접 안무하고 무대에 올린 창작 현대무용 공연입니다.",
+    },
+  },
+  {
+    slug: "vienna-ensemble-2026",
+    title: { en: "Vienna Youth Chamber Concert", ko: "빈 청소년 실내악 정기연주회" },
+    city: { en: "Vienna", ko: "빈" },
+    date: "2026.12.20",
+    type: "음악",
+    summary: {
+      en: "Strings and piano finalists perform a chamber program in a Vienna recital hall, closing the year's music track.",
+      ko: "현악·피아노 본선 진출자들이 빈의 리사이틀 홀에서 선보이는 실내악 무대. 그해 음악 부문을 마무리하는 연주회입니다.",
+    },
+  },
+  {
+    slug: "seoul-piano-2026",
+    title: { en: "International Youth Piano Recital", ko: "국제 청소년 피아노 리사이틀" },
+    city: { en: "Seoul", ko: "서울" },
+    date: "2026.07.09",
+    type: "음악",
+    summary: {
+      en: "Solo recitals by the piano track's top young pianists, paired with short talks about each program.",
+      ko: "피아노 부문 상위 입상자들의 독주 리사이틀. 각 프로그램에 대한 짧은 해설을 곁들여 진행합니다.",
+    },
+  },
+  {
+    slug: "seoul-musical-2027",
+    title: { en: "Original Youth Musical — The Star Painter", ko: "청소년 창작 뮤지컬 〈별을 그리는 아이〉" },
+    city: { en: "Seoul", ko: "서울" },
+    date: "2027.01.15 ~ 01.22",
+    type: "뮤지컬",
+    summary: {
+      en: "A week-long run of an original musical written, scored, and performed by youth participants about a child who paints the night sky.",
+      ko: "밤하늘을 그리는 아이의 이야기를 청소년 참가자들이 극본·작곡·연기까지 직접 만든 창작 뮤지컬. 일주일간 상연합니다.",
+    },
   },
 ];
 
@@ -262,7 +314,6 @@ export type Winner = {
   category: string;
   year: string;
   country: string;
-  tint: string;
 };
 
 export const WINNER_YEARS = ["전체", "2026", "2025"] as const;
@@ -285,47 +336,19 @@ export const AWARD_LABEL: Record<string, Bi> = {
   Finalist: { en: "Finalist", ko: "Finalist" },
 };
 
+// PLACEHOLDER winners — realistic virtual awardees for design preview. Not real
+// results; replace after judging. English work titles + mixed artist names.
 export const WINNERS: Winner[] = [
-  {
-    slug: "quiet-morning",
-    title: "Quiet Morning",
-    artist: "김서연",
-    award: "Grand Prize",
-    category: "도서·일러스트",
-    year: "2026",
-    country: "KR",
-    tint: "linear-gradient(135deg,#efd189,#c68f2c)",
-  },
-  {
-    slug: "city-of-light",
-    title: "City of Light",
-    artist: "David Park",
-    award: "Gold",
-    category: "미술",
-    year: "2026",
-    country: "US",
-    tint: "linear-gradient(135deg,#a8dcd0,#8fb6f0)",
-  },
-  {
-    slug: "resonance",
-    title: "Resonance",
-    artist: "이준호",
-    award: "Silver",
-    category: "음악·공연",
-    year: "2025",
-    country: "KR",
-    tint: "linear-gradient(135deg,#7a4b2b,#1b1b1b)",
-  },
-  {
-    slug: "next-step",
-    title: "Next Step",
-    artist: "Team Aurora",
-    award: "Finalist",
-    category: "비즈니스",
-    year: "2025",
-    country: "KR",
-    tint: "linear-gradient(135deg,#e6e6e6,#a6a6a6)",
-  },
+  { slug: "quiet-morning", title: "Quiet Morning", artist: "김서연", award: "Grand Prize", category: "도서·일러스트", year: "2026", country: "KR" },
+  { slug: "paper-boats", title: "Paper Boats", artist: "박지민", award: "Gold", category: "도서·일러스트", year: "2026", country: "KR" },
+  { slug: "city-of-light", title: "City of Light", artist: "David Park", award: "Gold", category: "미술", year: "2026", country: "US" },
+  { slug: "blue-hour", title: "Blue Hour", artist: "Emma Chen", award: "Silver", category: "미술", year: "2026", country: "SG" },
+  { slug: "resonance", title: "Resonance", artist: "이준호", award: "Silver", category: "음악·공연", year: "2025", country: "KR" },
+  { slug: "first-light-sonata", title: "First Light Sonata", artist: "최유진", award: "Gold", category: "음악·공연", year: "2025", country: "KR" },
+  { slug: "kite-season", title: "Kite Season", artist: "정하늘", award: "Bronze", category: "미술", year: "2026", country: "KR" },
+  { slug: "homebound", title: "Homebound", artist: "Liam O'Brien", award: "Bronze", category: "도서·일러스트", year: "2025", country: "IE" },
+  { slug: "next-step", title: "Next Step", artist: "Team Aurora", award: "Finalist", category: "비즈니스", year: "2025", country: "KR" },
+  { slug: "green-ledger", title: "Green Ledger", artist: "Team Sprout", award: "Finalist", category: "비즈니스", year: "2026", country: "KR" },
 ];
 
 export type Notice = {

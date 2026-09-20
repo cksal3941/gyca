@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ChevronsDown } from "lucide-react";
 import { useLocale } from "@/components/i18n/LocaleProvider";
-import type { Bi, BiLines } from "@/lib/i18n";
+import type { BiLines } from "@/lib/i18n";
 
 type Slide = {
   title: BiLines;
-  desc: Bi;
+  desc: BiLines;
   tag: string;
   image: string;
 };
@@ -19,20 +20,20 @@ const SLIDES: Slide[] = [
       ko: ["2027 GYCA 국제", "청소년 아트북 어워드"],
     },
     desc: {
-      en: "A global art book award for young creators aged 7–18. Submit one PDF of 20+ pages including the cover.",
-      ko: "전 세계 만 7–18세를 위한 국제 아트북 공모. 표지 포함 20쪽 이상 단일 PDF로 출품합니다.",
+      en: ["The world is waiting for your art.", "An art book award where creators aged 7–18 debut on the global stage."],
+      ko: ["세상이 당신의 그림을 기다립니다.", "7–18세 창작자가 국제 무대에 데뷔하는 아트북 어워드."],
     },
     tag: "Leipzig 2027",
     image: "/images/hero/iyac.jpg",
   },
   {
     title: {
-      en: ["YOUR BOOK. YOUR STORY.", "NEXT STOP, LEIPZIG."],
-      ko: ["당신의 책, 당신의 이야기.", "다음 무대는 라이프치히."],
+      en: ["YOUR BOOK, YOUR STORY", "NEXT STOP, LEIPZIG"],
+      ko: ["당신의 책, 당신의 이야기", "다음 무대는 라이프치히"],
     },
     desc: {
-      en: "Pass the first international review to earn a GYCA Official Selection Certificate.",
-      ko: "1차 국제심사를 통과하면 GYCA Official Selection 인증서를 받습니다.",
+      en: ["Your story, recognized by the world.", "A GYCA Official Selection is where it begins."],
+      ko: ["당신의 작은 이야기가 세계의 인정을 받습니다.", "GYCA 공식 선정이 그 첫 무대입니다."],
     },
     tag: "Open Call",
     image: "/images/hero/kajaa.jpg",
@@ -43,8 +44,8 @@ const SLIDES: Slide[] = [
       ko: ["Finalist는", "라이프치히로"],
     },
     desc: {
-      en: "Up to 30 works advance to the Leipzig international exhibition.",
-      ko: "최대 30작품이 라이프치히 국제전시에 진출합니다.",
+      en: ["Meet a global audience in Leipzig.", "Your book takes center stage at an international exhibition."],
+      ko: ["라이프치히에서 세계 관객과 마주하세요.", "당신의 책이 국제 전시의 주인공이 됩니다."],
     },
     tag: "Finalist",
     image: "/images/hero/led-wall.jpg",
@@ -83,7 +84,9 @@ export default function Hero() {
         <div className="flex max-w-[893px] flex-col items-start gap-6">
           <h1
             key={`${index}-${locale}`}
-            className="font-display text-[52px] leading-[0.95] tracking-[0.5px] sm:text-[64px] md:text-[80px] md:tracking-[1px]"
+            className={`font-display text-[52px] tracking-[0.5px] sm:text-[64px] md:text-[80px] md:tracking-[1px] ${
+              locale === "ko" ? "leading-[1.15]" : "leading-[0.95]"
+            }`}
           >
             {active.title[locale].map((line, li) => (
               <span key={li} className="block overflow-hidden">
@@ -97,8 +100,13 @@ export default function Hero() {
             ))}
           </h1>
 
-          <p className="max-w-md text-[16px] leading-[1.7] text-white">
-            {active.desc[locale]}
+          <p className="max-w-lg text-[18px] leading-[1.7] text-white">
+            {active.desc[locale].map((line, li) => (
+              <span key={li}>
+                {li > 0 && <br />}
+                {line}
+              </span>
+            ))}
           </p>
 
           <button className="mt-2 flex h-11 items-center gap-2 rounded-[5px] border border-white/[0.28] bg-white/[0.12] px-[26px] text-[14px] font-bold text-white backdrop-blur-sm hover:bg-white/20">
@@ -107,6 +115,21 @@ export default function Hero() {
           </button>
         </div>
       </div>
+
+      {/* Bottom-center scroll-down hint */}
+      <button
+        type="button"
+        onClick={() =>
+          window.scrollTo({ top: window.innerHeight, behavior: "smooth" })
+        }
+        aria-label={locale === "ko" ? "아래로 스크롤" : "Scroll down"}
+        className="absolute bottom-9 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-1.5 text-white/80 hover:text-white"
+      >
+        <span className="text-[12px] font-semibold uppercase tracking-[0.3em]">
+          Scroll
+        </span>
+        <ChevronsDown className="scroll-chevron h-5 w-5" strokeWidth={1.75} />
+      </button>
 
       {/* Bottom-right slide index — name (right-aligned) + .0N number + active bar */}
       <ul className="absolute bottom-14 right-[5%] z-10 flex flex-col items-end gap-3">
@@ -129,7 +152,7 @@ export default function Hero() {
                   isActive ? "text-neutral-200" : "text-neutral-500"
                 }`}
               >
-                .{String(i + 1).padStart(2, "0")}
+                {String(i + 1).padStart(2, "0")}
               </span>
               <span
                 className={`ml-[7px] h-[21px] w-[3px] ${

@@ -13,14 +13,14 @@ export const KLIMT_VILLA: ProjectArchive = {
   slug: "klimt-villa",
   status: "completed",
   hero: {
-    eyebrow: { en: "Completed Project · Archive", ko: "완료 프로젝트 · 아카이브" },
+    eyebrow: { en: "Archive", ko: "Archive" },
     program: { en: "Klimt Villa Youth Art Project", ko: "클림트 빌라 청소년 아트 프로젝트" },
     location: { en: "Vienna, Austria", ko: "오스트리아 비엔나" },
     // Exact dates are a CMS field — not fabricated here.
     period: { en: "Completed", ko: "완료" },
     summary: {
-      en: "A completed GYCA program at the Klimt Villa in Vienna — run end to end, from open call and selection through exhibition, an awards ceremony, artwork sales, and issued certificates.",
-      ko: "비엔나 클림트 빌라에서 진행된 GYCA 완료 프로젝트입니다. 공모·선정부터 전시, 수여식, 작품 판매, 인증서 발급까지 전 과정을 운영했습니다.",
+      en: "A completed GYCA project at the Klimt Villa in Vienna.",
+      ko: "비엔나 클림트 빌라에서 진행된 GYCA 완료 프로젝트입니다.",
     },
     operated: [
       { en: "Exhibition", ko: "전시" },
@@ -28,8 +28,8 @@ export const KLIMT_VILLA: ProjectArchive = {
       { en: "Artwork sales", ko: "작품 판매" },
       { en: "Certificates", ko: "인증서" },
     ],
-    // No fabricated hero photograph; a typographic panel stands in until a real
-    // approved image is provided (src stays null → placeholder panel).
+    // Optional hero photo (unused by the current editorial header). Provide an
+    // approved Klimt Villa photograph to enable an image hero later.
     image: { src: null, alt: { en: "Klimt Villa, Vienna", ko: "비엔나 클림트 빌라" } },
   },
 

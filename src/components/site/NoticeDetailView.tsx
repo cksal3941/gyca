@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import EditorialHeader from "@/components/site/EditorialHeader";
 import { useLocale } from "@/components/i18n/LocaleProvider";
 import { getEditorialPublic } from "@/lib/api";
 import { isLive } from "@/lib/api/mode";
@@ -62,27 +63,26 @@ export default function NoticeDetailView({ slug }: { slug: string }) {
   }
 
   return (
-    <section className="mx-auto max-w-page px-6 py-16 lg:py-24">
-      <div className="mx-auto max-w-[46rem]">
-        <nav className="mb-10 flex flex-wrap items-center gap-1.5 text-[16px] text-ink-strong">
-          <Link href="/" className="hover:text-brand-blue">{ko ? "홈" : "Home"}</Link>
-          <span className="text-line">/</span>
-          <Link href="/notices" className="hover:text-brand-blue">{ko ? "공지사항" : "Notices"}</Link>
-          <span className="text-line">/</span>
-          <span className="text-ink-strong">{view.title[locale]}</span>
-        </nav>
-        <p className="text-[16px] font-bold uppercase tracking-[0.18em] text-brand-blue">{view.catLabel[locale]}</p>
-        <h1 className="mt-4 font-title font-bold text-[clamp(40px,5vw,64px)] leading-[1.05] tracking-[0.02em] text-ink-strong">{view.title[locale]}</h1>
-        <p className="mt-6 text-[16px] text-ink-strong">{view.date}</p>
-        <div className="mt-10 whitespace-pre-line border-t border-line pt-10">
-          <p className="text-[16px] leading-[1.9] text-ink-strong">{view.body[locale]}</p>
+    <>
+      <EditorialHeader
+        eyebrow={view.catLabel[locale]}
+        title={view.title[locale]}
+        crumbs={[{ label: ko ? "공지사항" : "Notices", href: "/notices" }]}
+        locale={locale}
+      />
+      <section className="mx-auto max-w-page px-6 py-16 lg:py-20">
+        <div className="mx-auto max-w-[46rem]">
+          <p className="text-[16px] text-ink-strong">{view.date}</p>
+          <div className="mt-8 whitespace-pre-line border-t border-line pt-10">
+            <p className="text-[16px] leading-[1.9] text-ink-strong">{view.body[locale]}</p>
+          </div>
+          <div className="mt-14 border-t border-line pt-8">
+            <Link href="/notices" className="inline-flex items-center gap-2 text-[16px] font-semibold text-ink-strong hover:text-brand-blue">
+              <span aria-hidden>‹</span>{ko ? "공지사항 목록으로" : "Back to notices"}
+            </Link>
+          </div>
         </div>
-        <div className="mt-14 border-t border-line pt-8">
-          <Link href="/notices" className="inline-flex items-center gap-2 text-[16px] font-semibold text-ink-strong hover:text-brand-blue">
-            <span aria-hidden>‹</span>{ko ? "공지사항 목록으로" : "Back to notices"}
-          </Link>
-        </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }

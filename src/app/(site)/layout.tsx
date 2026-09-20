@@ -8,9 +8,9 @@ import Footer from "@/components/Footer";
 // full-bleed Header without this offset.)
 export default function SiteLayout({ children }: { children: ReactNode }) {
   return (
-    <div id="top" className="font-sans">
+    <div id="top" className="flex min-h-screen flex-col font-sans">
       <Header />
-      <main className="pt-[70px]">{children}</main>
+      <main className="flex-1 pt-[70px] pb-16">{children}</main>
       <Footer />
     </div>
   );

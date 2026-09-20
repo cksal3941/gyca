@@ -1,4 +1,4 @@
-import Link from "next/link";
+import EditorialHeader from "@/components/site/EditorialHeader";
 import {
   visibleSections,
   hasRealContent,
@@ -159,44 +159,15 @@ export default function ProjectArchiveView({
 
   return (
     <>
-      {/* Hero — reads unambiguously as a completed project (Archive) */}
-      <section className="bg-ink-strong text-white">
-        <div className="mx-auto max-w-page px-6 pb-14 pt-12 lg:pb-16 lg:pt-16">
-          <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-[16px] text-white">
-            <Link href="/" className="hover:text-white">
-              {ko ? "홈" : "Home"}
-            </Link>
-            <span className="text-white/40">/</span>
-            <span className="text-white">{T(hero.program, locale)}</span>
-          </nav>
-
-          <p className="text-[16px] font-bold uppercase tracking-[0.18em] text-white">
-            {T(hero.eyebrow, locale)}
-          </p>
-          <h1 className="mt-4 font-display text-[clamp(36px,5.2vw,68px)] font-extrabold uppercase leading-[1.02] tracking-[0.02em]">
-            {T(hero.program, locale)}
-          </h1>
-          <p className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[16px] text-white">
-            <span>{T(hero.location, locale)}</span>
-            <span className="text-white/40">·</span>
-            <span>{T(hero.period, locale)}</span>
-          </p>
-          <p className="mt-6 max-w-[52ch] text-[18px] leading-[1.7] text-white">
-            {T(hero.summary, locale)}
-          </p>
-
-          <ul className="mt-7 flex flex-wrap gap-2">
-            {hero.operated.map((o) => (
-              <li
-                key={o.en}
-                className="border border-white/30 px-4 py-2 text-[16px] font-medium text-white"
-              >
-                {T(o, locale)}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+      {/* Hero — the shared editorial header (breadcrumb + label + title +
+          description), the same style as /contests. */}
+      <EditorialHeader
+        eyebrow={T(hero.eyebrow, locale)}
+        title={T(hero.program, locale)}
+        description={T(hero.summary, locale)}
+        crumbs={[{ label: ko ? "아카이브" : "Archive", href: "/archive" }]}
+        locale={locale}
+      />
 
       {/* Content areas */}
       <section className="mx-auto max-w-page px-6 py-14 lg:py-20">
@@ -211,7 +182,11 @@ export default function ProjectArchiveView({
                 <span className="font-title text-[18px] font-bold text-brand-blue">
                   {String(s.order).padStart(2, "0")}
                 </span>
-                <h2 className="font-title font-bold text-[clamp(24px,2.6vw,32px)] leading-[1.15] tracking-[0.02em] text-ink-strong">
+                <h2
+                  className={`font-bold text-[clamp(24px,2.6vw,32px)] leading-[1.15] text-ink-strong ${
+                    ko ? "font-sans tracking-[-0.01em]" : "font-title tracking-[0.02em]"
+                  }`}
+                >
                   {T(s.title, locale)}
                 </h2>
               </div>

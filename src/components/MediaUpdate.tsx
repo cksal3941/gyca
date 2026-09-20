@@ -52,7 +52,7 @@ function PlayIcon() {
 
 export default function MediaUpdate({ locale }: { locale: Locale }) {
   return (
-    <section className="bg-white py-20">
+    <section className="bg-white pt-28 pb-20">
       <div className="mx-auto max-w-page px-6">
         <SectionHeading badge="Media" title={HEADING[locale]} locale={locale} />
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
@@ -69,7 +69,7 @@ export default function MediaUpdate({ locale }: { locale: Locale }) {
                 </div>
                 <PlayIcon />
               </div>
-              <h3 className="mt-4 text-[16px] font-medium leading-snug text-ink-strong group-hover:text-brand-blue">
+              <h3 className="mt-4 text-[16px] font-medium leading-snug text-ink-strong decoration-1 underline-offset-4 group-hover:underline">
                 <span className="text-ink-strong">[{m.cat[locale]}]</span> {m.title[locale]}
               </h3>
               <p className="mt-2 text-[16px] leading-[1.6] text-ink-strong">{m.sub[locale]}</p>

@@ -1,3 +1,7 @@
+/* Pretendard (Korean) — the font stacks list "Pretendard Variable" first but it
+   was never loaded, so Hangul fell back to a system font. Load it via the
+   official CDN (variable, dynamic subset for efficient Korean). */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -44,11 +48,12 @@
   /* Unified content width for all sections except the site header & hero. */
   --container-page: 1400px;
 
-  /* Fonts (measured from myslide.org) */
-  --font-display: var(--font-bebas), "Bebas Neue", sans-serif;
-  --font-nav: var(--font-quicksand), sans-serif;
+  /* Fonts (measured from myslide.org). Every stack keeps its Latin display face
+     first, then falls back to Pretendard so ALL Hangul renders in Pretendard. */
+  --font-display: var(--font-bebas), "Bebas Neue", "Pretendard Variable", Pretendard, sans-serif;
+  --font-nav: var(--font-quicksand), "Pretendard Variable", Pretendard, sans-serif;
   /* Extracted from myslide.org via extract-design-system */
-  --font-body: var(--font-manrope), "Manrope", sans-serif;
+  --font-body: var(--font-manrope), "Manrope", "Pretendard Variable", Pretendard, sans-serif;
   /* Serif titles — Latin renders in DM Serif Display (like the reference);
      Korean falls back to a gothic (as the reference does), not a batang serif. */
   --font-serif: var(--font-dm-serif), "DM Serif Display", "Pretendard Variable",
@@ -102,6 +107,19 @@
       transform: translateY(0);
     }
   }
+
+  @keyframes scrollNudge {
+    0%,
+    100% {
+      opacity: 0.55;
+      transform: translateY(0);
+    }
+    50% {
+      opacity: 1;
+      transform: translateY(5px);
+    }
+  }
+
 }
 
 html {
@@ -121,6 +139,16 @@ button {
   transition: all 0.3s ease;
 }
 
+/* Tailwind v4 no longer applies `cursor: pointer` to buttons (it matches the
+   native default). Restore the pointer for interactive buttons; disabled ones
+   keep their own cursor, and any `cursor-*` utility still wins. */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
 /* Section title: Latin/numbers render in Bebas, Korean falls back to Pretendard
    (mirrors the reference "Bebas Kai, NexonLv2Gothic" stack) */
 .font-title {
@@ -128,6 +156,19 @@ button {
   /* Bebas is condensed — give titles a comfortable default letter-spacing so
      English headings don't read cramped. Utilities can still override. */
   letter-spacing: 0.02em;
+}
+
+/* Korean version: render EVERYTHING — including Latin/English fragments (GYCA,
+   Leipzig, labels…) — in Pretendard for a consistent look. English pages keep
+   the Latin display faces (Bebas / Quicksand / DM Serif). */
+html[lang="ko"] {
+  --font-display: "Pretendard Variable", Pretendard, sans-serif;
+  --font-nav: "Pretendard Variable", Pretendard, sans-serif;
+  --font-body: "Pretendard Variable", Pretendard, sans-serif;
+  --font-serif: "Pretendard Variable", Pretendard, sans-serif;
+}
+html[lang="ko"] .font-title {
+  font-family: "Pretendard Variable", Pretendard, sans-serif;
 }
 
 /* Hero word-up reveal */
@@ -139,6 +180,17 @@ button {
 /* Scroll reveal utility */
 .reveal {
   animation: fadeUp 0.7s var(--ease-brand) both;
+}
+
+/* Hero scroll-down indicator (chevron nudging downward) */
+.scroll-chevron {
+  animation: scrollNudge 1.6s var(--ease-brand) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-chevron {
+    animation: none;
+    opacity: 0.8;
+  }
 }
 
 /* Marquee helpers */

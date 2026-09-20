@@ -14,6 +14,7 @@ import {
 } from "@/lib/site-data";
 import { listCompetitionCards, canStartEntry, type CompetitionCard } from "@/lib/api";
 import { isLive } from "@/lib/api/mode";
+import { coverBg } from "@/lib/unsplash";
 import type { Locale } from "@/lib/i18n";
 
 // Contests list (dual-mode). Live: GET /content/competition-cards — real
@@ -30,6 +31,19 @@ const STATUS_BADGE: Record<ContestStatus, string> = {
   result: "bg-brand-blue",
   closed: "bg-neutral-500",
 };
+
+// Status filter — works in both live and mock (each row carries a status).
+const STATUS_FILTERS = [
+  { key: "all", ko: "전체", en: "All" },
+  { key: "open", ko: "접수 중", en: "Open" },
+  { key: "upcoming", ko: "접수 예정", en: "Upcoming" },
+  { key: "closed", ko: "종료", en: "Closed" },
+] as const;
+function statusMatch(s: ContestStatus, key: string): boolean {
+  if (key === "all") return true;
+  if (key === "closed") return s === "closed" || s === "judging" || s === "result";
+  return s === key;
+}
 
 // Row view-model — the single shape the row renders from.
 type RowVM = {
@@ -93,76 +107,66 @@ function liveToRow(card: CompetitionCard, locale: Locale): RowVM {
   };
 }
 
-function ContestRow({ r, flip, locale }: { r: RowVM; flip: boolean; locale: Locale }) {
+// Poster-first card: portrait (3:4) poster image + compact meta below, the way
+// competitions are actually promoted. The whole poster/title links to detail;
+// an Apply CTA shows only when the server allows it.
+function ContestCard({ r, locale }: { r: RowVM; locale: Locale }) {
   const ko = locale === "ko";
   const applyLabel = r.status === "open" ? (ko ? "접수하기" : "Apply") : ko ? "자세히 보기" : "View details";
   return (
-    <article className="grid items-center gap-8 border-b border-line py-14 lg:grid-cols-2 lg:gap-16">
-      {/* Text */}
-      <div className={flip ? "lg:order-2" : ""}>
-        <div className="flex items-center gap-2">
-          {r.categoryLabel && (
-            <span className="bg-brand-blue px-[15px] py-[9px] text-[11px] font-bold uppercase leading-none tracking-[0.3px] text-white">
-              {r.categoryLabel}
-            </span>
-          )}
-          {r.sample ? (
-            <span className="border border-line px-[13px] py-[9px] text-[11px] font-bold uppercase leading-none tracking-[0.3px] text-ink-strong">
-              {ko ? "샘플 · 준비 중" : "Sample · Coming soon"}
-            </span>
-          ) : (
-            <span
-              className={`px-[13px] py-[9px] text-[11px] font-bold uppercase leading-none tracking-[0.3px] text-white ${STATUS_BADGE[r.status]}`}
-            >
-              {STATUS_LABEL[r.status][locale]}
-            </span>
-          )}
-        </div>
-
-        <Link href={`/contests/${r.slug}`}>
-          <h2 className="mt-5 font-title text-[clamp(28px,3.4vw,40px)] font-bold leading-[1.15] tracking-[0.02em] text-ink-strong hover:text-brand-blue">
-            {r.title}
-          </h2>
-        </Link>
-        {r.summary && (
-          <p className="mt-4 max-w-[34rem] text-[16px] leading-[1.8] text-ink-strong">
-            {r.summary}
-          </p>
-        )}
-        <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-[16px] text-ink-strong">
-          {r.city && <span>{r.city}</span>}
-          {r.period && <span>{ko ? "접수" : "Entry"} {r.period}</span>}
-        </div>
-
-        <div className="mt-8 flex flex-wrap gap-3">
-          {r.applyHref && (
-            <Link
-              href={r.applyHref}
-              className="flex h-11 items-center justify-center gap-[10px] rounded-[7px] bg-black px-7 text-[14px] font-semibold text-white hover:opacity-90"
-            >
-              {applyLabel}
-              <span aria-hidden>›</span>
-            </Link>
-          )}
-          <Link
-            href={`/contests/${r.slug}`}
-            className="flex h-11 items-center justify-center gap-[10px] rounded-[7px] border border-black bg-white px-7 text-[14px] font-semibold text-ink hover:bg-neutral-50"
-          >
-            {ko ? "자세히 보기" : "View details"}
-            <span aria-hidden>›</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* Poster (image + gradient placeholder) */}
-      <Link href={`/contests/${r.slug}`} className={`block ${flip ? "lg:order-1" : ""}`}>
+    <article className="group flex flex-col">
+      <Link href={`/contests/${r.slug}`} className="block overflow-hidden ring-1 ring-black/5">
         <div
-          className="aspect-[4/3] w-full overflow-hidden bg-cover bg-center ring-1 ring-black/5"
-          style={{ backgroundImage: r.coverSrc ? `url(${r.coverSrc}), ${r.tint}` : r.tint }}
+          className="aspect-[3/4] w-full bg-cover bg-center transition-transform duration-500 group-hover:scale-[1.03]"
+          style={{ backgroundImage: coverBg(r.slug, r.coverSrc, 800) }}
           role="img"
           aria-label={r.title}
         />
       </Link>
+
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        {r.categoryLabel && (
+          <span className="bg-brand-blue px-[13px] py-[8px] text-[14px] font-bold uppercase leading-none tracking-[0.3px] text-white">
+            {r.categoryLabel}
+          </span>
+        )}
+        {r.sample ? (
+          <span className="border border-line px-[11px] py-[8px] text-[14px] font-bold uppercase leading-none tracking-[0.3px] text-ink-strong">
+            {ko ? "샘플" : "Sample"}
+          </span>
+        ) : (
+          <span
+            className={`px-[11px] py-[8px] text-[14px] font-bold uppercase leading-none tracking-[0.3px] text-white ${STATUS_BADGE[r.status]}`}
+          >
+            {STATUS_LABEL[r.status][locale]}
+          </span>
+        )}
+      </div>
+
+      <Link href={`/contests/${r.slug}`}>
+        <h2
+          className={`mt-3 break-keep text-[22px] font-bold leading-[1.25] text-ink-strong group-hover:text-brand-blue ${
+            ko ? "font-sans tracking-[-0.01em]" : "font-title tracking-[0.02em]"
+          }`}
+        >
+          {r.title}
+        </h2>
+      </Link>
+      {r.period && (
+        <p className="mt-2 text-[16px] text-ink-strong">
+          {ko ? "접수" : "Entry"} {r.period}
+        </p>
+      )}
+
+      {r.applyHref && (
+        <Link
+          href={r.applyHref}
+          className="mt-4 inline-flex h-11 w-fit items-center justify-center gap-[10px] rounded-[7px] bg-black px-6 text-[14px] font-semibold text-white hover:opacity-90"
+        >
+          {applyLabel}
+          <span aria-hidden>›</span>
+        </Link>
+      )}
     </article>
   );
 }
@@ -170,6 +174,7 @@ function ContestRow({ r, flip, locale }: { r: RowVM; flip: boolean; locale: Loca
 export default function ContestsPage() {
   const { locale } = useLocale();
   const [filter, setFilter] = useState<string>("전체");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [liveRows, setLiveRows] = useState<RowVM[] | null>(null);
   const [phase, setPhase] = useState<"loading" | "ready" | "error">(isLive ? "loading" : "ready");
 
@@ -188,6 +193,7 @@ export default function ContestsPage() {
   const mockList =
     filter === "전체" ? CONTESTS : CONTESTS.filter((c) => c.category === filter);
   const rows: RowVM[] = isLive ? (liveRows ?? []) : mockList.map((c) => mockToRow(c, locale));
+  const visibleRows = rows.filter((r) => statusMatch(r.status, statusFilter));
 
   return (
     <>
@@ -196,8 +202,8 @@ export default function ContestsPage() {
         title={locale === "ko" ? "공모전" : "Competitions"}
         description={
           locale === "ko"
-            ? "분야별 국제 청소년 공모전을 탐색하고, 접수 중인 공모전에 바로 지원하세요."
-            : "Explore international youth competitions by field and apply directly to open calls."
+            ? "국제 청소년 공모전을 만나보세요."
+            : "Discover international youth competitions."
         }
         crumbs={[{ label: locale === "ko" ? "공모전" : "Competitions" }]}
         locale={locale}
@@ -211,9 +217,9 @@ export default function ContestsPage() {
               : "The only open call right now is Leipzig 2027. Items marked “Sample · Coming soon” are demo placeholders — not real or approved events."}
           </div>
         )}
-        {/* Filters (mock categories only — live presentation category is free copy) */}
+        {/* Category filter (mock only — live presentation category is free copy) */}
         {!isLive && (
-          <div className="flex flex-wrap gap-2 -mx-6 border-b border-line px-6 py-6">
+          <div className="flex flex-wrap gap-2 pt-6">
             {CONTEST_FILTERS.map((f) => (
               <button
                 key={f}
@@ -229,6 +235,22 @@ export default function ContestsPage() {
             ))}
           </div>
         )}
+        {/* Status filter (live + mock) */}
+        <div className="flex flex-wrap gap-2 border-b border-line py-6">
+          {STATUS_FILTERS.map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setStatusFilter(f.key)}
+              className={`rounded-full border px-4 py-2 text-[16px] font-medium transition-colors ${
+                statusFilter === f.key
+                  ? "border-black bg-black text-white"
+                  : "border-field text-ink hover:border-black hover:text-ink-strong"
+              }`}
+            >
+              {locale === "ko" ? f.ko : f.en}
+            </button>
+          ))}
+        </div>
 
         {phase === "loading" ? (
           <p className="py-24 text-center text-[16px] text-ink-strong">{locale === "ko" ? "불러오는 중…" : "Loading…"}</p>
@@ -236,17 +258,21 @@ export default function ContestsPage() {
           <p className="py-24 text-center text-[16px] text-ink-strong">
             {locale === "ko" ? "공모전을 불러오지 못했습니다. 잠시 후 다시 시도하세요." : "Could not load competitions. Please try again shortly."}
           </p>
-        ) : rows.length > 0 ? (
-          <div>
-            {rows.map((r, i) => (
-              <ContestRow key={r.slug} r={r} flip={i % 2 === 1} locale={locale} />
+        ) : visibleRows.length > 0 ? (
+          <div className="grid grid-cols-2 gap-x-6 gap-y-12 py-12 md:grid-cols-3 lg:gap-x-8">
+            {visibleRows.map((r) => (
+              <ContestCard key={r.slug} r={r} locale={locale} />
             ))}
           </div>
         ) : (
           <p className="py-24 text-center text-[16px] text-ink-strong">
-            {locale === "ko"
-              ? "공개된 공모전이 아직 없습니다."
-              : "No competitions published yet."}
+            {rows.length === 0
+              ? locale === "ko"
+                ? "공개된 공모전이 아직 없습니다."
+                : "No competitions published yet."
+              : locale === "ko"
+                ? "해당 조건의 공모전이 없습니다."
+                : "No competitions match this filter."}
           </p>
         )}
       </section>

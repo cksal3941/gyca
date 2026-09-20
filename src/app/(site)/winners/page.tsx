@@ -16,17 +16,16 @@ import {
   type Winner,
 } from "@/lib/site-data";
 import type { Bi, Locale } from "@/lib/i18n";
-import { isLive } from "@/lib/api/mode";
-import ProjectCollectionView from "@/components/archive/ProjectCollectionView";
+import { coverBg } from "@/lib/unsplash";
 
-/** Award pill for use over imagery (translucent, white text + colored dot).
+/** Award pill shown below the image (light chip, dark text + colored dot).
  *  Carries a "sample" marker — these are demo placeholders, not real results. */
 function AwardChip({ w, locale }: { w: Winner; locale: Locale }) {
   return (
-    <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-[14px] font-semibold text-white backdrop-blur-sm">
+    <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-surface px-3 py-1 text-[14px] font-semibold text-ink-strong">
       <span className={`h-1.5 w-1.5 rounded-full ${AWARD_COLOR[w.award]}`} />
       {w.award}
-      <span className="ml-1 border-l border-white/40 pl-1.5 text-[12px] font-bold uppercase tracking-[0.06em]">
+      <span className="ml-1 border-l border-line pl-1.5 text-[13px] font-bold uppercase tracking-[0.06em]">
         {locale === "ko" ? "예시" : "Sample"}
       </span>
     </span>
@@ -34,30 +33,27 @@ function AwardChip({ w, locale }: { w: Winner; locale: Locale }) {
 }
 
 const bg = (w: Winner) => ({
-  backgroundImage: `url(/images/winners/${w.slug}.jpg), ${w.tint}`,
+  backgroundImage: coverBg(w.slug, `/images/winners/${w.slug}.jpg`),
 });
 
-/** Large featured winner — full-width image with overlaid text (works in any
- *  language; the drama comes from scale + imagery, not the typeface). */
+/** Large featured winner — full-width image with the caption below it. */
 function FeaturedWinner({ w, locale }: { w: Winner; locale: Locale }) {
   return (
-    <Link
-      href={`/winners/${w.slug}`}
-      className="group relative mt-6 block aspect-[16/10] w-full overflow-hidden rounded-2xl ring-1 ring-black/5 sm:aspect-[16/8] lg:aspect-[21/9]"
-    >
-      <div
-        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-[1.03]"
-        style={bg(w)}
-        role="img"
-        aria-label={w.title}
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
-      <div className="absolute inset-0 flex flex-col justify-end gap-3 p-7 text-white sm:p-10 lg:p-14">
+    <Link href={`/winners/${w.slug}`} className="group mt-6 block">
+      <div className="aspect-[16/10] w-full overflow-hidden ring-1 ring-black/5 sm:aspect-[16/8] lg:aspect-[21/9]">
+        <div
+          className="h-full w-full bg-cover bg-center transition-transform duration-700 group-hover:scale-[1.03]"
+          style={bg(w)}
+          role="img"
+          aria-label={w.title}
+        />
+      </div>
+      <div className="mt-5 flex flex-col gap-3">
         <AwardChip w={w} locale={locale} />
-        <h2 className="max-w-[22ch] font-title text-[clamp(34px,6vw,76px)] font-bold leading-[1.0] tracking-[0.01em]">
+        <h2 className="max-w-[22ch] break-keep font-title text-[clamp(34px,6vw,76px)] font-bold leading-[1.0] tracking-[0.01em] text-ink-strong group-hover:text-brand-blue">
           {w.title}
         </h2>
-        <p className="text-[16px] text-white/85">
+        <p className="text-[16px] text-ink-strong">
           {w.artist} · {w.country} · {CATEGORY_LABEL[w.category]?.[locale] ?? w.category} · {w.year}
         </p>
       </div>
@@ -65,26 +61,24 @@ function FeaturedWinner({ w, locale }: { w: Winner; locale: Locale }) {
   );
 }
 
-/** Grid card — big image with an overlaid caption at the bottom. */
+/** Grid card — image on top, caption below. */
 function WinnerCard({ w, locale }: { w: Winner; locale: Locale }) {
   return (
-    <Link
-      href={`/winners/${w.slug}`}
-      className="group relative block aspect-[3/4] overflow-hidden rounded-xl ring-1 ring-black/5"
-    >
-      <div
-        className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-        style={bg(w)}
-        role="img"
-        aria-label={w.title}
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 p-5 text-white">
+    <Link href={`/winners/${w.slug}`} className="group block">
+      <div className="aspect-[3/4] w-full overflow-hidden ring-1 ring-black/5">
+        <div
+          className="h-full w-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+          style={bg(w)}
+          role="img"
+          aria-label={w.title}
+        />
+      </div>
+      <div className="mt-4 flex flex-col gap-2">
         <AwardChip w={w} locale={locale} />
-        <h3 className="font-title text-[clamp(20px,2.2vw,28px)] font-bold leading-[1.08] tracking-[0.01em]">
+        <h3 className="break-keep font-title text-[clamp(20px,2.2vw,28px)] font-bold leading-[1.08] tracking-[0.01em] text-ink-strong group-hover:text-brand-blue">
           {w.title}
         </h3>
-        <p className="text-[15px] text-white/85">
+        <p className="text-[16px] text-ink-strong">
           {w.artist} · {w.year}
         </p>
       </div>
@@ -159,13 +153,6 @@ export default function WinnersPage() {
         crumbs={[{ label: locale === "ko" ? "수상작" : "Winners" }]}
         locale={locale}
       />
-      {isLive ? (
-        <ProjectCollectionView
-          kind="winners"
-          locale={locale}
-          emptyText={locale === "ko" ? "공개된 수상 프로젝트가 아직 없습니다." : "No winner projects published yet."}
-        />
-      ) : (
       <section className="mx-auto max-w-page px-6 pb-16">
         {/* Safety notice — these winners are demo placeholders, not real results */}
         <div className="mt-6 rounded-xl border border-line bg-surface px-4 py-3 text-[16px] leading-[1.6] text-ink-strong">
@@ -197,7 +184,7 @@ export default function WinnersPage() {
 
         {list.length > 0 ? (
           rest.length > 0 ? (
-            <div className="grid gap-6 py-12 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-x-6 gap-y-16 py-12 sm:grid-cols-2 xl:grid-cols-3">
               {rest.map((w) => (
                 <WinnerCard key={w.slug} w={w} locale={locale} />
               ))}
@@ -213,7 +200,6 @@ export default function WinnersPage() {
           </p>
         )}
       </section>
-      )}
     </>
   );
 }

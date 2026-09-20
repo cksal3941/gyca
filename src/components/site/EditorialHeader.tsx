@@ -25,8 +25,8 @@ export default function EditorialHeader({
   serif?: boolean;
 }) {
   return (
-    <section>
-      <div className="mx-auto max-w-page border-b-[3px] border-black px-6 pb-8 pt-12 lg:pb-10 lg:pt-16">
+    <section className="border-b-2 border-black">
+      <div className="mx-auto max-w-page px-6 pb-12 pt-16 lg:pb-16 lg:pt-24">
         {crumbs && crumbs.length > 0 && (
           <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-[16px] text-ink-strong">
             <Link href="/" className="hover:text-brand-blue">
@@ -54,7 +54,7 @@ export default function EditorialHeader({
               </p>
             )}
             <h1
-              className={`text-[clamp(44px,5.6vw,72px)] leading-[1.05] text-ink-strong ${
+              className={`break-keep text-[clamp(38px,4.8vw,60px)] leading-[1.08] text-ink-strong ${
                 serif
                   ? "font-serif tracking-[0.005em]"
                   : "font-title font-bold tracking-[0.02em]"

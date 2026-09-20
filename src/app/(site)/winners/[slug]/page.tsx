@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getWinner, WINNERS, AWARD_COLOR, CATEGORY_LABEL } from "@/lib/site-data";
+import EditorialHeader from "@/components/site/EditorialHeader";
+import { coverBg } from "@/lib/unsplash";
+import { getWinner, WINNERS, CATEGORY_LABEL } from "@/lib/site-data";
 import { getServerLocale } from "@/lib/i18n/server";
 import type { Locale } from "@/lib/i18n";
 
@@ -27,31 +29,18 @@ export default async function WinnerDetail({
   ];
 
   return (
-    <section className="mx-auto max-w-page px-6 py-16 lg:py-24">
-      <nav className="mb-10 flex flex-wrap items-center gap-1.5 text-[16px] text-ink-strong">
-        <Link href="/" className="hover:text-brand-blue">
-          {ko ? "홈" : "Home"}
-        </Link>
-        <span className="text-line">/</span>
-        <Link href="/winners" className="hover:text-brand-blue">
-          {ko ? "수상작" : "Winners"}
-        </Link>
-        <span className="text-line">/</span>
-        <span className="text-ink-strong">{w.title}</span>
-      </nav>
-
-      <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
-        {/* Left: title + index */}
-        <div>
-          <p className="mb-4 flex items-center gap-2 text-[16px] font-bold uppercase tracking-[0.14em] text-brand-blue">
-            <span className={`h-2.5 w-2.5 rounded-full ${AWARD_COLOR[w.award]}`} />
-            {w.award}
-          </p>
-          <h1 className="font-title font-bold text-[clamp(40px,5vw,64px)] leading-[1.05] tracking-[0.02em] text-ink-strong">
-            {w.title}
-          </h1>
-
-          <dl className="mt-10 border-t border-line">
+    <>
+      <EditorialHeader
+        eyebrow={w.award}
+        title={w.title}
+        crumbs={[{ label: ko ? "수상작" : "Winners", href: "/winners" }]}
+        locale={locale}
+      />
+      <section className="mx-auto max-w-page px-6 py-16 lg:py-20">
+        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
+          {/* Left: award facts + back */}
+          <div>
+            <dl className="border-t border-line">
             {meta.map(([k, v]) => (
               <div
                 key={k}
@@ -76,7 +65,7 @@ export default async function WinnerDetail({
         <div>
           <div
             className="aspect-[4/5] w-full overflow-hidden bg-cover bg-center ring-1 ring-black/5"
-            style={{ backgroundImage: `url(/images/winners/${w.slug}.jpg), ${w.tint}` }}
+            style={{ backgroundImage: coverBg(w.slug, `/images/winners/${w.slug}.jpg`) }}
             role="img"
             aria-label={w.title}
           />
@@ -108,6 +97,7 @@ export default async function WinnerDetail({
           </blockquote>
         </div>
       </div>
-    </section>
+      </section>
+    </>
   );
 }

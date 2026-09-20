@@ -4,6 +4,7 @@ import EditorialHeader from "@/components/site/EditorialHeader";
 import ContestDetailLive from "@/components/site/ContestDetailLive";
 import { getContest, CONTESTS, STATUS_LABEL, STATUS_COLOR } from "@/lib/site-data";
 import { isLive } from "@/lib/api/mode";
+import { coverBg } from "@/lib/unsplash";
 import { getServerLocale } from "@/lib/i18n/server";
 import type { Bi, Locale } from "@/lib/i18n";
 
@@ -91,7 +92,7 @@ export default async function ContestDetail({
       <div className="mx-auto max-w-page px-6 pt-10 lg:pt-14">
         <div
           className="aspect-[21/9] w-full overflow-hidden bg-cover bg-center ring-1 ring-black/5"
-          style={{ backgroundImage: `url(/images/contests/${c.slug}.jpg), ${c.tint}` }}
+          style={{ backgroundImage: coverBg(c.slug, `/images/contests/${c.slug}.jpg`) }}
           role="img"
           aria-label={c.title}
         />

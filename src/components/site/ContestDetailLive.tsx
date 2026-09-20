@@ -12,6 +12,7 @@ import {
   type CompetitionCard,
 } from "@/lib/api";
 import { money, fmtDate } from "@/lib/entry-view";
+import { coverBg } from "@/lib/unsplash";
 import { STATUS_LABEL, STATUS_COLOR, type ContestStatus } from "@/lib/site-data";
 import type { Competition } from "@/contracts";
 import type { Locale } from "@/lib/i18n";
@@ -39,7 +40,6 @@ function fmtKeyDate(v: KeyDateValue, ko: boolean): string {
   return `${fmtDate(v.startsOn, ko)} – ${fmtDate(v.endsOn, ko)}`;
 }
 
-const NEUTRAL_TINT = "linear-gradient(135deg,#e8edf5,#cdd7e6)";
 
 export default function ContestDetailLive({ slug }: { slug: string }) {
   const { locale }: { locale: Locale } = useLocale();
@@ -177,7 +177,7 @@ export default function ContestDetailLive({ slug }: { slug: string }) {
       <div className="mx-auto max-w-page px-6 pt-10 lg:pt-14">
         <div
           className="aspect-[21/9] w-full overflow-hidden bg-cover bg-center ring-1 ring-black/5"
-          style={{ backgroundImage: cover ? `url(${cover}), ${NEUTRAL_TINT}` : NEUTRAL_TINT }}
+          style={{ backgroundImage: coverBg(comp.slug, cover, 1600) }}
           role="img"
           aria-label={comp.title[locale]}
         />

@@ -7,7 +7,6 @@ import PartnerMarquee from "@/components/PartnerMarquee";
 import MediaUpdate from "@/components/MediaUpdate";
 import NewsUpdate from "@/components/NewsUpdate";
 import Footer from "@/components/Footer";
-import ApplyCta from "@/components/home/ApplyCta";
 import { getServerLocale } from "@/lib/i18n/server";
 
 // Home keeps the deployed design intact. The Hero slides already tell the Leipzig
@@ -23,12 +22,11 @@ export default async function Home() {
       <main>
         <Hero />
         <EventSlider />
-        <Marquee locale={locale} />
+        <Marquee />
         <DarkProjects locale={locale} />
-        <PartnerMarquee locale={locale} />
+        <PartnerMarquee />
         <MediaUpdate locale={locale} />
         <NewsUpdate locale={locale} />
-        <ApplyCta locale={locale} />
       </main>
       <Footer />
     </div>

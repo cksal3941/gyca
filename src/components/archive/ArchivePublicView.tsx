@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import EditorialHeader from "@/components/site/EditorialHeader";
 import { useLocale } from "@/components/i18n/LocaleProvider";
 import { getProject, type ArchivePublicItem } from "@/lib/api";
 import { isLive } from "@/lib/api/mode";
@@ -120,29 +121,23 @@ export default function ArchivePublicView({ slug }: { slug: string }) {
   }
 
   const sections = [...proj.sections].sort((a, b) => a.order - b.order);
-  const heroMeta = [proj.hero.location?.[locale], proj.hero.period?.[locale]].filter(Boolean);
   return (
-    <article className="mx-auto max-w-page px-6 py-16 lg:py-24">
-      <nav className="mb-10 flex flex-wrap items-center gap-1.5 text-[16px] text-ink-strong">
-        <Link href="/" className="hover:text-brand-blue">{ko ? "홈" : "Home"}</Link>
-        <span className="text-line">/</span>
-        <Link href="/archive" className="hover:text-brand-blue">{ko ? "아카이브" : "Archive"}</Link>
-      </nav>
-      <p className="text-[16px] font-bold uppercase tracking-[0.18em] text-brand-blue">{ko ? "완료 프로젝트" : "Completed project"}</p>
-      <h1 className="mt-4 font-title font-bold text-[clamp(36px,4.6vw,60px)] leading-[1.05] tracking-[0.02em] text-ink-strong">{proj.hero.program[locale]}</h1>
-      <p className="mt-6 max-w-[46rem] text-[18px] leading-[1.7] text-ink-strong">{proj.hero.summary[locale]}</p>
-      {heroMeta.length > 0 && (
-        <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-[16px] text-ink-strong">
-          {heroMeta.map((m, i) => <span key={i}>{m}</span>)}
-          {proj.hero.operated.length > 0 && <span>{ko ? "주관" : "Operated by"} {proj.hero.operated.map((o) => o[locale]).join(", ")}</span>}
+    <>
+      <EditorialHeader
+        eyebrow="Archive"
+        title={proj.hero.program[locale]}
+        description={proj.hero.summary[locale]}
+        crumbs={[{ label: ko ? "아카이브" : "Archive", href: "/archive" }]}
+        locale={locale}
+      />
+      <article className="mx-auto max-w-page px-6 py-16 lg:py-20">
+        {proj.hero.image && (
+          <div className="aspect-[16/9] w-full overflow-hidden bg-cover bg-center ring-1 ring-black/5" style={{ backgroundImage: `url(${proj.hero.image.src})` }} role="img" aria-label={proj.hero.image.alt[locale]} />
+        )}
+        <div className={proj.hero.image ? "mt-10" : ""}>
+          {sections.map((s) => <SectionBlock key={`${s.kind}-${s.order}`} s={s} locale={locale} />)}
         </div>
-      )}
-      {proj.hero.image && (
-        <div className="mt-10 aspect-[16/9] w-full overflow-hidden bg-cover bg-center ring-1 ring-black/5" style={{ backgroundImage: `url(${proj.hero.image.src})` }} role="img" aria-label={proj.hero.image.alt[locale]} />
-      )}
-      <div className="mt-10">
-        {sections.map((s) => <SectionBlock key={`${s.kind}-${s.order}`} s={s} locale={locale} />)}
-      </div>
-    </article>
+      </article>
+    </>
   );
 }

@@ -69,7 +69,7 @@ const NEWS: News[] = [
 
 export default function NewsUpdate({ locale }: { locale: Locale }) {
   return (
-    <section className="bg-white pb-24">
+    <section className="bg-white pt-20 pb-24">
       <div className="mx-auto max-w-page px-6">
         <SectionHeading badge="News" title={HEADING[locale]} locale={locale} />
         <ul className="border-t border-ink/15">

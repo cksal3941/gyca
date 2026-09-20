@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { listProjects, listWinners, listExhibitions, type ArchivePublicItem } from "@/lib/api";
+import { coverBg } from "@/lib/unsplash";
 import type { Locale } from "@/lib/i18n";
 
 // Public collection of COMPLETED projects (winners / exhibitions / all projects).
@@ -20,13 +21,19 @@ const FETCH: Record<Kind, (o: { signal?: AbortSignal }) => Promise<Awaited<Retur
 function ProjectCard({ p, flip, locale }: { p: ArchivePublicItem; flip: boolean; locale: Locale }) {
   const ko = locale === "ko";
   const cover = p.hero.image;
-  const meta = [p.hero.location?.[locale], p.hero.period?.[locale], p.completionYear ? String(p.completionYear) : null].filter(Boolean);
+  // location + a single year (period, else completionYear) — never a duplicate.
+  const year = p.hero.period?.[locale] ?? (p.completionYear ? String(p.completionYear) : null);
+  const meta = [p.hero.location?.[locale], year].filter(Boolean);
   return (
     <article className="grid items-center gap-8 border-b border-line py-14 lg:grid-cols-2 lg:gap-16">
       <div className={flip ? "lg:order-2" : ""}>
         <p className="text-[16px] font-bold uppercase tracking-[0.18em] text-brand-blue">{ko ? "완료 프로젝트" : "Completed project"}</p>
         <Link href={`/archive/${p.slug}`}>
-          <h2 className="mt-4 font-title text-[clamp(28px,3.4vw,40px)] font-bold leading-[1.15] tracking-[0.02em] text-ink-strong hover:text-brand-blue">
+          <h2
+            className={`mt-4 text-[clamp(28px,3.4vw,40px)] font-bold leading-[1.15] text-ink-strong hover:text-brand-blue ${
+              ko ? "font-sans tracking-[-0.01em]" : "font-title tracking-[0.02em]"
+            }`}
+          >
             {p.hero.program[locale]}
           </h2>
         </Link>
@@ -49,7 +56,7 @@ function ProjectCard({ p, flip, locale }: { p: ArchivePublicItem; flip: boolean;
       <Link href={`/archive/${p.slug}`} className={`block ${flip ? "lg:order-1" : ""}`}>
         <div
           className="aspect-[4/3] w-full overflow-hidden bg-cover bg-center ring-1 ring-black/5"
-          style={{ backgroundImage: cover ? `url(${cover.src}), linear-gradient(135deg,#e8edf5,#cdd7e6)` : "linear-gradient(135deg,#e8edf5,#cdd7e6)" }}
+          style={{ backgroundImage: coverBg(p.slug, cover?.src ?? null) }}
           role="img"
           aria-label={cover ? cover.alt[locale] : p.hero.program[locale]}
         />
