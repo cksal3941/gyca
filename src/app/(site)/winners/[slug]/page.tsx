@@ -78,7 +78,7 @@ export default async function WinnerDetail({
             </span>
           </div>
 
-          <h2 className="mt-12 font-title font-bold text-[clamp(26px,2.6vw,32px)] leading-[1.15] tracking-[0.02em] text-ink-strong">
+          <h2 className={`mt-12 break-keep font-bold text-[clamp(26px,2.6vw,32px)] leading-[1.15] text-ink-strong ${ko ? "font-sans tracking-[-0.01em]" : "font-title tracking-[0.02em]"}`}>
             {ko ? "작품 설명" : "About the work"}
           </h2>
           <p className="mt-3 text-[16px] leading-[1.9] text-ink-strong">
@@ -87,7 +87,7 @@ export default async function WinnerDetail({
               : "A description of the theme and intent the artist conveys through the work. Judging weighed originality, understanding of the theme, expression, completion, and potential."}
           </p>
 
-          <h2 className="mt-10 font-title font-bold text-[clamp(26px,2.6vw,32px)] leading-[1.15] tracking-[0.02em] text-ink-strong">
+          <h2 className={`mt-10 break-keep font-bold text-[clamp(26px,2.6vw,32px)] leading-[1.15] text-ink-strong ${ko ? "font-sans tracking-[-0.01em]" : "font-title tracking-[0.02em]"}`}>
             {ko ? "심사평" : "Jury comment"}
           </h2>
           <blockquote className="mt-3 border-l-2 border-brand-blue pl-5 text-[16px] leading-[1.9] text-ink">

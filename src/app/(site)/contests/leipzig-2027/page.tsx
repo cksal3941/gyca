@@ -34,9 +34,9 @@ function MaybeValue({ v, locale }: { v: Maybe; locale: Locale }) {
   return <span className="font-semibold text-ink-strong">{v.value[locale]}</span>;
 }
 
-function SectionH2({ children }: { children: React.ReactNode }) {
+function SectionH2({ ko, children }: { ko: boolean; children: React.ReactNode }) {
   return (
-    <h2 className="font-title font-bold text-[clamp(24px,2.6vw,32px)] leading-[1.15] tracking-[0.02em] text-ink-strong">
+    <h2 className={`break-keep font-bold text-[clamp(24px,2.6vw,32px)] leading-[1.15] text-ink-strong ${ko ? "font-sans tracking-[-0.01em]" : "font-title tracking-[0.02em]"}`}>
       {children}
     </h2>
   );
@@ -96,7 +96,7 @@ export default async function LeipzigDetailPage() {
           <div className="min-w-0">
             {/* Core information + fee */}
             <div id="core" className="scroll-mt-24">
-              <SectionH2>{t(CORE.title)}</SectionH2>
+              <SectionH2 ko={ko}>{t(CORE.title)}</SectionH2>
               <dl className="mt-6 border-t border-line">
                 {CORE.facts.map((f) => (
                   <div
@@ -117,7 +117,7 @@ export default async function LeipzigDetailPage() {
 
             {/* Divisions & categories */}
             <div id="divisions" className="mt-12 scroll-mt-24 border-t border-line pt-10">
-              <SectionH2>{t(DIVISIONS.title)}</SectionH2>
+              <SectionH2 ko={ko}>{t(DIVISIONS.title)}</SectionH2>
               <p className="mt-4 max-w-[42rem] text-[16px] leading-[1.9] text-ink-strong">
                 {t(DIVISIONS.intro)}
               </p>
@@ -136,7 +136,7 @@ export default async function LeipzigDetailPage() {
 
             {/* Submission & required materials */}
             <div id="submission" className="mt-12 scroll-mt-24 border-t border-line pt-10">
-              <SectionH2>{t(SUBMISSION.title)}</SectionH2>
+              <SectionH2 ko={ko}>{t(SUBMISSION.title)}</SectionH2>
               <dl className="mt-6 grid gap-px overflow-hidden border border-line bg-line sm:grid-cols-2">
                 {SUBMISSION.specs.map((s) => (
                   <div key={s.label.en} className="bg-white px-5 py-5">
@@ -162,7 +162,7 @@ export default async function LeipzigDetailPage() {
 
             {/* Judging criteria */}
             <div id="judging" className="mt-12 scroll-mt-24 border-t border-line pt-10">
-              <SectionH2>{t(JUDGING.title)}</SectionH2>
+              <SectionH2 ko={ko}>{t(JUDGING.title)}</SectionH2>
               <div className="mt-6 grid gap-px overflow-hidden border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
                 {JUDGING.criteria.map((c) => (
                   <div key={c.label.en} className="bg-white px-5 py-6">
@@ -176,7 +176,7 @@ export default async function LeipzigDetailPage() {
 
             {/* Schedule */}
             <div id="schedule" className="mt-12 scroll-mt-24 border-t border-line pt-10">
-              <SectionH2>{ko ? "일정" : "Schedule"}</SectionH2>
+              <SectionH2 ko={ko}>{ko ? "일정" : "Schedule"}</SectionH2>
               <p className="mt-3 text-[16px] text-ink-strong">{t(KEY_DATES.timezoneNote)}</p>
               <dl className="mt-6 border-t border-line">
                 {KEY_DATES.rows.map((row) => (
@@ -193,7 +193,7 @@ export default async function LeipzigDetailPage() {
 
             {/* Official Selection & Finalist */}
             <div id="selection" className="mt-12 scroll-mt-24 border-t border-line pt-10">
-              <SectionH2>{t(SELECTION.title)}</SectionH2>
+              <SectionH2 ko={ko}>{t(SELECTION.title)}</SectionH2>
               <div className="mt-6 grid gap-6 sm:grid-cols-2">
                 {SELECTION.stages.map((s, i) => (
                   <div key={s.key} className="border-t-2 border-brand-blue bg-canvas p-6">
@@ -209,7 +209,7 @@ export default async function LeipzigDetailPage() {
 
             {/* Certificates */}
             <div id="certificates" className="mt-12 scroll-mt-24 border-t border-line pt-10">
-              <SectionH2>{t(CERTIFICATES.title)}</SectionH2>
+              <SectionH2 ko={ko}>{t(CERTIFICATES.title)}</SectionH2>
               <p className="mt-3 text-[16px] text-ink-strong">{t(CERTIFICATES.intro)}</p>
               <dl className="mt-6 border-t border-line">
                 {CERTIFICATES.items.map((c) => (
@@ -226,7 +226,7 @@ export default async function LeipzigDetailPage() {
 
             {/* Exhibition support & costs */}
             <div id="exhibition" className="mt-12 scroll-mt-24 border-t border-line pt-10">
-              <SectionH2>{t(EXHIBITION.title)}</SectionH2>
+              <SectionH2 ko={ko}>{t(EXHIBITION.title)}</SectionH2>
 
               {/* Planned/pending exhibition — never asserts an approved venue */}
               <div className="mt-6 border border-line p-5">
@@ -287,7 +287,7 @@ export default async function LeipzigDetailPage() {
 
             {/* FAQ + terms */}
             <div id="faq" className="mt-12 scroll-mt-24 border-t border-line pt-10">
-              <SectionH2>{t(FAQ.title)}</SectionH2>
+              <SectionH2 ko={ko}>{t(FAQ.title)}</SectionH2>
               <dl className="mt-6 divide-y divide-line border-y border-line">
                 {FAQ.items.map((f) => (
                   <div key={f.q.en} className="py-6">

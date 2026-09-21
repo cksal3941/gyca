@@ -114,7 +114,7 @@ function ReviewDecisionEditor({ competitionId, entryId }: { competitionId: strin
 
   return (
     <div className="mt-8 rounded-2xl border border-line bg-white p-6">
-      <h2 className="font-title text-[18px] font-bold text-ink-strong">심사 결정</h2>
+      <h2 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">심사 결정</h2>
       <p className="mt-1 text-[15px] text-ink-strong/70">발표 전 finalist 결정은 내부에만 보관되고 공개되지 않습니다(1차는 Official Selection만 공개).</p>
       {notice && <Message tone="success" className="mt-3">{notice}</Message>}
       {error && <Message tone="danger" className="mt-3">{error}</Message>}
@@ -196,7 +196,7 @@ export default function AdminEntryDetailLive({ competitionId, entryId }: { compe
 
       <div className="mt-8 grid gap-8 lg:grid-cols-2">
         <div className="rounded-2xl border border-line bg-white p-6">
-          <h2 className="font-title text-[18px] font-bold text-ink-strong">참가자</h2>
+          <h2 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">참가자</h2>
           <dl className="mt-4 flex flex-col gap-2 text-[16px]">
             {participantRows.map(([k, v]) => (
               <div key={k} className="flex justify-between gap-4 border-b border-line py-2 last:border-0">
@@ -207,7 +207,7 @@ export default function AdminEntryDetailLive({ competitionId, entryId }: { compe
           </dl>
         </div>
         <div className="rounded-2xl border border-line bg-white p-6">
-          <h2 className="font-title text-[18px] font-bold text-ink-strong">작품</h2>
+          <h2 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">작품</h2>
           <dl className="mt-4 flex flex-col gap-3 text-[16px]">
             <div><dt className="text-ink-strong">영문 작품명</dt><dd className="mt-1 font-semibold text-ink-strong">{w.englishTitle || "—"}</dd></div>
             <div><dt className="text-ink-strong">영문 소개</dt><dd className="mt-1 font-semibold text-ink-strong">{w.englishDescription || "—"}</dd></div>
@@ -217,7 +217,7 @@ export default function AdminEntryDetailLive({ competitionId, entryId }: { compe
       </div>
 
       <div className="mt-8 rounded-2xl border border-line bg-white p-6">
-        <h2 className="font-title text-[18px] font-bold text-ink-strong">파일 검증 상태</h2>
+        <h2 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">파일 검증 상태</h2>
         {d.files.length === 0 ? (
           <p className="mt-4 text-[16px] text-ink-strong">제출된 파일이 없습니다.</p>
         ) : (
@@ -239,7 +239,7 @@ export default function AdminEntryDetailLive({ competitionId, entryId }: { compe
       </div>
 
       <div className="mt-8 rounded-2xl border border-line bg-white p-6">
-        <h2 className="font-title text-[18px] font-bold text-ink-strong">결제</h2>
+        <h2 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">결제</h2>
         {d.payment ? (
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <StatusBadge tone={PAYMENT[d.payment.state]?.tone ?? "neutral"}>{PAYMENT[d.payment.state]?.label ?? d.payment.state}</StatusBadge>
@@ -255,7 +255,7 @@ export default function AdminEntryDetailLive({ competitionId, entryId }: { compe
 
       <div className="mt-8 grid gap-8 lg:grid-cols-2">
         <div className="rounded-2xl border border-line bg-white p-6">
-          <h2 className="font-title text-[18px] font-bold text-ink-strong">동의 내역</h2>
+          <h2 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">동의 내역</h2>
           {d.consents.length === 0 ? (
             <p className="mt-4 text-[16px] text-ink-strong">제출된 동의 내역이 없습니다.</p>
           ) : (
@@ -271,7 +271,7 @@ export default function AdminEntryDetailLive({ competitionId, entryId }: { compe
           <p className="mt-3 text-[16px] text-ink-strong">보호자 확인: <span className="font-semibold">{GUARDIAN_STATUS[d.guardianVerificationStatus]?.label ?? d.guardianVerificationStatus}</span> — 이메일 수락만으로 확인 완료로 표시하지 않습니다.</p>
         </div>
         <div className="rounded-2xl border border-line bg-white p-6">
-          <h2 className="font-title text-[18px] font-bold text-ink-strong">인증서</h2>
+          <h2 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">인증서</h2>
           {d.certificates.length === 0 ? (
             <p className="mt-4 text-[16px] text-ink-strong">발급된 인증서가 없습니다.</p>
           ) : (
@@ -288,7 +288,7 @@ export default function AdminEntryDetailLive({ competitionId, entryId }: { compe
       </div>
 
       <div className="mt-8 rounded-2xl border border-line bg-white p-6">
-        <h2 className="font-title text-[18px] font-bold text-ink-strong">처리 이력 <span className="text-[14px] font-normal text-ink-strong/70">(최근 최대 100건)</span></h2>
+        <h2 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">처리 이력 <span className="text-[14px] font-normal text-ink-strong/70">(최근 최대 100건)</span></h2>
         {d.audit.length === 0 ? (
           <p className="mt-4 text-[16px] text-ink-strong">이력이 없습니다.</p>
         ) : (
@@ -304,7 +304,7 @@ export default function AdminEntryDetailLive({ competitionId, entryId }: { compe
       </div>
 
       <div className="mt-8 rounded-2xl border border-line bg-white p-6">
-        <h2 className="font-title text-[18px] font-bold text-ink-strong">허용된 작업</h2>
+        <h2 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">허용된 작업</h2>
         <div className="mt-4 flex flex-wrap gap-2">
           {d.allowedActions.length === 0 ? (
             <span className="text-[16px] text-ink-strong">이 접수에 대해 허용된 상세 작업이 없습니다.</span>

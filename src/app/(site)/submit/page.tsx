@@ -170,7 +170,7 @@ function SubmitForm({
         {/* STEP 1 — participant + guardian */}
         {uiStep === 1 && (
           <div>
-            <h2 className="font-title text-[22px] font-bold text-ink-strong">
+            <h2 className={`break-keep text-[22px] font-bold text-ink-strong ${ko ? "font-sans tracking-[-0.01em]" : "font-title"}`}>
               {ko ? "참가자·보호자 정보" : "Participant & guardian"}
             </h2>
             <p className="mt-2 text-[15px] text-ink-strong">
@@ -200,7 +200,7 @@ function SubmitForm({
         {/* STEP 2 — work */}
         {uiStep === 2 && (
           <div>
-            <h2 className="font-title text-[22px] font-bold text-ink-strong">{ko ? "작품 정보" : "Work details"}</h2>
+            <h2 className={`break-keep text-[22px] font-bold text-ink-strong ${ko ? "font-sans tracking-[-0.01em]" : "font-title"}`}>{ko ? "작품 정보" : "Work details"}</h2>
             <p className="mt-2 text-[15px] text-ink-strong">
               {ko ? "영문 작품명·영문 작품 소개는 필수입니다." : "English work title and description are required."}
             </p>
@@ -212,7 +212,7 @@ function SubmitForm({
         {/* STEP 3 — files */}
         {uiStep === 3 && (
           <div>
-            <h2 className="font-title text-[22px] font-bold text-ink-strong">{ko ? "파일 및 필수 자료" : "Files & materials"}</h2>
+            <h2 className={`break-keep text-[22px] font-bold text-ink-strong ${ko ? "font-sans tracking-[-0.01em]" : "font-title"}`}>{ko ? "파일 및 필수 자료" : "Files & materials"}</h2>
             <p className="mt-2 text-[15px] text-ink-strong">
               {ko
                 ? "허용 용량·페이지 수는 서버 설정값이며, 최종 검증은 서버가 수행합니다."
@@ -238,7 +238,7 @@ function SubmitForm({
         {/* STEP 4 — review + consent + submit */}
         {uiStep === 4 && (
           <div>
-            <h2 className="font-title text-[22px] font-bold text-ink-strong">{ko ? "입력 내용 확인 및 동의" : "Review & consent"}</h2>
+            <h2 className={`break-keep text-[22px] font-bold text-ink-strong ${ko ? "font-sans tracking-[-0.01em]" : "font-title"}`}>{ko ? "입력 내용 확인 및 동의" : "Review & consent"}</h2>
 
             <dl className="mt-6 border-t border-line">
               {[
@@ -323,7 +323,7 @@ function PaymentStep({
 
   return (
     <div>
-      <h2 className="font-title text-[22px] font-bold text-ink-strong">{ko ? "결제" : "Payment"}</h2>
+      <h2 className={`break-keep text-[22px] font-bold text-ink-strong ${ko ? "font-sans tracking-[-0.01em]" : "font-title"}`}>{ko ? "결제" : "Payment"}</h2>
       <p className="mt-3 flex items-baseline gap-2">
         <span className="text-[16px] text-ink-strong">{ko ? "출품비" : "Entry fee"}</span>
         <span className="text-[24px] font-extrabold text-ink-strong">{fee}</span>
@@ -397,7 +397,7 @@ function ResultStep({
     <div>
       <div className="flex flex-col items-center rounded-2xl border border-line bg-canvas px-6 py-10 text-center">
         <StatusBadge tone="success">{ko ? "접수 완료" : "Entry received"}</StatusBadge>
-        <h2 className="mt-4 font-title text-[24px] font-bold text-ink-strong">
+        <h2 className={`mt-4 break-keep text-[24px] font-bold text-ink-strong ${ko ? "font-sans tracking-[-0.01em]" : "font-title"}`}>
           {ko ? "접수가 완료되었습니다" : "Your entry is received"}
         </h2>
         <dl className="mt-8 w-full max-w-md space-y-3 text-left text-[16px]">

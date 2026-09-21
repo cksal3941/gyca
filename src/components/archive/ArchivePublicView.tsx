@@ -35,7 +35,7 @@ function SectionBlock({ s, locale }: { s: Section; locale: Locale }) {
   return (
     <section className="border-t border-line py-14">
       <p className="text-[16px] font-bold uppercase tracking-[0.18em] text-brand-blue">{eyebrow}</p>
-      <h2 className="mt-4 font-title text-[clamp(24px,2.6vw,34px)] font-bold leading-[1.15] tracking-[0.02em] text-ink-strong">{s.title[locale]}</h2>
+      <h2 className={`mt-4 break-keep text-[clamp(24px,2.6vw,34px)] font-bold leading-[1.15] text-ink-strong ${ko ? "font-sans tracking-[-0.01em]" : "font-title tracking-[0.02em]"}`}>{s.title[locale]}</h2>
       {s.status === "pending" ? (
         <p className="mt-5 text-[16px] leading-[1.8] text-ink-strong/70">
           {s.pendingNote ? s.pendingNote[locale] : ko ? "자료 준비 중입니다." : "Materials are being prepared."}
@@ -57,7 +57,7 @@ function SectionBlock({ s, locale }: { s: Section; locale: Locale }) {
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               {s.stats.map((st, i) => (
                 <div key={i} className="rounded-2xl border border-line bg-surface p-5">
-                  <div className="font-title text-[28px] font-bold text-ink-strong">{st.value[locale]}</div>
+                  <div className={`text-[28px] font-bold text-ink-strong ${ko ? "font-sans tracking-[-0.01em]" : "font-title"}`}>{st.value[locale]}</div>
                   <div className="mt-1 text-[15px] text-ink-strong/70">{st.label[locale]}</div>
                 </div>
               ))}

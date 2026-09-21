@@ -253,7 +253,7 @@ export default function CompetitionForm({
       {/* 일정표 (keyDates) — 공개 상세에 노출되는 주요 일정 */}
       <div className="mt-6 rounded-2xl border border-line bg-white p-6">
         <div className="flex items-center justify-between">
-          <h3 className="font-title text-[18px] font-bold text-ink-strong">일정표</h3>
+          <h3 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">일정표</h3>
           <Button size="sm" variant="outline" onClick={() => setKeyDates((k) => [...k, { id: "", en: "", ko: "", timezone: timezone.trim() || "Europe/Berlin", kind: "tbd", date: "", startsOn: "", endsOn: "", at: "" }])}>일정 추가</Button>
         </div>
         <p className="mt-2 text-[15px] text-ink-strong/70">공개 상세 페이지의 일정 안내입니다. 확정 전 항목은 “미정”으로 두면 “준비 중”으로 표시됩니다. 날짜/기간은 위 공모 시간대 기준으로 표시됩니다.</p>
@@ -298,7 +298,7 @@ export default function CompetitionForm({
       {/* 전시 (exhibition) — 공개 상세의 전시 안내 */}
       <div className="mt-6 rounded-2xl border border-line bg-white p-6">
         <div className="flex items-center justify-between">
-          <h3 className="font-title text-[18px] font-bold text-ink-strong">전시 정보</h3>
+          <h3 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">전시 정보</h3>
           <label className="flex items-center gap-2">
             <input type="checkbox" checked={exhOn} onChange={(e) => setExhOn(e.target.checked)} className="h-4 w-4 accent-brand-blue" />
             <span className={label}>전시 정보 포함</span>
@@ -333,7 +333,7 @@ export default function CompetitionForm({
       {/* 부문 (categories) */}
       <div className="mt-6 rounded-2xl border border-line bg-white p-6">
         <div className="flex items-center justify-between">
-          <h3 className="font-title text-[18px] font-bold text-ink-strong">부문</h3>
+          <h3 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">부문</h3>
           <Button size="sm" variant="outline" onClick={() => setCategories((c) => [...c, { id: "", en: "", ko: "" }])}>부문 추가</Button>
         </div>
         {categories.length === 0 && <p className="mt-3 text-[16px] text-ink-strong/70">부문이 없습니다.</p>}
@@ -352,7 +352,7 @@ export default function CompetitionForm({
       {/* 연령 부문 (ageGroups) */}
       <div className="mt-6 rounded-2xl border border-line bg-white p-6">
         <div className="flex items-center justify-between">
-          <h3 className="font-title text-[18px] font-bold text-ink-strong">연령 부문</h3>
+          <h3 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">연령 부문</h3>
           <Button size="sm" variant="outline" onClick={() => setAgeGroups((a) => [...a, { id: "", en: "", ko: "", min: "", max: "" }])}>연령 추가</Button>
         </div>
         <label className="mt-3 block sm:max-w-xs">
@@ -378,7 +378,7 @@ export default function CompetitionForm({
       {/* 입력 필드 (formSpec.fields) */}
       <div className="mt-6 rounded-2xl border border-line bg-white p-6">
         <div className="flex items-center justify-between">
-          <h3 className="font-title text-[18px] font-bold text-ink-strong">입력 필드</h3>
+          <h3 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">입력 필드</h3>
           <Button size="sm" variant="outline" onClick={() => setFields((f) => [...f, { path: FORM_FIELD_PATHS[0], inputType: "text", required: "required" }])}>필드 추가</Button>
         </div>
         {fields.length === 0 && <p className="mt-3 text-[16px] text-ink-strong/70">필드가 없습니다. 참가자가 입력할 항목을 추가하세요.</p>}
@@ -406,7 +406,7 @@ export default function CompetitionForm({
       {/* 업로드 규격 (formSpec.uploads) */}
       <div className="mt-6 rounded-2xl border border-line bg-white p-6">
         <div className="flex items-center justify-between">
-          <h3 className="font-title text-[18px] font-bold text-ink-strong">업로드 규격</h3>
+          <h3 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">업로드 규격</h3>
           <Button size="sm" variant="outline" onClick={() => setUploads((u) => [...u, { purpose: ASSET_PURPOSES[0], required: "required", media: "", maxFiles: "1", maxBytes: "", minPages: "" }])}>업로드 추가</Button>
         </div>
         {uploads.length === 0 && <p className="mt-3 text-[16px] text-ink-strong/70">업로드 규격이 없습니다.</p>}
@@ -437,7 +437,7 @@ export default function CompetitionForm({
 
       {/* 요강 (guidelines) */}
       <div className="mt-6 rounded-2xl border border-line bg-white p-6">
-        <h3 className="font-title text-[18px] font-bold text-ink-strong">요강 (선택)</h3>
+        <h3 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">요강 (선택)</h3>
         <div className="mt-3 grid gap-4 sm:grid-cols-[2fr_1fr_1fr]">
           <label className="block">
             <span className={label}>URL</span>
@@ -467,9 +467,9 @@ export default function CompetitionForm({
         <Message tone="danger" className="mt-4" title="저장 실패">{error}</Message>
       )}
 
-      <div className="mt-6 flex flex-wrap gap-3">
-        <Button onClick={save} disabled={busy}>{busy ? "저장 중…" : mode === "create" ? "공모 등록" : "변경 저장"}</Button>
+      <div className="mt-6 flex flex-wrap justify-end gap-3">
         <Button href="/admin/competitions" variant="ghost">목록으로</Button>
+        <Button onClick={save} disabled={busy}>{busy ? "저장 중…" : mode === "create" ? "공모 등록" : "변경 저장"}</Button>
       </div>
     </div>
   );

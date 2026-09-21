@@ -191,7 +191,7 @@ export default function ReviewEditor({ id }: { id: string }) {
       <div className="min-w-0">
         <div className="rounded-2xl border border-line bg-white p-6">
           <div className="flex items-center justify-between">
-            <h2 className="font-title text-[18px] font-bold text-ink-strong">심사 항목</h2>
+            <h2 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">심사 항목</h2>
             <span className="text-[16px] font-semibold text-ink-strong">
               {total} / {totalMax}
             </span>
@@ -281,14 +281,14 @@ export default function ReviewEditor({ id }: { id: string }) {
           {!isLive && (
             <div className="mt-6 grid grid-cols-2 gap-3 border-t border-dashed border-field pt-4">
               <label className="block">
-                <span className="text-[13px] font-bold uppercase tracking-[0.1em] text-ink-strong/70">저장(개발용)</span>
+                <span className="text-[14px] font-bold uppercase tracking-[0.1em] text-ink-strong">저장(개발용)</span>
                 <Select value={saveSim} onChange={(e) => setSaveSim(e.target.value as SaveScenario)} className="mt-1">
                   <option value="ok">성공</option>
                   <option value="fail">실패</option>
                 </Select>
               </label>
               <label className="block">
-                <span className="text-[13px] font-bold uppercase tracking-[0.1em] text-ink-strong/70">제출(개발용)</span>
+                <span className="text-[14px] font-bold uppercase tracking-[0.1em] text-ink-strong">제출(개발용)</span>
                 <Select value={submitSim} onChange={(e) => setSubmitSim(e.target.value as SubmitScenario)} className="mt-1">
                   <option value="ok">성공</option>
                   <option value="conflict">동시 수정 충돌</option>

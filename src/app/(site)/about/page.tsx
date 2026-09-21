@@ -54,9 +54,9 @@ const COPY = {
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return <p className="text-[14px] font-bold uppercase tracking-[0.18em] text-brand-blue">{children}</p>;
 }
-function SectionTitle({ children }: { children: React.ReactNode }) {
+function SectionTitle({ ko, children }: { ko: boolean; children: React.ReactNode }) {
   return (
-    <h2 className="mt-4 break-keep font-title font-bold text-[clamp(26px,2.8vw,36px)] leading-[1.15] tracking-[0.02em] text-ink-strong">
+    <h2 className={`mt-4 break-keep font-bold text-[clamp(26px,2.8vw,36px)] leading-[1.15] text-ink-strong ${ko ? "font-sans tracking-[-0.01em]" : "font-title tracking-[0.02em]"}`}>
       {children}
     </h2>
   );
@@ -85,8 +85,10 @@ export default async function AboutPage() {
         <div className="mx-auto w-full max-w-page px-6 py-28 lg:py-40">
           <SectionLabel>Vision &amp; Mission</SectionLabel>
           <h2
-            className={`mt-8 break-keep font-title font-bold tracking-[0.02em] text-ink-strong lg:whitespace-nowrap ${
-              ko ? "text-[clamp(24px,3vw,34px)] leading-[1.3]" : "text-[clamp(30px,4vw,46px)] leading-[1.1]"
+            className={`mt-8 break-keep font-bold text-ink-strong lg:whitespace-nowrap ${
+              ko
+                ? "font-sans tracking-[-0.01em] text-[clamp(24px,3vw,34px)] leading-[1.3]"
+                : "font-title tracking-[0.02em] text-[clamp(30px,4vw,46px)] leading-[1.1]"
             }`}
           >
             {COPY.visionTitle[locale]}
@@ -105,7 +107,7 @@ export default async function AboutPage() {
       <section className="flex min-h-screen items-center bg-surface">
         <div className="mx-auto w-full max-w-page px-6 py-28 lg:py-40">
           <SectionLabel>Fields</SectionLabel>
-          <SectionTitle>{COPY.fieldsTitle[locale]}</SectionTitle>
+          <SectionTitle ko={ko}>{COPY.fieldsTitle[locale]}</SectionTitle>
           <p className="mt-5 max-w-[40rem] text-[16px] leading-[1.8] text-ink-strong">{COPY.fieldsBody[locale]}</p>
           <ul className="mt-20 grid gap-x-10 gap-y-16 sm:grid-cols-2 lg:grid-cols-3">
             {FIELDS.map((f) => (
@@ -134,7 +136,7 @@ export default async function AboutPage() {
           />
           <div>
             <SectionLabel>Process</SectionLabel>
-            <SectionTitle>{COPY.processTitle[locale]}</SectionTitle>
+            <SectionTitle ko={ko}>{COPY.processTitle[locale]}</SectionTitle>
             <ol className="mt-14 space-y-12">
               {PROCESS.map((p) => (
                 <li key={p.step} className="flex gap-5">
@@ -162,7 +164,7 @@ export default async function AboutPage() {
         <div className="absolute inset-0 bg-black/70" />
         <div className="relative mx-auto w-full max-w-page px-6 py-20 text-white lg:py-24">
           <p className="text-[14px] font-bold uppercase tracking-[0.18em] text-white/80">Apply</p>
-          <h2 className="mt-4 break-keep font-title font-bold text-[clamp(26px,3.2vw,40px)] leading-[1.15] tracking-[0.02em] text-white">
+          <h2 className={`mt-4 break-keep font-bold text-[clamp(26px,3.2vw,40px)] leading-[1.15] text-white ${ko ? "font-sans tracking-[-0.01em]" : "font-title tracking-[0.02em]"}`}>
             {COPY.ctaTitle[locale]}
           </h2>
           <p className="mt-5 max-w-[40rem] text-[17px] leading-[1.8] text-white/90">{COPY.ctaBody[locale]}</p>

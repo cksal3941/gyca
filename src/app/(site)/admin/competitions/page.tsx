@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import PageHeader from "@/components/site/PageHeader";
+import AdminShell from "@/components/admin/AdminShell";
 import { Button, Message, StatusBadge } from "@/components/ds";
 import { listAdminCompetitions, type AdminCompetitionRef } from "@/lib/api/ops";
 import { isLive } from "@/lib/api/mode";
@@ -23,14 +23,13 @@ export default function AdminCompetitionsPage() {
   }, []);
 
   return (
-    <>
-      <PageHeader
-        eyebrow="Admin"
-        title="공모 관리"
-        description="공모를 등록·편집하고 접수를 엽니다."
-        crumbs={[{ label: "관리자", href: "/admin" }, { label: "공모 관리" }]}
-        action={<Button href="/admin/competitions/new">새 공모 등록</Button>}
-      />
+    <AdminShell
+      eyebrow="Admin"
+      title="공모 관리"
+      description="공모를 등록·편집하고 접수를 엽니다."
+      crumbs={[{ label: "관리자", href: "/admin" }, { label: "공모 관리" }]}
+      action={<Button href="/admin/competitions/new">새 공모 등록</Button>}
+    >
 
       <section className="mx-auto max-w-page px-6 py-12">
         {!isLive && (
@@ -53,7 +52,7 @@ export default function AdminCompetitionsPage() {
           </Message>
         )}
         {state.kind === "success" && (
-          <div className="overflow-x-auto rounded-2xl border border-line bg-white">
+          <div className="overflow-x-auto rounded-md border border-line bg-white">
             <table className="w-full min-w-[520px] text-left text-[16px]">
               <thead>
                 <tr className="border-b border-line bg-surface text-ink-strong">
@@ -81,6 +80,6 @@ export default function AdminCompetitionsPage() {
           </div>
         )}
       </section>
-    </>
+    </AdminShell>
   );
 }

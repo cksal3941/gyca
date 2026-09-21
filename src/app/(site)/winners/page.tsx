@@ -25,7 +25,7 @@ function AwardChip({ w, locale }: { w: Winner; locale: Locale }) {
     <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-surface px-3 py-1 text-[14px] font-semibold text-ink-strong">
       <span className={`h-1.5 w-1.5 rounded-full ${AWARD_COLOR[w.award]}`} />
       {w.award}
-      <span className="ml-1 border-l border-line pl-1.5 text-[13px] font-bold uppercase tracking-[0.06em]">
+      <span className="ml-1 border-l border-line pl-1.5 text-[14px] font-bold uppercase tracking-[0.06em]">
         {locale === "ko" ? "예시" : "Sample"}
       </span>
     </span>

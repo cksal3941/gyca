@@ -416,6 +416,7 @@ export default function MyPage() {
   return (
     <>
       <PageHeader
+        locale={ko ? "ko" : "en"}
         eyebrow="My Page"
         title={ko ? "마이페이지" : "My Page"}
         description={

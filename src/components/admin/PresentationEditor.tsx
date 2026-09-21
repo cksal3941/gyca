@@ -93,7 +93,7 @@ export default function PresentationEditor({ competitionId }: { competitionId: s
 
   return (
     <div className="rounded-2xl border border-line bg-white p-6">
-      <h3 className="font-title text-[18px] font-bold text-ink-strong">공개 카드 표시 정보</h3>
+      <h3 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">공개 카드 표시 정보</h3>
       <p className="mt-2 text-[15px] text-ink-strong/70">공모전 목록 카드에 노출되는 요약·분류·도시·표지입니다. 참가비·일정·정책과 별개로 저장되며, 공개 공모에는 즉시 반영됩니다. <b>도시는 전시 장소가 승인된 뒤에만 공개</b>됩니다(승인 전 입력해도 공개 응답에서는 숨김).</p>
 
       {phase === "loading" && <p className="mt-4 text-[16px] text-ink-strong">불러오는 중…</p>}

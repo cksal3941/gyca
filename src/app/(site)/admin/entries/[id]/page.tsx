@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import PageHeader from "@/components/site/PageHeader";
+import AdminShell from "@/components/admin/AdminShell";
 import { Button, Message, StatusBadge, type Tone } from "@/components/ds";
 import { getAdminEntrySync } from "@/lib/api/ops";
 import { isLive } from "@/lib/api/mode";
@@ -71,16 +71,15 @@ export default async function AdminEntryDetailPage({
     const sp = await searchParams;
     const competitionId = typeof sp.competition === "string" ? sp.competition : null;
     return (
-      <>
-        <PageHeader
-          eyebrow="Admin"
-          title="접수 상세"
-          crumbs={[
-            { label: "관리자", href: "/admin" },
-            { label: "접수 관리", href: "/admin" },
-            { label: "접수 상세" },
-          ]}
-        />
+      <AdminShell
+        eyebrow="Admin"
+        title="접수 상세"
+        crumbs={[
+          { label: "관리자", href: "/admin" },
+          { label: "접수 관리", href: "/admin" },
+          { label: "접수 상세" },
+        ]}
+      >
         {competitionId ? (
           <AdminEntryDetailLive competitionId={competitionId} entryId={id} />
         ) : (
@@ -93,7 +92,7 @@ export default async function AdminEntryDetailPage({
             </div>
           </section>
         )}
-      </>
+      </AdminShell>
     );
   }
 
@@ -102,17 +101,15 @@ export default async function AdminEntryDetailPage({
   const e = res.data;
 
   return (
-    <>
-      <PageHeader
-        eyebrow="Admin"
-        title={e.receiptNumber ?? "접수 상세"}
-        crumbs={[
-          { label: "관리자", href: "/admin" },
-          { label: "접수 관리", href: "/admin" },
-          { label: "접수 상세" },
-        ]}
-      />
-
+    <AdminShell
+      eyebrow="Admin"
+      title={e.receiptNumber ?? "접수 상세"}
+      crumbs={[
+        { label: "관리자", href: "/admin" },
+        { label: "접수 관리", href: "/admin" },
+        { label: "접수 상세" },
+      ]}
+    >
       <section className="mx-auto max-w-page px-6 py-12">
         {/* Status chips */}
         <div className="flex flex-wrap items-center gap-2">
@@ -127,7 +124,7 @@ export default async function AdminEntryDetailPage({
         <div className="mt-8 grid gap-8 lg:grid-cols-2">
           {/* 참가자 */}
           <div className="rounded-2xl border border-line bg-white p-6">
-            <h2 className="font-title text-[18px] font-bold text-ink-strong">참가자</h2>
+            <h2 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">참가자</h2>
             <dl className="mt-4 flex flex-col gap-2 text-[16px]">
               {[
                 ["이름", e.participant.name],
@@ -146,7 +143,7 @@ export default async function AdminEntryDetailPage({
 
           {/* 작품 */}
           <div className="rounded-2xl border border-line bg-white p-6">
-            <h2 className="font-title text-[18px] font-bold text-ink-strong">작품</h2>
+            <h2 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">작품</h2>
             <dl className="mt-4 flex flex-col gap-3 text-[16px]">
               <div>
                 <dt className="text-ink-strong">영문 작품명</dt>
@@ -162,7 +159,7 @@ export default async function AdminEntryDetailPage({
 
         {/* 파일 검증 상태 */}
         <div className="mt-8 rounded-2xl border border-line bg-white p-6">
-          <h2 className="font-title text-[18px] font-bold text-ink-strong">파일 검증 상태</h2>
+          <h2 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">파일 검증 상태</h2>
           <ul className="mt-4 flex flex-col gap-3">
             {e.files.map((f) => (
               <li key={f.purpose} className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-line p-4">
@@ -185,7 +182,7 @@ export default async function AdminEntryDetailPage({
 
         {/* 결제 (읽기 전용) */}
         <div className="mt-8 rounded-2xl border border-line bg-white p-6">
-          <h2 className="font-title text-[18px] font-bold text-ink-strong">결제</h2>
+          <h2 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">결제</h2>
           {e.payment ? (
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <StatusBadge tone={PAYMENT[e.payment.state].tone}>{PAYMENT[e.payment.state].label}</StatusBadge>
@@ -202,7 +199,7 @@ export default async function AdminEntryDetailPage({
 
         {/* 동의 / 보호자 */}
         <div className="mt-8 rounded-2xl border border-line bg-white p-6">
-          <h2 className="font-title text-[18px] font-bold text-ink-strong">동의 · 보호자 확인</h2>
+          <h2 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">동의 · 보호자 확인</h2>
           {e.consents.length === 0 ? (
             <p className="mt-4 text-[16px] text-ink-strong">아직 제출된 동의 내역이 없습니다.</p>
           ) : (
@@ -224,7 +221,7 @@ export default async function AdminEntryDetailPage({
 
         {/* 처리 이력 */}
         <div className="mt-8 rounded-2xl border border-line bg-white p-6">
-          <h2 className="font-title text-[18px] font-bold text-ink-strong">처리 이력</h2>
+          <h2 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">처리 이력</h2>
           <ol className="mt-4 flex flex-col gap-3">
             {e.audit.map((a) => (
               <li key={a.id} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-line pb-3 last:border-0">
@@ -240,7 +237,7 @@ export default async function AdminEntryDetailPage({
 
         {/* 허용된 작업 (서버 게이팅) */}
         <div className="mt-8 rounded-2xl border border-line bg-white p-6">
-          <h2 className="font-title text-[18px] font-bold text-ink-strong">허용된 작업</h2>
+          <h2 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">허용된 작업</h2>
           <div className="mt-4 flex flex-wrap gap-2">
             {e.allowedActions.map((a) => (
               <StatusBadge key={a} tone="neutral">
@@ -259,6 +256,6 @@ export default async function AdminEntryDetailPage({
           </Button>
         </div>
       </section>
-    </>
+    </AdminShell>
   );
 }

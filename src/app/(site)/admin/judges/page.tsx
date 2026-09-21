@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import PageHeader from "@/components/site/PageHeader";
+import AdminShell from "@/components/admin/AdminShell";
 import { Button, Message, StatusBadge, Select } from "@/components/ds";
 import { isLive } from "@/lib/api/mode";
 import {
@@ -73,8 +73,7 @@ export default function AdminJudgesPage() {
   };
 
   return (
-    <>
-      <PageHeader eyebrow="Admin" title="심사 운영" crumbs={[{ label: "관리자", href: "/admin" }, { label: "심사 운영" }]} />
+    <AdminShell eyebrow="Admin" title="심사 운영" crumbs={[{ label: "관리자", href: "/admin" }, { label: "심사 운영" }]}>
       <section className="mx-auto max-w-page px-6 py-12">
         {!isLive && <Message tone="info" className="mb-6" title="미리보기">심사 운영은 라이브(운영자)에서 동작합니다.</Message>}
         {notice && <Message tone="success" className="mb-4">{notice}</Message>}
@@ -82,7 +81,7 @@ export default function AdminJudgesPage() {
 
         {/* Judges */}
         <div className="rounded-2xl border border-line bg-white p-6">
-          <h2 className="font-title text-[18px] font-bold text-ink-strong">심사위원</h2>
+          <h2 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">심사위원</h2>
           {judges === null ? (
             <p className="mt-4 text-[16px] text-ink-strong">불러오는 중…</p>
           ) : judges.length === 0 ? (
@@ -113,7 +112,7 @@ export default function AdminJudgesPage() {
 
         {/* Rubric */}
         <div className="mt-8 rounded-2xl border border-line bg-white p-6">
-          <h2 className="font-title text-[18px] font-bold text-ink-strong">채점 기준</h2>
+          <h2 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">채점 기준</h2>
           <label className="mt-4 block max-w-sm">
             <span className="text-[16px] font-semibold text-ink-strong">공모 선택</span>
             <Select value={compId} onChange={(e) => loadRubric(e.target.value)} className="mt-1">
@@ -153,6 +152,6 @@ export default function AdminJudgesPage() {
           )}
         </div>
       </section>
-    </>
+    </AdminShell>
   );
 }

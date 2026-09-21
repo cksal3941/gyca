@@ -201,7 +201,7 @@ export default function ContestDetailLive({ slug }: { slug: string }) {
             )}
 
             {categories.length > 0 && (
-              <Section title={ko ? "모집 부문" : "Divisions"}>
+              <Section ko={ko} title={ko ? "모집 부문" : "Divisions"}>
                 <ul className="flex flex-wrap gap-2">
                   {categories.map((c) => (
                     <li
@@ -216,7 +216,7 @@ export default function ContestDetailLive({ slug }: { slug: string }) {
             )}
 
             {ageGroups.length > 0 && (
-              <Section title={ko ? "참가 대상" : "Eligibility"}>
+              <Section ko={ko} title={ko ? "참가 대상" : "Eligibility"}>
                 <ul className="border-t border-line">
                   {ageGroups.map((g) => (
                     <li
@@ -235,7 +235,7 @@ export default function ContestDetailLive({ slug }: { slug: string }) {
             )}
 
             {uploads.length > 0 && (
-              <Section title={ko ? "제출 규격" : "Submissions"}>
+              <Section ko={ko} title={ko ? "제출 규격" : "Submissions"}>
                 <ul className="border-t border-line">
                   {uploads.map((u, i) => {
                     const parts: string[] = [];
@@ -258,7 +258,7 @@ export default function ContestDetailLive({ slug }: { slug: string }) {
             )}
 
             {keyDates.length > 0 && (
-              <Section title={ko ? "주요 일정" : "Key dates"}>
+              <Section ko={ko} title={ko ? "주요 일정" : "Key dates"}>
                 <div className="border-t border-line">
                   {keyDates.map((d) => (
                     <div
@@ -345,10 +345,24 @@ export default function ContestDetailLive({ slug }: { slug: string }) {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  ko,
+  children,
+}: {
+  title: string;
+  ko: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <div className="border-b border-line py-8">
-      <h2 className="font-title font-bold text-[clamp(26px,2.6vw,32px)] leading-[1.15] tracking-[0.02em] text-ink-strong">
+      <h2
+        className={`break-keep text-[clamp(26px,2.6vw,32px)] leading-[1.15] text-ink-strong ${
+          ko
+            ? "font-sans font-bold tracking-[-0.01em]"
+            : "font-title font-bold tracking-[0.02em]"
+        }`}
+      >
         {title}
       </h2>
       <div className="mt-6">{children}</div>

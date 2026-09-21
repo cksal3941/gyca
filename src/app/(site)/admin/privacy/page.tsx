@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import PageHeader from "@/components/site/PageHeader";
+import AdminShell from "@/components/admin/AdminShell";
 import { Button, Message, StatusBadge, Select, type Tone } from "@/components/ds";
 import { isLive } from "@/lib/api/mode";
 import {
@@ -79,8 +79,7 @@ export default function AdminPrivacyPage() {
   };
 
   return (
-    <>
-      <PageHeader eyebrow="Admin" title="개인정보 요청 검토" crumbs={[{ label: "관리자", href: "/admin" }, { label: "개인정보 요청" }]} />
+    <AdminShell eyebrow="Admin" title="개인정보 요청 검토" crumbs={[{ label: "관리자", href: "/admin" }, { label: "개인정보 요청" }]}>
       <section className="mx-auto max-w-page px-6 py-12">
         {!isLive && <Message tone="info" className="mb-6" title="미리보기">개인정보 요청 검토는 라이브(운영자)에서 동작합니다.</Message>}
         {notice && <Message tone="success" className="mb-4">{notice}</Message>}
@@ -106,7 +105,7 @@ export default function AdminPrivacyPage() {
           </Message>
         )}
         {state.kind === "success" && (
-          <div className="overflow-x-auto rounded-2xl border border-line bg-white">
+          <div className="overflow-x-auto rounded-md border border-line bg-white">
             <table className="w-full min-w-[860px] text-left text-[16px]">
               <thead>
                 <tr className="border-b border-line bg-surface text-ink-strong">
@@ -153,6 +152,6 @@ export default function AdminPrivacyPage() {
           </div>
         )}
       </section>
-    </>
+    </AdminShell>
   );
 }

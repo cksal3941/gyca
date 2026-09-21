@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import PageHeader from "@/components/site/PageHeader";
-import { Button, Message, StatusBadge, Select, Textarea, type Tone } from "@/components/ds";
+import AdminShell from "@/components/admin/AdminShell";
+import { Button, Message, Modal, StatusBadge, Select, Textarea, type Tone } from "@/components/ds";
 import { isLive } from "@/lib/api/mode";
 import {
-  listAdminPartners, createPartner, updatePartner, partnerRelationship, transitionPartner,
+  listAdminPartners, createPartner, updatePartner, partnerRelationship, transitionPartner, deletePartner,
   type PartnerAdminItem,
 } from "@/lib/api/ops";
 import { PARTNER_TYPES, PartnerBodySchema } from "@/contracts/partner-content";
@@ -35,6 +35,7 @@ export default function AdminPartnersPage() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<PartnerAdminItem | null>(null);
 
   // create / edit form. editId null = create; set = editing that partner's content.
   const [editId, setEditId] = useState<string | null>(null);
@@ -113,9 +114,18 @@ export default function AdminPartnersPage() {
     else setError(res.kind === "error" ? res.message : "처리 실패");
   };
 
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
+    const item = pendingDelete;
+    setBusy(true); setError(null); setNotice(null);
+    const res = await deletePartner(item.id, { actionId: crypto.randomUUID(), expectedRevision: item.revision });
+    setBusy(false); setPendingDelete(null);
+    if (res.kind === "success") { setNotice("삭제했습니다."); reload(); }
+    else setError(res.kind === "error" ? res.message : "삭제 실패");
+  };
+
   return (
-    <>
-      <PageHeader eyebrow="Admin" title="협력기관 관리" crumbs={[{ label: "관리자", href: "/admin" }, { label: "협력기관" }]} />
+    <AdminShell eyebrow="Admin" title="협력기관 관리" crumbs={[{ label: "관리자", href: "/admin" }, { label: "협력기관" }]}>
       <section className="mx-auto max-w-page px-6 py-12">
         {!isLive && <Message tone="info" className="mb-6" title="미리보기">협력기관 관리는 라이브(운영자)에서 동작합니다.</Message>}
         {notice && <Message tone="success" className="mb-4">{notice}</Message>}
@@ -123,7 +133,7 @@ export default function AdminPartnersPage() {
 
         <div className="rounded-2xl border border-line bg-white p-6">
           <div className="flex items-center justify-between gap-4">
-            <h2 className="font-title text-[18px] font-bold text-ink-strong">{editId ? `협력기관 수정 · ${slug}` : "새 협력기관 (초안)"}</h2>
+            <h2 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">{editId ? `협력기관 수정 · ${slug}` : "새 협력기관 (초안)"}</h2>
             {editId && <Button size="sm" variant="outline" onClick={resetForm} disabled={busy}>수정 취소</Button>}
           </div>
           {editId && <p className="mt-2 text-[15px] text-ink-strong/70">유형·슬러그는 변경할 수 없습니다. 내용만 저장됩니다.</p>}
@@ -143,7 +153,9 @@ export default function AdminPartnersPage() {
             <label className="block"><span className={label}>소개 KO</span><Textarea rows={3} value={descKo} onChange={(e) => setDescKo(e.target.value)} className="mt-1" /></label>
           </div>
           <label className="mt-4 block"><span className={label}>웹사이트 (https, 선택)</span><input className={field} value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} placeholder="https://…" /></label>
-          <Button className="mt-4" onClick={save} disabled={busy}>{busy ? "처리 중…" : editId ? "변경 사항 저장" : "초안 생성"}</Button>
+          <div className="mt-4 flex justify-end">
+            <Button onClick={save} disabled={busy}>{busy ? "처리 중…" : editId ? "변경 사항 저장" : "초안 생성"}</Button>
+          </div>
         </div>
 
         {/* relationship evidence (for confirm/revoke) */}
@@ -160,7 +172,7 @@ export default function AdminPartnersPage() {
           {state.kind === "empty" && <p className="text-[16px] text-ink-strong">등록된 협력기관이 없습니다.</p>}
           {state.kind === "error" && <Message tone="danger" title="불러오지 못했습니다">{state.code === "FORBIDDEN" ? "운영자 권한이 필요합니다." : "목록을 불러오지 못했습니다."}</Message>}
           {state.kind === "success" && (
-            <div className="overflow-x-auto rounded-2xl border border-line bg-white">
+            <div className="overflow-x-auto rounded-md border border-line bg-white">
               <table className="w-full min-w-[820px] text-left text-[16px]">
                 <thead><tr className="border-b border-line bg-surface text-ink-strong">
                   <th className="px-5 py-3 font-semibold">유형</th><th className="px-5 py-3 font-semibold">이름</th>
@@ -180,6 +192,7 @@ export default function AdminPartnersPage() {
                           {it.allowedActions.includes("revoke_relationship") && <Button size="sm" variant="outline" onClick={() => rel(it, "revoke")} disabled={busy}>관계 철회</Button>}
                           {it.allowedActions.includes("publish") && <Button size="sm" onClick={() => trans(it, "publish")} disabled={busy}>공개</Button>}
                           {it.allowedActions.includes("archive") && <Button size="sm" variant="outline" onClick={() => trans(it, "archive")} disabled={busy}>보관</Button>}
+                          {(it.status === "draft" || it.status === "archived") && <Button size="sm" variant="outline" className="border-danger text-danger hover:bg-danger/5" onClick={() => setPendingDelete(it)} disabled={busy}>삭제</Button>}
                         </div>
                       </td>
                     </tr>
@@ -190,6 +203,28 @@ export default function AdminPartnersPage() {
           )}
         </div>
       </section>
-    </>
+
+      <Modal
+        open={pendingDelete !== null}
+        onClose={() => setPendingDelete(null)}
+        title="협력기관 삭제"
+        description="이 작업은 되돌릴 수 없습니다. 보관(archive)은 목록에 남지만, 삭제는 완전히 제거합니다."
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setPendingDelete(null)} disabled={busy}>취소</Button>
+            <Button className="bg-danger text-white hover:opacity-90" onClick={confirmDelete} disabled={busy}>
+              {busy ? "삭제 중…" : "삭제"}
+            </Button>
+          </>
+        }
+      >
+        {pendingDelete && (
+          <p className="text-[16px] text-ink-strong">
+            <span className="font-semibold">{pendingDelete.content.name.ko || pendingDelete.content.name.en}</span>
+            {" "}({pendingDelete.slug}) 항목을 삭제합니다.
+          </p>
+        )}
+      </Modal>
+    </AdminShell>
   );
 }

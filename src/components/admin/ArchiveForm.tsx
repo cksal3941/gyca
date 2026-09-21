@@ -139,7 +139,7 @@ export default function ArchiveForm({ mode, initial }: { mode: "create" | "edit"
 
       {/* 기본 정보 + hero */}
       <div className="rounded-2xl border border-line bg-white p-6">
-        <h3 className="font-title text-[18px] font-bold text-ink-strong">기본 정보</h3>
+        <h3 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">기본 정보</h3>
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
           <label className="block"><span className={label}>슬러그</span><input className={field} value={slug} onChange={(e) => setSlug(e.target.value)} disabled={mode === "edit"} placeholder="klimt-villa-2024" /></label>
           <label className="block"><span className={label}>유형</span>
@@ -169,7 +169,7 @@ export default function ArchiveForm({ mode, initial }: { mode: "create" | "edit"
       {/* 섹션 */}
       <div className="rounded-2xl border border-line bg-white p-6">
         <div className="flex items-center justify-between">
-          <h3 className="font-title text-[18px] font-bold text-ink-strong">섹션 (1~10)</h3>
+          <h3 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">섹션 (1~10)</h3>
           <Button size="sm" variant="outline" disabled={sections.length >= 10} onClick={() => setSections((v) => [...v, blankSection(v.length + 1)])}>섹션 추가</Button>
         </div>
         <p className="mt-2 text-[15px] text-ink-strong/70">종류·순서는 중복 불가. <b>ready</b> 섹션은 최소 1개의 콘텐츠(소개/갤러리/문서/인용/통계)가 필요합니다. 발행하려면 ready 섹션이 하나 이상 있어야 합니다. 미디어는 공개 승인된 사이트 경로 또는 https URL만 가능합니다.</p>
@@ -217,9 +217,9 @@ export default function ArchiveForm({ mode, initial }: { mode: "create" | "edit"
         </div>
       </div>
 
-      <div className="flex gap-3">
-        <Button onClick={save} disabled={busy}>{busy ? "저장 중…" : mode === "create" ? "초안 생성" : "변경 저장"}</Button>
+      <div className="flex justify-end gap-3">
         <Button href="/admin/content/projects" variant="outline">목록으로</Button>
+        <Button onClick={save} disabled={busy}>{busy ? "저장 중…" : mode === "create" ? "초안 생성" : "변경 저장"}</Button>
       </div>
     </div>
   );

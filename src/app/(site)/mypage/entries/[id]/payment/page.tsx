@@ -20,6 +20,7 @@ export default async function EntryPaymentPage({
   return (
     <>
       <PageHeader
+        locale={ko ? "ko" : "en"}
         eyebrow="My Page"
         title={ko ? "결제 확인" : "Payment"}
         crumbs={[

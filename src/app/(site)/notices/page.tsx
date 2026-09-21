@@ -25,19 +25,6 @@ const CAT_COLOR: Record<string, string> = {
   faq: "bg-neutral-700", FAQ: "bg-neutral-700", news: "bg-brand-blue", press: "bg-neutral-700",
 };
 
-function FaqItem({ n, locale }: { n: Item; locale: Locale }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="border-b border-line">
-      <button onClick={() => setOpen((v) => !v)} className="flex w-full items-center justify-between gap-6 py-6 text-left">
-        <span className="break-keep font-title text-[clamp(20px,2.2vw,26px)] font-bold leading-snug tracking-[0.02em] text-ink-strong">{n.title[locale]}</span>
-        <span className={`shrink-0 text-[24px] leading-none text-ink-strong transition-transform ${open ? "rotate-45" : ""}`}>+</span>
-      </button>
-      {open && <p className="max-w-[46rem] pb-7 text-[16px] leading-[1.9] text-ink-strong">{n.body[locale]}</p>}
-    </div>
-  );
-}
-
 export default function NoticesPage() {
   const { locale } = useLocale();
   const [filter, setFilter] = useState<string>("all");
@@ -62,7 +49,7 @@ export default function NoticesPage() {
     return () => { alive = false; };
   }, []);
 
-  const faqs = items.filter((n) => n.catKey === "faq" || n.catKey === "FAQ");
+  // FAQ moved to /help — keep faq items out of the notices list.
   const nonFaq = items.filter((n) => n.catKey !== "faq" && n.catKey !== "FAQ");
   const cats = Array.from(new Set(nonFaq.map((n) => n.catKey)));
   const list = filter === "all" ? nonFaq : nonFaq.filter((n) => n.catKey === filter);
@@ -73,8 +60,8 @@ export default function NoticesPage() {
         eyebrow="News & Notice"
         title={locale === "ko" ? "공지사항" : "Notices"}
         description={locale === "ko"
-          ? "GYCA 공모전 일정, 접수 안내, 자주 묻는 질문을 확인하세요."
-          : "Find GYCA competition schedules, submission guidance, and frequently asked questions."}
+          ? "GYCA 공모전 일정과 접수 안내를 확인하세요."
+          : "Find GYCA competition schedules and submission guidance."}
         crumbs={[{ label: locale === "ko" ? "공지사항" : "Notices" }]}
         locale={locale}
       />
@@ -114,7 +101,7 @@ export default function NoticesPage() {
                   <span className={`shrink-0 px-[13px] py-[8px] text-[14px] font-bold uppercase leading-none tracking-[0.3px] text-white ${CAT_COLOR[n.catKey] ?? "bg-neutral-700"}`}>
                     {CAT_LABEL[n.catKey]?.[locale] ?? n.catKey}
                   </span>
-                  <h2 className="min-w-0 flex-1 break-keep font-title text-[clamp(20px,2.2vw,26px)] font-bold leading-snug tracking-[0.02em] text-ink-strong group-hover:text-brand-blue">
+                  <h2 className={`min-w-0 flex-1 break-keep text-[clamp(20px,2.2vw,26px)] font-bold leading-snug text-ink-strong group-hover:text-brand-blue ${locale === "ko" ? "font-sans tracking-[-0.01em]" : "font-title tracking-[0.02em]"}`}>
                     {n.title[locale]}
                   </h2>
                   <span className="hidden shrink-0 text-[16px] text-ink-strong sm:block">{n.date}</span>
@@ -133,21 +120,6 @@ export default function NoticesPage() {
           </p>
         )}
       </section>
-
-      {/* FAQ */}
-      {faqs.length > 0 && (
-        <section className="mx-auto max-w-page px-6">
-          <div className="border-t border-line py-16 lg:py-24">
-            <p className="text-[16px] font-bold uppercase tracking-[0.18em] text-brand-blue">FAQ</p>
-            <h2 className="mt-5 break-keep font-title text-[clamp(26px,2.8vw,36px)] font-bold leading-[1.1] tracking-[0.02em] text-ink-strong">
-              {locale === "ko" ? "자주 묻는 질문" : "Frequently asked questions"}
-            </h2>
-            <div className="mt-10 border-t border-line">
-              {faqs.map((n) => <FaqItem key={n.key} n={n} locale={locale} />)}
-            </div>
-          </div>
-        </section>
-      )}
     </>
   );
 }

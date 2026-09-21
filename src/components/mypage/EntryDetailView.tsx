@@ -286,6 +286,7 @@ export default function EntryDetailView({ id, locale }: { id: string; locale: Lo
     return (
       <>
         <PageHeader
+          locale={ko ? "ko" : "en"}
           eyebrow="My Page"
           title={ko ? "접수 상세" : "Entry detail"}
           crumbs={[
@@ -309,6 +310,7 @@ export default function EntryDetailView({ id, locale }: { id: string; locale: Lo
     return (
       <>
         <PageHeader
+          locale={ko ? "ko" : "en"}
           eyebrow="My Page"
           title={ko ? "접수 상세" : "Entry detail"}
           crumbs={[
@@ -395,6 +397,7 @@ export default function EntryDetailView({ id, locale }: { id: string; locale: Lo
   return (
     <>
       <PageHeader
+        locale={ko ? "ko" : "en"}
         eyebrow="My Page"
         title={e.receiptNumber ?? (ko ? "접수 상세" : "Entry detail")}
         crumbs={[

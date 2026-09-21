@@ -73,7 +73,7 @@ export function SocialButtons() {
         <AppleIcon />
         Continue with Apple
       </Button>
-      {error && <p className="text-destructive text-xs">{error}</p>}
+      {error && <p className="text-destructive text-sm">{error}</p>}
     </div>
   );
 }

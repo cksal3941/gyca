@@ -14,10 +14,10 @@ export default function SectionHeading({ badge, title, locale = "en", href = "/n
   return (
     <div className="mb-8 flex items-end justify-between">
       <div>
-        <span className="inline-block bg-brand-blue px-[15px] py-[9px] text-[11px] font-bold uppercase leading-none tracking-wide text-white">
+        <span className="inline-block bg-brand-blue px-[15px] py-[9px] text-[14px] font-bold uppercase leading-none tracking-wide text-white">
           {badge}
         </span>
-        <h2 className="mt-4 font-title text-[24px] font-bold tracking-[0.5px] text-ink-strong md:text-[28px]">
+        <h2 className={`mt-4 break-keep text-[24px] font-bold text-ink-strong md:text-[28px] ${locale === "ko" ? "font-sans tracking-[-0.01em]" : "font-title tracking-[0.5px]"}`}>
           {title}
         </h2>
       </div>

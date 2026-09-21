@@ -88,7 +88,7 @@ export default function LaunchControl({
 
   return (
     <div className="rounded-2xl border border-line bg-white p-6">
-      <h3 className="font-title text-[18px] font-bold text-ink-strong">오픈 제어</h3>
+      <h3 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">오픈 제어</h3>
       <div className="mt-2 flex items-center gap-2">
         <StatusBadge tone={draftEnabled ? "success" : "neutral"}>{draftEnabled ? "접수 열림" : "접수 닫힘"}</StatusBadge>
       </div>

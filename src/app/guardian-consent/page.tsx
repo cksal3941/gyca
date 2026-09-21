@@ -88,7 +88,7 @@ export default function GuardianConsentPage() {
   const docs = preview?.documents ?? [];
   return shell(
     <div className="rounded-2xl border border-line bg-white p-8">
-      <h1 className="font-title text-[clamp(24px,3vw,32px)] font-bold text-ink-strong">{t.title}</h1>
+      <h1 className={`text-[clamp(24px,3vw,32px)] font-bold text-ink-strong ${loc === "ko" ? "font-sans tracking-[-0.01em]" : "font-title"}`}>{t.title}</h1>
       <p className="mt-3 text-[16px] leading-[1.7] text-ink-strong">{t.intro}</p>
 
       <div className="mt-6 flex flex-col gap-4">

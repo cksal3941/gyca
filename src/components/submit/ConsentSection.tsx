@@ -88,7 +88,7 @@ export default function ConsentSection({
         <div className="mt-6 rounded-xl border border-dashed border-field bg-canvas p-4">
           <p className="mb-3 text-[15px] font-semibold text-ink-strong">
             {ko ? "선택 동의" : "Optional consents"}
-            <span className="ml-2 text-[13px] font-normal text-ink-strong/70">
+            <span className="ml-2 text-[14px] font-normal text-ink-strong">
               {ko ? "· 미구현 시연(실 API 미전송)" : "· demo only (not sent to the API)"}
             </span>
           </p>

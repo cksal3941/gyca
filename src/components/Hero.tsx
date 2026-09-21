@@ -84,8 +84,10 @@ export default function Hero() {
         <div className="flex max-w-[893px] flex-col items-start gap-6">
           <h1
             key={`${index}-${locale}`}
-            className={`font-display text-[52px] tracking-[0.5px] sm:text-[64px] md:text-[80px] md:tracking-[1px] ${
-              locale === "ko" ? "leading-[1.15]" : "leading-[0.95]"
+            className={`text-[52px] sm:text-[64px] md:text-[80px] ${
+              locale === "ko"
+                ? "font-sans font-bold leading-[1.15] tracking-[-0.01em]"
+                : "font-display leading-[0.95] tracking-[0.5px] md:tracking-[1px]"
             }`}
           >
             {active.title[locale].map((line, li) => (
@@ -125,7 +127,7 @@ export default function Hero() {
         aria-label={locale === "ko" ? "아래로 스크롤" : "Scroll down"}
         className="absolute bottom-9 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-1.5 text-white/80 hover:text-white"
       >
-        <span className="text-[12px] font-semibold uppercase tracking-[0.3em]">
+        <span className="text-[14px] font-semibold uppercase tracking-[0.3em]">
           Scroll
         </span>
         <ChevronsDown className="scroll-chevron h-5 w-5" strokeWidth={1.75} />
@@ -142,14 +144,14 @@ export default function Hero() {
                 className={`font-nav tracking-wide !transition-none ${
                   isActive
                     ? "text-[15px] font-medium text-white"
-                    : "text-[13px] text-neutral-400 hover:text-neutral-200"
+                    : "text-[14px] text-white/70 hover:text-white"
                 }`}
               >
                 {s.tag}
               </button>
               <span
-                className={`ml-7 text-[11px] tabular-nums ${
-                  isActive ? "text-neutral-200" : "text-neutral-500"
+                className={`ml-7 text-[14px] tabular-nums ${
+                  isActive ? "text-white/90" : "text-white/60"
                 }`}
               >
                 {String(i + 1).padStart(2, "0")}

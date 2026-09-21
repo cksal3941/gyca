@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import PageHeader from "@/components/site/PageHeader";
+import AdminShell from "@/components/admin/AdminShell";
 import { Button, Message, Select, StatusBadge } from "@/components/ds";
 import { isLive } from "@/lib/api/mode";
 import {
@@ -74,8 +74,7 @@ export default function AdminResultsPage() {
   };
 
   return (
-    <>
-      <PageHeader eyebrow="Admin" title="결과 발표·인증서" crumbs={[{ label: "관리자", href: "/admin" }, { label: "결과·인증서" }]} />
+    <AdminShell eyebrow="Admin" title="결과 발표·인증서" crumbs={[{ label: "관리자", href: "/admin" }, { label: "결과·인증서" }]}>
       <section className="mx-auto max-w-page px-6 py-12">
         {!isLive && <Message tone="info" className="mb-6" title="미리보기">결과 발표·인증서는 라이브(운영자)에서 동작합니다.</Message>}
         {notice && <Message tone="success" className="mb-4">{notice}</Message>}
@@ -98,7 +97,7 @@ export default function AdminResultsPage() {
 
             {/* Result rounds */}
             <div className="mt-4 rounded-2xl border border-line bg-white p-6">
-              <h3 className="font-title text-[18px] font-bold text-ink-strong">결과 발표</h3>
+              <h3 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">결과 발표</h3>
               <p className="mt-2 text-[15px] text-ink-strong/70">
                 모든 접수 심사 결정 완료, 결제 검토 중 접수 없음, 마감 경과, 보관 정책 설정이 충족되어야 서버가 발표를 허용합니다. 1차는 Official Selection만 공개(finalist는 내부), 이후 finalist 결정을 갱신해 2차 발표합니다.
               </p>
@@ -110,7 +109,7 @@ export default function AdminResultsPage() {
 
             {/* Certificate issue */}
             <div className="mt-6 rounded-2xl border border-line bg-white p-6">
-              <h3 className="font-title text-[18px] font-bold text-ink-strong">인증서 발급</h3>
+              <h3 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">인증서 발급</h3>
               <p className="mt-2 text-[15px] text-ink-strong/70">공개된 결과 증거가 있는 접수에만 발급을 예약합니다(1~100건). 202/pending은 예약이며, PDF는 내부 작업자가 발급을 완료합니다.</p>
               <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,14rem)_1fr]">
                 <label className="block"><span className="text-[15px] font-semibold text-ink-strong">단계</span>
@@ -128,6 +127,6 @@ export default function AdminResultsPage() {
           </>
         )}
       </section>
-    </>
+    </AdminShell>
   );
 }

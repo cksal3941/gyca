@@ -277,6 +277,20 @@ export async function transitionEditorial(
   return httpSend("POST", `/admin/content/editorial/${encodeURIComponent(id)}/${action}`, EditorialAdminItemSchema, { body: input, signal: opts.signal });
 }
 
+// Delete result — server contract TBD (Codex): see docs/backend/content-delete-request.md.
+// Only draft/archived may be deleted; server enforces (ENTRY_LOCKED otherwise).
+const DeleteResultSchema = z.object({ id: z.string() });
+
+/** Permanently delete a content item (draft/archived only). Live: POST .../{id}/delete.
+ *  Endpoint pending backend (Codex); until then this surfaces a NOT_FOUND/NOT_CONNECTED
+ *  error honestly (no fake success). */
+export async function deleteEditorial(
+  id: string, input: { actionId: string; expectedRevision: number }, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<{ id: string }>> {
+  if (!isLive) return { kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 CMS를 지원하지 않습니다.", retryable: false };
+  return httpSend("POST", `/admin/content/editorial/${encodeURIComponent(id)}/delete`, DeleteResultSchema, { body: input, signal: opts.signal });
+}
+
 /* ---- payment operations (read; LIVE, organizer) ---- */
 
 export type AdminDashboard = z.infer<typeof AdminDashboardSchema>;
@@ -351,6 +365,15 @@ export async function transitionPartner(
 ): Promise<RequestState<PartnerAdminItem>> {
   if (!isLive) return partnerOff();
   return httpSend("POST", `/admin/content/partners/${encodeURIComponent(id)}/${action}`, PartnerAdminItemSchema, { body: input, signal: opts.signal });
+}
+
+/** Permanently delete a partner (draft/archived only). Live: POST .../{id}/delete.
+ *  Endpoint pending backend (Codex) — see docs/backend/content-delete-request.md. */
+export async function deletePartner(
+  id: string, input: { actionId: string; expectedRevision: number }, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<{ id: string }>> {
+  if (!isLive) return partnerOff();
+  return httpSend("POST", `/admin/content/partners/${encodeURIComponent(id)}/delete`, DeleteResultSchema, { body: input, signal: opts.signal });
 }
 
 /* ---- judge admin: accounts + review rubric (LIVE, organizer) ---- */
@@ -983,6 +1006,15 @@ export async function archiveProject(
 ): Promise<RequestState<ArchiveAdminItem>> {
   if (!isLive) return cmsOff();
   return httpSend("POST", `/admin/content/projects/${encodeURIComponent(id)}/archive`, ArchiveAdminItemSchema, { body: input, signal: opts.signal });
+}
+
+/** Permanently delete a project (draft/archived only). Live: POST .../{id}/delete.
+ *  Endpoint pending backend (Codex) — see docs/backend/content-delete-request.md. */
+export async function deleteProject(
+  id: string, input: { actionId: string; expectedRevision: number }, opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<{ id: string }>> {
+  if (!isLive) return cmsOff();
+  return httpSend("POST", `/admin/content/projects/${encodeURIComponent(id)}/delete`, DeleteResultSchema, { body: input, signal: opts.signal });
 }
 
 /* ---- payment operations mutations (LIVE, organizer/operator) ---- */

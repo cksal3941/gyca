@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import PageHeader from "@/components/site/PageHeader";
+import AdminShell from "@/components/admin/AdminShell";
 import { Button, Message, StatusBadge, Select, type Tone } from "@/components/ds";
 import { isLive } from "@/lib/api/mode";
 import {
@@ -103,7 +103,7 @@ function RefundPanel({ competitionId }: { competitionId: string }) {
 
   return (
     <div className="mt-6 rounded-2xl border border-line bg-white p-6">
-      <h3 className="font-title text-[18px] font-bold text-ink-strong">환불 (주문별)</h3>
+      <h3 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">환불 (주문별)</h3>
       <div className="mt-3 flex flex-wrap gap-2">
         <input className="min-w-[22rem] flex-1 rounded-lg border border-field bg-white px-3 py-2 text-[15px] text-ink-strong outline-none focus:border-brand-blue" value={orderId} onChange={(e) => setOrderId(e.target.value)} placeholder="주문 ID (UUID)" />
         <Button size="sm" variant="outline" onClick={look} disabled={busy}>조회</Button>
@@ -164,8 +164,7 @@ export default function AdminPaymentsPage() {
   };
 
   return (
-    <>
-      <PageHeader eyebrow="Admin" title="결제 운영" crumbs={[{ label: "관리자", href: "/admin" }, { label: "결제 운영" }]} />
+    <AdminShell eyebrow="Admin" title="결제 운영" crumbs={[{ label: "관리자", href: "/admin" }, { label: "결제 운영" }]}>
       <section className="mx-auto max-w-page px-6 py-12">
         {!isLive && <Message tone="info" className="mb-6" title="미리보기">결제 운영 조회는 라이브(운영자)에서 동작합니다.</Message>}
 
@@ -183,7 +182,7 @@ export default function AdminPaymentsPage() {
               <StatusBadge tone="neutral">지원자(고유) {dash.data.applicants.uniqueAccounts}</StatusBadge>
               <span className="text-[15px] text-ink-strong/70">측정 {new Date(dash.data.measuredAt).toLocaleString("ko-KR")}</span>
             </div>
-            <div className="mt-4 overflow-x-auto rounded-2xl border border-line bg-white">
+            <div className="mt-4 overflow-x-auto rounded-md border border-line bg-white">
               <table className="w-full min-w-[820px] text-left text-[16px]">
                 <thead><tr className="border-b border-line bg-surface text-ink-strong">
                   <th className="px-4 py-3 font-semibold">공모</th><th className="px-4 py-3 font-semibold">단계</th>
@@ -222,7 +221,7 @@ export default function AdminPaymentsPage() {
 
           {health && (
             <div className="mt-4 rounded-2xl border border-line bg-white p-6">
-              <h3 className="font-title text-[18px] font-bold text-ink-strong">결제 건강도 (payment-health)</h3>
+              <h3 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">결제 건강도 (payment-health)</h3>
               <div className="mt-3 flex flex-wrap gap-2">
                 <StatusBadge tone="neutral">주문 {health.orders.total}</StatusBadge>
                 <StatusBadge tone="success">완료 {health.orders.succeeded}</StatusBadge>
@@ -241,7 +240,7 @@ export default function AdminPaymentsPage() {
 
           {reviews && (
             <div className="mt-6 rounded-2xl border border-line bg-white p-6">
-              <h3 className="font-title text-[18px] font-bold text-ink-strong">검토 필요 주문 (payment-reviews)</h3>
+              <h3 className="font-sans text-[18px] font-bold tracking-[-0.01em] text-ink-strong">검토 필요 주문 (payment-reviews)</h3>
               {reviews.length === 0 ? (
                 <p className="mt-3 text-[16px] text-ink-strong">검토가 필요한 주문이 없습니다.</p>
               ) : (
@@ -258,6 +257,6 @@ export default function AdminPaymentsPage() {
           {compId && health && <RefundPanel competitionId={compId} />}
         </div>
       </section>
-    </>
+    </AdminShell>
   );
 }

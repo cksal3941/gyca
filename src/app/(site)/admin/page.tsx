@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import PageHeader from "@/components/site/PageHeader";
+import AdminShell from "@/components/admin/AdminShell";
 import { Button, Message, StatusBadge, Modal, Select, type Tone } from "@/components/ds";
 import {
   listAdminEntries,
@@ -278,26 +278,12 @@ export default function AdminEntriesPageView() {
   };
 
   return (
-    <>
-      <PageHeader
-        eyebrow="Admin"
-        title="접수 관리"
-        description="Leipzig 2027 접수를 검색·필터·정렬하고, 선택 건을 일괄 처리합니다."
-        crumbs={[{ label: "관리자" }, { label: "접수 관리" }]}
-        action={
-          <div className="flex flex-wrap gap-2">
-            <Button href="/admin/competitions" variant="outline">공모 관리</Button>
-            <Button href="/admin/payments" variant="outline">결제 운영</Button>
-            <Button href="/admin/content/editorial" variant="outline">콘텐츠 관리</Button>
-            <Button href="/admin/content/partners" variant="outline">협력기관</Button>
-            <Button href="/admin/content/projects" variant="outline">아카이브</Button>
-            <Button href="/admin/judges" variant="outline">심사 운영</Button>
-            <Button href="/admin/results" variant="outline">결과·인증서</Button>
-            <Button href="/admin/privacy" variant="outline">개인정보 요청</Button>
-          </div>
-        }
-      />
-
+    <AdminShell
+      eyebrow="Admin"
+      title="접수 관리"
+      description="Leipzig 2027 접수를 검색·필터·정렬하고, 선택 건을 일괄 처리합니다."
+      crumbs={[{ label: "관리자" }, { label: "접수 관리" }]}
+    >
       <section className="mx-auto max-w-page px-6 py-12">
         {/* Competition picker (live) */}
         {isLive && competitions.length > 0 && (
@@ -351,57 +337,72 @@ export default function AdminEntriesPageView() {
           </Message>
         )}
 
-        {/* Toolbar */}
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && rerun({ search })}
-            placeholder="접수번호·참가자·작품명 검색 (Enter)"
-            className="w-full flex-1 rounded-lg border border-field bg-white px-4 py-2.5 text-[16px] text-ink-strong outline-none focus:border-brand-blue"
-          />
-          <div className="flex flex-wrap gap-2">
-            <Select
-              aria-label="접수 상태"
-              value={status}
-              onChange={(e) => rerun({ status: e.target.value as AdminQuery["status"] })}
-            >
-              <option value="all">전체 상태</option>
-              <option value="draft">작성 중</option>
-              <option value="submitted">제출됨</option>
-              <option value="received">접수 완료</option>
-            </Select>
-            <Select
-              aria-label="결제 상태"
-              value={payment}
-              onChange={(e) => rerun({ payment: e.target.value as AdminQuery["payment"] })}
-            >
-              <option value="all">전체 결제</option>
-              <option value="succeeded">결제완료</option>
-              <option value="pending">대기</option>
-              <option value="failed">실패</option>
-            </Select>
-            <Select
-              aria-label="심사 결과"
-              value={result}
-              onChange={(e) => rerun({ result: e.target.value as AdminQuery["result"] })}
-            >
-              <option value="all">전체 결과</option>
-              <option value="not_announced">미발표</option>
-              <option value="official_selection">Official Selection</option>
-              <option value="finalist">Leipzig Finalist</option>
-              <option value="not_selected">미선정</option>
-            </Select>
-            <Select
-              aria-label="정렬"
-              value={sort}
-              onChange={(e) => rerun({ sort: e.target.value as NonNullable<AdminQuery["sort"]> })}
-            >
-              <option value="created_desc">최신순</option>
-              <option value="created_asc">오래된순</option>
-              <option value="name_asc">이름순</option>
-            </Select>
+        {/* Toolbar — each control is labelled so its meaning is clear. */}
+        <div className="flex flex-col gap-4">
+          <label className="flex flex-col gap-1">
+            <span className="text-[14px] font-semibold text-ink-strong">검색</span>
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && rerun({ search })}
+              placeholder="접수번호·참가자 이름·작품명으로 검색 (Enter)"
+              className="w-full rounded-lg border border-field bg-white px-4 py-2.5 text-[16px] text-ink-strong outline-none focus:border-brand-blue"
+            />
+          </label>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <label className="flex flex-col gap-1">
+              <span className="text-[14px] font-semibold text-ink-strong">접수 상태</span>
+              <Select
+                aria-label="접수 상태"
+                value={status}
+                onChange={(e) => rerun({ status: e.target.value as AdminQuery["status"] })}
+              >
+                <option value="all">전체</option>
+                <option value="draft">작성 중</option>
+                <option value="submitted">제출됨</option>
+                <option value="received">접수 완료</option>
+              </Select>
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-[14px] font-semibold text-ink-strong">결제 상태</span>
+              <Select
+                aria-label="결제 상태"
+                value={payment}
+                onChange={(e) => rerun({ payment: e.target.value as AdminQuery["payment"] })}
+              >
+                <option value="all">전체</option>
+                <option value="succeeded">결제완료</option>
+                <option value="pending">대기</option>
+                <option value="failed">실패</option>
+              </Select>
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-[14px] font-semibold text-ink-strong">심사 결과</span>
+              <Select
+                aria-label="심사 결과"
+                value={result}
+                onChange={(e) => rerun({ result: e.target.value as AdminQuery["result"] })}
+              >
+                <option value="all">전체</option>
+                <option value="not_announced">미발표</option>
+                <option value="official_selection">Official Selection</option>
+                <option value="finalist">Leipzig Finalist</option>
+                <option value="not_selected">미선정</option>
+              </Select>
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-[14px] font-semibold text-ink-strong">정렬</span>
+              <Select
+                aria-label="정렬"
+                value={sort}
+                onChange={(e) => rerun({ sort: e.target.value as NonNullable<AdminQuery["sort"]> })}
+              >
+                <option value="created_desc">최신순</option>
+                <option value="created_asc">오래된순</option>
+                <option value="name_asc">이름순</option>
+              </Select>
+            </label>
           </div>
         </div>
 
@@ -454,8 +455,8 @@ export default function AdminEntriesPageView() {
         )}
         {state.kind === "success" && (
           <>
-            <div className="mt-4 overflow-x-auto rounded-2xl border border-line bg-white">
-              <table className="w-full min-w-[900px] text-left text-[16px]">
+            <div className="mt-4 overflow-x-auto rounded-md border border-line bg-white">
+              <table className="w-full min-w-[1080px] text-left text-[16px]">
                 <thead>
                   <tr className="border-b border-line bg-surface text-ink-strong">
                     <th className="px-4 py-3">
@@ -471,9 +472,9 @@ export default function AdminEntriesPageView() {
                     <th className="px-4 py-3 font-semibold">참가자</th>
                     <th className="px-4 py-3 font-semibold">작품명</th>
                     <th className="px-4 py-3 font-semibold">부문/연령</th>
-                    <th className="px-4 py-3 font-semibold">접수</th>
-                    <th className="px-4 py-3 font-semibold">파일</th>
-                    <th className="px-4 py-3 font-semibold">결제</th>
+                    <th className="px-4 py-3 font-semibold">접수 상태</th>
+                    <th className="px-4 py-3 font-semibold">파일 검증</th>
+                    <th className="px-4 py-3 font-semibold">결제 상태</th>
                     <th className="px-4 py-3 font-semibold">심사/결과</th>
                     <th className="px-4 py-3 font-semibold" />
                   </tr>
@@ -532,7 +533,7 @@ export default function AdminEntriesPageView() {
                       <td className="px-4 py-3 text-right">
                         <Link
                           href={isLive && competitionId ? `/admin/entries/${e.id}?competition=${encodeURIComponent(competitionId)}` : `/admin/entries/${e.id}`}
-                          className="text-[16px] font-semibold text-brand-blue hover:underline"
+                          className="whitespace-nowrap text-[16px] font-semibold text-brand-blue hover:underline"
                         >
                           상세
                         </Link>
@@ -661,6 +662,6 @@ export default function AdminEntriesPageView() {
           </div>
         )}
       </Modal>
-    </>
+    </AdminShell>
   );
 }
