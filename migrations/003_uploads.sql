@@ -1,0 +1,27 @@
+CREATE TABLE gyca_assets (
+  id uuid PRIMARY KEY,
+  entry_id uuid NOT NULL REFERENCES gyca_entries(id) ON DELETE RESTRICT,
+  request_key text NOT NULL CHECK (length(request_key) BETWEEN 1 AND 128),
+  request_hash text NOT NULL,
+  purpose text NOT NULL,
+  display_name text NOT NULL,
+  declared_size bigint NOT NULL CHECK (declared_size > 0),
+  declared_type text NOT NULL,
+  max_bytes bigint NOT NULL CHECK (max_bytes > 0),
+  min_pages integer,
+  object_key text NOT NULL UNIQUE,
+  object_version text,
+  checksum text,
+  state text NOT NULL DEFAULT 'pending_upload' CHECK (state IN ('pending_upload','uploaded','validating','ready','rejected')),
+  size_bytes bigint NOT NULL DEFAULT 0 CHECK (size_bytes >= 0),
+  page_count integer,
+  rejection_code text,
+  expires_at timestamptz NOT NULL,
+  validation_token uuid,
+  validation_started_at timestamptz,
+  removed_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+  UNIQUE(entry_id, request_key),
+  CHECK ((state = 'rejected') = (rejection_code IS NOT NULL))
+);
+CREATE INDEX gyca_assets_entry ON gyca_assets(entry_id, purpose) WHERE removed_at IS NULL;

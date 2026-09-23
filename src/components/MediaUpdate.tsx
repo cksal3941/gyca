@@ -1,29 +1,41 @@
 import SectionHeading from "./SectionHeading";
+import type { Bi, Locale } from "@/lib/i18n";
 
 type Media = {
-  cat: string;
-  title: string;
-  sub: string;
+  cat: Bi;
+  title: Bi;
+  sub: Bi;
   image: string;
 };
 
+const HEADING: Bi = { en: "Media Update", ko: "미디어 업데이트" };
+
 const ITEMS: Media[] = [
   {
-    cat: "인터뷰",
-    title: "IYAC 심사위원 Dale Clifford 인터뷰",
-    sub: "심사위원 Dale Clifford 인터뷰 (前 SCAD 교수님 / AP 미술 수석 채점관)",
+    cat: { en: "About", ko: "소개" },
+    title: { en: "About GYCA Awards", ko: "GYCA AWARDS 소개" },
+    sub: {
+      en: "Meet GYCA, connecting young creators to the global stage.",
+      ko: "청소년 창작자를 국제 무대로 잇는 GYCA 어워드를 소개합니다.",
+    },
     image: "/images/media/dale-interview.jpg",
   },
   {
-    cat: "미디어",
-    title: "2025 카쟈아트페스티벌 전광판 송출",
-    sub: "서울 삼성역 근처 옥택스 미디어(옥외 파리스크 미디어)&외 우수작 송출",
+    cat: { en: "Guide", ko: "안내" },
+    title: { en: "2027 Leipzig Exhibition Guide", ko: "2027 라이프치히 국제전시 안내" },
+    sub: {
+      en: "The international exhibition program for finalists in Leipzig.",
+      ko: "Finalist 진출 작가를 위한 라이프치히 국제전시 프로그램을 안내합니다.",
+    },
     image: "/images/media/billboard.jpg",
   },
   {
-    cat: "인터뷰",
-    title: "2025 IYAC 은상 수상자 인터뷰 영상",
-    sub: "2025 SVA 심가 / 2025 IYAC 수상자 강남 학원가 글로벌 무대 도전기",
+    cat: { en: "Guide", ko: "안내" },
+    title: { en: "Submission Format Guide", ko: "아트북 출품 규격 안내" },
+    sub: {
+      en: "One cover image and a single PDF of 20+ pages including the cover.",
+      ko: "표지 이미지 1장과 표지 포함 20쪽 이상 단일 PDF 등 제출 규격을 안내합니다.",
+    },
     image: "/images/media/iyac-interview.jpg",
   },
 ];
@@ -38,29 +50,29 @@ function PlayIcon() {
   );
 }
 
-export default function MediaUpdate() {
+export default function MediaUpdate({ locale }: { locale: Locale }) {
   return (
-    <section className="bg-white py-20">
-      <div className="mx-auto max-w-content px-6">
-        <SectionHeading badge="Media" title="미디어 업데이트" />
+    <section className="bg-white pt-28 pb-20">
+      <div className="mx-auto max-w-page px-6">
+        <SectionHeading badge="Media" title={HEADING[locale]} locale={locale} />
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
           {ITEMS.map((m) => (
-            <article key={m.title} className="group cursor-pointer">
+            <article key={m.title.en} className="group cursor-pointer">
               <div className="relative overflow-hidden bg-neutral-100">
                 <div className="aspect-video w-full overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={m.image}
-                    alt={m.title}
+                    alt={m.title[locale]}
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
                 <PlayIcon />
               </div>
-              <h3 className="mt-4 text-[15px] font-medium leading-snug text-ink-strong group-hover:text-brand-blue">
-                <span className="text-neutral-400">[{m.cat}]</span> {m.title}
+              <h3 className="mt-4 text-[16px] font-medium leading-snug text-ink-strong decoration-1 underline-offset-4 group-hover:underline">
+                <span className="text-ink-strong">[{m.cat[locale]}]</span> {m.title[locale]}
               </h3>
-              <p className="mt-2 text-[13px] leading-6 text-neutral-500">{m.sub}</p>
+              <p className="mt-2 text-[16px] leading-[1.6] text-ink-strong">{m.sub[locale]}</p>
             </article>
           ))}
         </div>

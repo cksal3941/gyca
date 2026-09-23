@@ -67,7 +67,7 @@ export default function SignupPage() {
           </CardHeader>
           <CardContent className="grid gap-4">
             <SocialButtons />
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <div className="flex items-center gap-3 text-sm text-foreground">
               <div className="h-px flex-1 bg-border" />
               or sign up with email
               <div className="h-px flex-1 bg-border" />
@@ -119,7 +119,7 @@ export default function SignupPage() {
                   onChange={(e) => setConfirm(e.target.value)}
                 />
               </div>
-              {error && <p className="text-destructive text-xs">{error}</p>}
+              {error && <p className="text-destructive text-sm">{error}</p>}
               <Button
                 type="submit"
                 className="w-full bg-brand-blue text-white hover:bg-brand-blue/90"
@@ -128,7 +128,7 @@ export default function SignupPage() {
                 {pending ? "Creating account..." : "Sign up"}
               </Button>
             </form>
-            <p className="text-center text-xs text-muted-foreground">
+            <p className="text-center text-sm text-foreground">
               Already have an account?{" "}
               <Link
                 href="/login"

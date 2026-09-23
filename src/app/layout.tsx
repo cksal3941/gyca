@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { Bebas_Neue, Quicksand, Manrope, DM_Serif_Display } from "next/font/google";
+import LocaleProvider from "@/components/i18n/LocaleProvider";
+import { LOCALE_COOKIE, normalizeLocale } from "@/lib/i18n";
 import "./globals.css";
 
 const bebas = Bebas_Neue({
@@ -33,10 +36,12 @@ export const metadata: Metadata = {
   description: "Young Artists Begin and Grow — A Place Where Young Artists Begin and Grow",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const cookieStore = await cookies();
+  const locale = normalizeLocale(cookieStore.get(LOCALE_COOKIE)?.value);
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`${bebas.variable} ${quicksand.variable} ${manrope.variable} ${dmSerif.variable}`}
     >
       <head>
@@ -50,7 +55,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           href="https://cdnjs.cloudflare.com/ajax/libs/simple-line-icons/2.5.5/css/simple-line-icons.min.css"
         />
       </head>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <LocaleProvider initialLocale={locale}>{children}</LocaleProvider>
+      </body>
     </html>
   );
 }

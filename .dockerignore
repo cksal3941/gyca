@@ -1,4 +1,8 @@
 node_modules
+.pnpm-store
+.claude
+.codex
+.agents
 .next
 .env*
 .git
