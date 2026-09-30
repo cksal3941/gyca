@@ -16,6 +16,7 @@
 
 ## 문서
 
+- [2026-09-30 백엔드 전문 개발자 인계서](developer-handoff-2026-09-30.md) — 현재 코드 기준 미구현·연동·검증 17개 작업, 우선순위·근거·완료 기준. 인수 작업의 최신 진입점.
 - [2026-09-19 회고 결정과 후속 5단계](retrospective-decisions-2026-09-19.md) — Claude의 계약 대기 해소, 보호자·프로필 검증 경로와 남은 외부 작업.
 - [완료 프로젝트 아카이브](project-archive.md) — 출처·권리 근거 발행, 10종 섹션, 공개 프로젝트·Winners·Exhibitions API.
 - [공모 카드 표시 정보](competition-presentation.md) — 접수 정책과 분리한 summary/category/city/cover 편집과 공개 카드 목록.
