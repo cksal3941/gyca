@@ -57,7 +57,7 @@ export default function LoginPage() {
           </CardHeader>
           <CardContent className="grid gap-4">
             <SocialButtons />
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <div className="flex items-center gap-3 text-sm text-foreground">
               <div className="h-px flex-1 bg-border" />
               or continue with email
               <div className="h-px flex-1 bg-border" />
@@ -86,7 +86,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
-              {error && <p className="text-destructive text-xs">{error}</p>}
+              {error && <p className="text-destructive text-sm">{error}</p>}
               <Button
                 type="submit"
                 className="w-full bg-brand-blue text-white hover:bg-brand-blue/90"
@@ -95,7 +95,7 @@ export default function LoginPage() {
                 {pending ? "Signing in..." : "Sign in"}
               </Button>
             </form>
-            <p className="text-center text-xs text-muted-foreground">
+            <p className="text-center text-sm text-foreground">
               Don&apos;t have an account?{" "}
               <Link
                 href="/signup"

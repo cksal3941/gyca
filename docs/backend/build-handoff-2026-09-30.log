@@ -1,0 +1,170 @@
+$ next build "--webpack"
+▲ Next.js 16.3.1 (webpack)
+- Environments: .env.local
+✓ Running next.config.ts took 20ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 16.9s
+  Running TypeScript ...
+  Finished TypeScript in 6.9s ...
+  Collecting page data using 23 workers ...
+  Generating static pages using 23 workers (0/75) ...
+  Generating static pages using 23 workers (18/75) 
+  Generating static pages using 23 workers (37/75) 
+  Generating static pages using 23 workers (56/75) 
+✓ Generating static pages using 23 workers (75/75) in 809ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /about
+├ ƒ /admin
+├ ƒ /admin/competitions
+├ ƒ /admin/competitions/[id]
+├ ƒ /admin/competitions/new
+├ ƒ /admin/content/editorial
+├ ƒ /admin/content/partners
+├ ƒ /admin/content/projects
+├ ƒ /admin/content/projects/[id]
+├ ƒ /admin/content/projects/new
+├ ƒ /admin/entries/[id]
+├ ƒ /admin/judges
+├ ƒ /admin/payments
+├ ƒ /admin/privacy
+├ ƒ /admin/results
+├ ƒ /api/auth/[...all]
+├ ƒ /api/internal/notifications/receipts
+├ ƒ /api/internal/payments/reconcile
+├ ƒ /api/internal/storage/blind-reviews
+├ ƒ /api/internal/storage/certificates
+├ ƒ /api/internal/storage/retention
+├ ƒ /api/v1/admin/access
+├ ƒ /api/v1/admin/competitions
+├ ƒ /api/v1/admin/competitions/[competitionId]
+├ ƒ /api/v1/admin/competitions/[competitionId]/certificates/issue
+├ ƒ /api/v1/admin/competitions/[competitionId]/entries
+├ ƒ /api/v1/admin/competitions/[competitionId]/entries/[id]
+├ ƒ /api/v1/admin/competitions/[competitionId]/entries/[id]/consents
+├ ƒ /api/v1/admin/competitions/[competitionId]/entries/[id]/final-participation
+├ ƒ /api/v1/admin/competitions/[competitionId]/entries/[id]/guardian-consents
+├ ƒ /api/v1/admin/competitions/[competitionId]/entries/[id]/guardian-consents/[requestId]/verify
+├ ƒ /api/v1/admin/competitions/[competitionId]/entries/[id]/review
+├ ƒ /api/v1/admin/competitions/[competitionId]/entries/export
+├ ƒ /api/v1/admin/competitions/[competitionId]/judge-assignments
+├ ƒ /api/v1/admin/competitions/[competitionId]/judge-assignments/[assignmentId]/blind-asset
+├ ƒ /api/v1/admin/competitions/[competitionId]/judge-assignments/[assignmentId]/blind-asset/approve
+├ ƒ /api/v1/admin/competitions/[competitionId]/judge-assignments/[assignmentId]/reassign
+├ ƒ /api/v1/admin/competitions/[competitionId]/judge-assignments/[assignmentId]/revoke
+├ ƒ /api/v1/admin/competitions/[competitionId]/launch-readiness
+├ ƒ /api/v1/admin/competitions/[competitionId]/launch-verifications
+├ ƒ /api/v1/admin/competitions/[competitionId]/open-applications
+├ ƒ /api/v1/admin/competitions/[competitionId]/pause-applications
+├ ƒ /api/v1/admin/competitions/[competitionId]/payment-health
+├ ƒ /api/v1/admin/competitions/[competitionId]/payment-policy
+├ ƒ /api/v1/admin/competitions/[competitionId]/payment-policy/history
+├ ƒ /api/v1/admin/competitions/[competitionId]/payment-reviews
+├ ƒ /api/v1/admin/competitions/[competitionId]/payment-reviews/[orderId]/accept-late-payment
+├ ƒ /api/v1/admin/competitions/[competitionId]/payment-reviews/[orderId]/history
+├ ƒ /api/v1/admin/competitions/[competitionId]/payment-reviews/[orderId]/requeue
+├ ƒ /api/v1/admin/competitions/[competitionId]/payments/[orderId]
+├ ƒ /api/v1/admin/competitions/[competitionId]/payments/[orderId]/refunds
+├ ƒ /api/v1/admin/competitions/[competitionId]/presentation
+├ ƒ /api/v1/admin/competitions/[competitionId]/receipt-deliveries
+├ ƒ /api/v1/admin/competitions/[competitionId]/results/publish
+├ ƒ /api/v1/admin/competitions/[competitionId]/results/rounds/[round]/publish
+├ ƒ /api/v1/admin/competitions/[competitionId]/resume-applications
+├ ƒ /api/v1/admin/competitions/[competitionId]/retention-policy
+├ ƒ /api/v1/admin/competitions/[competitionId]/review-rubric
+├ ƒ /api/v1/admin/competitions/[competitionId]/submission-policy
+├ ƒ /api/v1/admin/competitions/[competitionId]/submission-policy/history
+├ ƒ /api/v1/admin/content/editorial
+├ ƒ /api/v1/admin/content/editorial/[contentId]
+├ ƒ /api/v1/admin/content/editorial/[contentId]/archive
+├ ƒ /api/v1/admin/content/editorial/[contentId]/publish
+├ ƒ /api/v1/admin/content/partners
+├ ƒ /api/v1/admin/content/partners/[partnerId]
+├ ƒ /api/v1/admin/content/partners/[partnerId]/archive
+├ ƒ /api/v1/admin/content/partners/[partnerId]/confirm
+├ ƒ /api/v1/admin/content/partners/[partnerId]/publish
+├ ƒ /api/v1/admin/content/partners/[partnerId]/revoke
+├ ƒ /api/v1/admin/content/projects
+├ ƒ /api/v1/admin/content/projects/[projectId]
+├ ƒ /api/v1/admin/content/projects/[projectId]/archive
+├ ƒ /api/v1/admin/content/projects/[projectId]/publish
+├ ƒ /api/v1/admin/dashboard
+├ ƒ /api/v1/admin/judges
+├ ƒ /api/v1/admin/judges/[userId]
+├ ƒ /api/v1/admin/privacy-requests
+├ ƒ /api/v1/admin/privacy-requests/[requestId]/review
+├ ƒ /api/v1/certificates
+├ ƒ /api/v1/certificates/[id]/download
+├ ƒ /api/v1/competitions
+├ ƒ /api/v1/competitions/[slug]
+├ ƒ /api/v1/content/competition-cards
+├ ƒ /api/v1/content/editorial
+├ ƒ /api/v1/content/editorial/[slug]
+├ ƒ /api/v1/content/exhibitions
+├ ƒ /api/v1/content/partners
+├ ƒ /api/v1/content/partners/[slug]
+├ ƒ /api/v1/content/projects
+├ ƒ /api/v1/content/projects/[slug]
+├ ƒ /api/v1/content/winners
+├ ƒ /api/v1/entries
+├ ƒ /api/v1/entries/[id]
+├ ƒ /api/v1/entries/[id]/certificates
+├ ƒ /api/v1/entries/[id]/final-participation
+├ ƒ /api/v1/entries/[id]/guardian-consent
+├ ƒ /api/v1/entries/[id]/orders
+├ ƒ /api/v1/entries/[id]/payment-options
+├ ƒ /api/v1/entries/[id]/submission
+├ ƒ /api/v1/entries/[id]/submission-readiness
+├ ƒ /api/v1/entries/[id]/submission/assets/[assetId]/download
+├ ƒ /api/v1/entries/[id]/submit
+├ ƒ /api/v1/entries/[id]/uploads
+├ ƒ /api/v1/entries/[id]/uploads/[assetId]
+├ ƒ /api/v1/entries/[id]/uploads/[assetId]/complete
+├ ƒ /api/v1/entries/[id]/withdraw-draft
+├ ƒ /api/v1/guardian-consent/accept
+├ ƒ /api/v1/guardian-consent/preview
+├ ƒ /api/v1/judge/assignments
+├ ƒ /api/v1/judge/reviews/[id]
+├ ƒ /api/v1/judge/reviews/[id]/draft
+├ ƒ /api/v1/judge/reviews/[id]/submit
+├ ƒ /api/v1/orders
+├ ƒ /api/v1/orders/[id]
+├ ƒ /api/v1/orders/[id]/checkout
+├ ƒ /api/v1/orders/[id]/confirm
+├ ƒ /api/v1/orders/[id]/reconcile
+├ ƒ /api/v1/payments/webhook
+├ ƒ /api/v1/privacy/requests
+├ ƒ /api/v1/privacy/requests/[requestId]/cancel
+├ ƒ /archive
+├ ƒ /archive/[slug]
+├ ƒ /archive/klimt-villa
+├ ƒ /contests
+├ ƒ /contests/[slug]
+├ ƒ /contests/leipzig-2027
+├ ƒ /exhibitions
+├ ƒ /guardian-consent
+├ ƒ /help
+├ ƒ /judge
+├ ƒ /judge/review/[id]
+├ ƒ /login
+├ ƒ /mypage
+├ ƒ /mypage/entries/[id]
+├ ƒ /mypage/entries/[id]/payment
+├ ƒ /notices
+├ ƒ /notices/[slug]
+├ ƒ /settings
+├ ƒ /signout
+├ ƒ /signup
+├ ƒ /styleguide
+├ ƒ /submit
+├ ƒ /winners
+└ ƒ /winners/[slug]
+
+
+ƒ  (Dynamic)  server-rendered on demand
+

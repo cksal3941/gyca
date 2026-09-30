@@ -59,11 +59,11 @@ function DotGrid() {
 export default function ProcessSteps() {
   return (
     <section className="bg-white pb-24">
-      <div className="mx-auto max-w-shell px-6">
+      <div className="mx-auto max-w-page px-6">
         <div className="relative overflow-hidden rounded-3xl bg-surface px-8 py-12 lg:px-12">
           <DotGrid />
           <div className="grid gap-10 lg:grid-cols-[340px_1fr] lg:items-center">
-            <h2 className="font-sans text-[28px] font-bold leading-[1.25] tracking-[-0.01em] text-ink-strong">
+            <h2 className="font-sans text-[28px] font-bold leading-[1.25] tracking-[0.02em] text-ink-strong">
               From Discovery
               <br />
               to the Global Stage

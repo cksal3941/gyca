@@ -114,7 +114,7 @@ function CollageTile({
 export default function LandingHero() {
   return (
     <section className="relative overflow-hidden bg-canvas">
-      <div className="relative mx-auto grid max-w-shell items-center gap-10 px-6 py-16 lg:grid-cols-[1.15fr_0.85fr] lg:py-20">
+      <div className="relative mx-auto grid max-w-page items-center gap-10 px-6 py-16 lg:grid-cols-[1.15fr_0.85fr] lg:py-20">
         {/* Left: copy */}
         <div>
           <p className="text-[18px] font-extrabold uppercase tracking-[0.12em] text-brand-blue">

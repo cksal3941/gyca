@@ -8,6 +8,12 @@ const nextConfig: NextConfig = {
   // MODULE_NOT_FOUND로 죽는 문제를 보정 (pnpm .pnpm 스토어 경로 기준)
   outputFileTracingIncludes: {
     "/*": ["./node_modules/.pnpm/@swc+helpers*/node_modules/@swc/helpers/**/*"],
+    "/api/v1/entries/*/uploads/*/complete": [
+      "./scripts/inspect-upload.mjs",
+      "./node_modules/pdf-lib/**/*",
+      "./node_modules/sharp/**/*",
+      "./node_modules/.pnpm/{pdf-lib@*,@pdf-lib+*,pako@*,tslib@*,sharp@*,@img+*,detect-libc@*,semver@*}/node_modules/**/*",
+    ],
   },
 };
 

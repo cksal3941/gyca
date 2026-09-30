@@ -112,6 +112,8 @@ DATABASE_URL="<Supabase Session pooler URI>" node scripts/migrate.mjs
 | `pnpm lint` | ESLint 검사 |
 | `pnpm db:migrate` | `.env.local`의 DB에 인증 스키마 마이그레이션 |
 
+백엔드 전체 회귀 검증은 `node scripts/verify-backend.mjs`로 실행한다. 공개 파트너와 관계 확인 흐름은 [파트너 CMS 문서](docs/backend/partner-cms.md)를 참고한다.
+
 ### 인증 API 수동 테스트 (dev 서버 실행 중에)
 
 ```bash

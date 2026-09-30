@@ -2,19 +2,26 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import Logo from "./Logo";
 import { useSession } from "@/lib/auth-client";
+import { useLocale } from "@/components/i18n/LocaleProvider";
+import LocaleToggle from "@/components/i18n/LocaleToggle";
+import type { Bi } from "@/lib/i18n";
 
-const MENU = [
-  "About",
-  "Bookstore",
-  "News",
-  "Contests",
-  "Epilogue",
-  "Winners",
-  "Gallery",
-  "Contact",
+// Nav mapped 1:1 to the pages that exist. (Deployed myslide labels like
+// Bookstore/Epilogue/Gallery/Contact had no GYCA pages, so the menu is
+// restructured to the real IA.)
+const MENU: { label: Bi; href: string }[] = [
+  { label: { en: "Competitions", ko: "공모전" }, href: "/contests" },
+  { label: { en: "Exhibitions", ko: "전시·공연" }, href: "/exhibitions" },
+  { label: { en: "Winners", ko: "수상작" }, href: "/winners" },
+  { label: { en: "About", ko: "소개" }, href: "/about" },
+  { label: { en: "Notice", ko: "공지사항" }, href: "/notices" },
+  { label: { en: "Help", ko: "이용안내" }, href: "/help" },
 ];
+
+const MYPAGE: Bi = { en: "My Page", ko: "마이페이지" };
 
 // The reference uses the simple-line-icons webfont (icon-social-instagram /
 // icon-globe). Render the same glyphs so the icons match exactly.
@@ -101,13 +108,13 @@ function AccountMenu() {
       {open && (
         <div className="absolute right-0 top-[calc(100%+8px)] w-56 overflow-hidden rounded-lg border border-black/10 bg-white text-ink shadow-lg">
           <div className="border-b border-black/10 px-4 py-3">
-            <p className="text-[13px] leading-tight text-neutral-500">
+            <p className="text-[14px] leading-tight text-ink-strong">
               Signed in as
             </p>
-            <p className="truncate text-[14px] font-semibold leading-snug">
+            <p className="truncate text-[15px] font-semibold leading-snug text-ink-strong">
               {session.user.name}
             </p>
-            <p className="truncate text-[12px] text-neutral-500">
+            <p className="truncate text-[14px] text-ink-strong">
               {session.user.email}
             </p>
           </div>
@@ -115,7 +122,7 @@ function AccountMenu() {
             <Link
               href="/settings"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-4 py-2 text-[13px] !transition-none hover:bg-brand-blue hover:text-white"
+              className="flex items-center gap-2.5 px-4 py-2 text-[14px] !transition-none hover:bg-brand-blue hover:text-white"
             >
               <Icon name="settings" size={14} />
               Settings
@@ -123,7 +130,7 @@ function AccountMenu() {
             <Link
               href="/signout"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-4 py-2 text-[13px] !transition-none hover:bg-brand-blue hover:text-white"
+              className="flex items-center gap-2.5 px-4 py-2 text-[14px] !transition-none hover:bg-brand-blue hover:text-white"
             >
               <Icon name="logout" size={14} />
               Sign out
@@ -137,6 +144,7 @@ function AccountMenu() {
 
 function AuthNav({ mobile = false }: { mobile?: boolean }) {
   const { data: session, isPending } = useSession();
+  const { locale } = useLocale();
 
   if (isPending) return null;
 
@@ -148,10 +156,13 @@ function AuthNav({ mobile = false }: { mobile?: boolean }) {
           {session.user.name}
         </span>
         <span className="flex items-center gap-4">
-          <Link href="/settings" className="text-neutral-500 hover:text-brand-blue">
+          <Link href="/mypage" className="hover:text-brand-blue">
+            {MYPAGE[locale]}
+          </Link>
+          <Link href="/settings" className="text-ink-strong hover:text-brand-blue">
             Settings
           </Link>
-          <Link href="/signout" className="text-neutral-500 hover:text-brand-blue">
+          <Link href="/signout" className="text-ink-strong hover:text-brand-blue">
             Sign out
           </Link>
         </span>
@@ -170,7 +181,13 @@ function AuthNav({ mobile = false }: { mobile?: boolean }) {
 
   // Desktop: narrow screens show icons only, labels appear from 2xl (1536px+)
   return session ? (
-    <div className="hidden items-center lg:flex">
+    <div className="hidden items-center gap-3 lg:flex">
+      <Link
+        href="/mypage"
+        className="font-nav text-[15px] whitespace-nowrap !transition-none hover:text-white"
+      >
+        {MYPAGE[locale]}
+      </Link>
       <AccountMenu />
     </div>
   ) : (
@@ -178,7 +195,7 @@ function AuthNav({ mobile = false }: { mobile?: boolean }) {
       <Link
         href="/login"
         title="Sign in"
-        className="flex items-center !transition-none hover:text-brand-blue"
+        className="flex items-center !transition-none hover:text-white"
       >
         <span className="inline-flex items-center justify-center p-[10px]">
           <Icon name="login" size={17} />
@@ -190,7 +207,7 @@ function AuthNav({ mobile = false }: { mobile?: boolean }) {
       <Link
         href="/signup"
         title="Sign up"
-        className="flex items-center !transition-none hover:text-brand-blue 2xl:ml-2"
+        className="flex items-center !transition-none hover:text-white 2xl:ml-2"
       >
         <span className="inline-flex items-center justify-center p-[10px]">
           <Icon name="user-follow" size={17} />
@@ -204,47 +221,29 @@ function AuthNav({ mobile = false }: { mobile?: boolean }) {
 }
 
 export default function Header() {
-  const [scrolled, setScrolled] = useState(false);
+  const { locale } = useLocale();
+  const pathname = usePathname();
+  const isActive = (href: string) =>
+    pathname === href || pathname.startsWith(href + "/");
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  useEffect(() => {
-    let ticking = false;
-    const update = () => {
-      const y = window.scrollY;
-      // Hysteresis: enter at 90px, leave at 40px — avoids rapid toggling
-      // (flicker) when the scroll position hovers near a single threshold.
-      setScrolled((prev) => (prev ? y > 40 : y > 90));
-      ticking = false;
-    };
-    const onScroll = () => {
-      if (!ticking) {
-        ticking = true;
-        requestAnimationFrame(update);
-      }
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  // Default: white bg + dark text + black lines. Scrolled: black bg + white text + white lines.
-  const line = scrolled ? "border-white" : "border-black";
+  // Header is always black: white text + white divider lines.
+  const line = "border-white";
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-[1000] border-b-2 ${line} ${
-        scrolled ? "bg-black text-white" : "bg-white text-ink"
-      }`}
+      className={`fixed inset-x-0 top-0 z-[1000] border-b-2 bg-black text-white ${line}`}
     >
       <div className="mx-auto flex h-[70px] max-w-[1570px] items-stretch">
         {/* Logo zone — sits at the container's left edge (no padding), matching
             the reference's symmetric ~167px inset. */}
-        <a
-          href="#top"
+        <Link
+          href="/"
+          aria-label="GYCA home"
           className={`flex w-[150px] shrink-0 items-center pl-4 !transition-none sm:w-[190px] lg:w-[214px] lg:border-r-2 lg:pl-0 ${line}`}
         >
-          <Logo variant={scrolled ? "light" : "dark"} />
-        </a>
+          <Logo variant="light" />
+        </Link>
 
         {/* Menu zone — right-aligned (menu hugs the icons side, gap sits between
             logo and menu). Each item padded 30px left/right, items touch. */}
@@ -252,18 +251,21 @@ export default function Header() {
           className={`hidden flex-1 items-center justify-end lg:flex lg:border-r-2 ${line}`}
         >
           {MENU.map((item) => (
-            <a
-              key={item}
-              href="#"
-              className="flex h-full items-center px-[30px] font-nav text-[17px] font-normal whitespace-nowrap !transition-none hover:text-brand-blue"
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex h-full items-center px-[30px] font-nav text-[17px] whitespace-nowrap !transition-none hover:text-white ${
+                isActive(item.href) ? "font-semibold text-white" : "font-normal text-white/80"
+              }`}
             >
-              {item}
-            </a>
+              {item.label[locale]}
+            </Link>
           ))}
         </nav>
 
         {/* Icons zone — sits at the container's right edge (no padding). */}
         <div className="ml-auto flex shrink-0 items-center pl-4 pr-4 lg:ml-0 lg:pl-[26px] lg:pr-2">
+          <LocaleToggle className="mr-4 hidden lg:flex" />
           <AuthNav />
 
           {/* Hamburger */}
@@ -283,14 +285,18 @@ export default function Header() {
       {mobileOpen && (
         <div className="border-t-2 border-current bg-white text-ink lg:hidden">
           <nav className="flex flex-col px-6 py-2">
+            <LocaleToggle className="border-b border-line py-3" />
             {MENU.map((item) => (
-              <a
-                key={item}
-                href="#"
-                className="border-b border-line py-3 font-nav text-[16px] hover:text-brand-blue"
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                className={`border-b border-line py-3 font-nav text-[16px] hover:text-brand-blue ${
+                  isActive(item.href) ? "font-semibold text-brand-blue" : ""
+                }`}
               >
-                {item}
-              </a>
+                {item.label[locale]}
+              </Link>
             ))}
             <AuthNav mobile />
           </nav>

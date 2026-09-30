@@ -35,7 +35,7 @@ export default function SignOutPage() {
                 <h1 className="text-lg font-semibold">
                   Are you sure you want to sign out?
                 </h1>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-foreground">
                   You are signed in as{" "}
                   <span className="font-medium text-foreground">
                     {session.user.email}
@@ -51,7 +51,7 @@ export default function SignOutPage() {
                 </Button>
                 <Link
                   href="/"
-                  className="text-xs text-muted-foreground hover:text-brand-blue hover:underline"
+                  className="text-sm text-foreground hover:text-brand-blue hover:underline"
                 >
                   Cancel and go back home
                 </Link>
@@ -61,7 +61,7 @@ export default function SignOutPage() {
                 <h1 className="text-lg font-semibold">
                   You are not signed in
                 </h1>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-foreground">
                   There is no active session on this device.
                 </p>
                 <Button
@@ -72,7 +72,7 @@ export default function SignOutPage() {
                 </Button>
                 <Link
                   href="/"
-                  className="text-xs text-muted-foreground hover:text-brand-blue hover:underline"
+                  className="text-sm text-foreground hover:text-brand-blue hover:underline"
                 >
                   Back to home
                 </Link>
