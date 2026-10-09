@@ -21,6 +21,9 @@ WORKDIR /app
 RUN npm install -g pnpm@11.22.0
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# NEXT_PUBLIC_* 값은 빌드 시 번들에 고정된다. 운영/스테이징 배포는 live 가 기본.
+ARG NEXT_PUBLIC_API_MODE=live
+ENV NEXT_PUBLIC_API_MODE=$NEXT_PUBLIC_API_MODE
 RUN pnpm build --webpack
 # Keep complete production dependencies instead of the partial file-traced dependency tree.
 RUN rm -rf /app/.next/standalone/node_modules
