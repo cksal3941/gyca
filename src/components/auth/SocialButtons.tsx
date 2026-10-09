@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { signIn } from "@/lib/auth-client";
-import type { SocialProviderId } from "@/lib/social-providers";
+import {
+  SOCIAL_PROVIDER_ORDER,
+  type SocialProviderId,
+} from "@/lib/social-providers";
 
 function GoogleIcon() {
   return (
@@ -28,6 +31,50 @@ function GoogleIcon() {
   );
 }
 
+function MicrosoftIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
+      <path fill="#F25022" d="M1 1h10.5v10.5H1z" />
+      <path fill="#7FBA00" d="M12.5 1H23v10.5H12.5z" />
+      <path fill="#00A4EF" d="M1 12.5h10.5V23H1z" />
+      <path fill="#FFB900" d="M12.5 12.5H23V23H12.5z" />
+    </svg>
+  );
+}
+
+function FacebookIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
+      <path
+        fill="#1877F2"
+        d="M24 12a12 12 0 1 0-13.875 11.854v-8.385H7.078V12h3.047V9.356c0-3.007 1.792-4.668 4.533-4.668 1.312 0 2.686.234 2.686.234v2.953h-1.514c-1.491 0-1.955.925-1.955 1.874V12h3.328l-.532 3.469h-2.796v8.385A12.003 12.003 0 0 0 24 12z"
+      />
+    </svg>
+  );
+}
+
+function KakaoIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
+      <path
+        fill="#000000"
+        fillOpacity="0.9"
+        d="M12 3C6.477 3 2 6.463 2 10.735c0 2.76 1.86 5.18 4.656 6.546l-1.18 4.37a.3.3 0 0 0 .457.33l5.02-3.34c.347.03.697.046 1.047.046 5.523 0 10-3.463 10-7.952S17.523 3 12 3z"
+      />
+    </svg>
+  );
+}
+
+const PROVIDER_UI: Record<
+  SocialProviderId,
+  { label: string; Icon: () => React.JSX.Element }
+> = {
+  google: { label: "Google", Icon: GoogleIcon },
+  microsoft: { label: "Microsoft", Icon: MicrosoftIcon },
+  facebook: { label: "Facebook", Icon: FacebookIcon },
+  kakao: { label: "Kakao", Icon: KakaoIcon },
+};
+
 export function SocialButtons() {
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +92,7 @@ export function SocialButtons() {
     return () => controller.abort();
   }, []);
 
-  const social = async (provider: "google") => {
+  const social = async (provider: SocialProviderId) => {
     setError(null);
     setPending(provider);
     const { error } = await signIn.social({ provider, callbackURL: "/" });
@@ -59,18 +106,22 @@ export function SocialButtons() {
 
   return (
     <div className="grid gap-2">
-      {providers.includes("google") && (
-      <Button
-        type="button"
-        variant="outline"
-        className="w-full"
-        disabled={pending !== null}
-        onClick={() => social("google")}
-      >
-        <GoogleIcon />
-        Continue with Google
-      </Button>
-      )}
+      {SOCIAL_PROVIDER_ORDER.filter((id) => providers.includes(id)).map((id) => {
+        const { label, Icon } = PROVIDER_UI[id];
+        return (
+          <Button
+            key={id}
+            type="button"
+            variant="outline"
+            className="w-full"
+            disabled={pending !== null}
+            onClick={() => social(id)}
+          >
+            <Icon />
+            Continue with {label}
+          </Button>
+        );
+      })}
       {error && <p className="text-destructive text-sm">{error}</p>}
     </div>
   );

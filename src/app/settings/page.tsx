@@ -378,6 +378,9 @@ type AccountRow = {
 const PROVIDER_LABEL: Record<string, string> = {
   credential: "Email & password",
   google: "Google",
+  microsoft: "Microsoft",
+  facebook: "Facebook",
+  kakao: "Kakao",
 };
 
 function AccountSection({

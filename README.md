@@ -220,18 +220,36 @@ gcloud run services logs read gyca --region asia-northeast3 --limit 50   # 컨�
    - `http://localhost:3000/api/auth/callback/google` (로컬)
 3. 환경변수 추가: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
 
-### Apple
+### Microsoft (개인 + 학교/직장 계정)
 
-제공하지 않습니다. Sign in with Apple 은 Apple Developer Program(유료) 가입 계정에서만 Services ID 와
-서명 키를 발급받을 수 있어, 가입 전에는 구현 자체가 불가능합니다. 필요해지면 Better Auth 의 `apple`
-공급자를 `src/lib/auth.ts` 와 `src/lib/social-providers.ts` 에 추가하면 됩니다.
+1. [Microsoft Entra 관리 센터 → App registrations](https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade) → *New registration*
+   - Supported account types: **Accounts in any organizational directory and personal Microsoft accounts** (필수 — 그래야 Outlook 개인 계정과 학교 계정이 모두 로그인됨)
+   - Redirect URI: Web, `https://gycaawards.com/api/auth/callback/microsoft` (로컬: `http://localhost:3000/api/auth/callback/microsoft`)
+2. 생성 후 *Overview* 의 **Application (client) ID** → `MICROSOFT_CLIENT_ID`
+3. *Certificates & secrets* → *New client secret* → 값(Value) → `MICROSOFT_CLIENT_SECRET` (만료일이 있으니 만료 전 재발급)
+
+### Facebook
+
+1. [Meta for Developers → 앱 만들기](https://developers.facebook.com/apps) → 사용 사례 *Authenticate and request data from users with Facebook Login* (소비자 앱)
+2. *Facebook Login → 설정* 의 **유효한 OAuth 리디렉션 URI** 에 `https://gycaawards.com/api/auth/callback/facebook` 추가
+3. *앱 설정 → 기본 설정* 의 **앱 ID** → `FACEBOOK_CLIENT_ID`, **앱 시크릿** → `FACEBOOK_CLIENT_SECRET`
+4. 개발 모드에서는 앱 역할에 등록된 테스터만 로그인된다. 일반 공개 전에 앱 검수(email·public_profile 권한)를 통과시키고 **라이브 모드** 로 전환해야 한다.
+
+### Kakao
+
+1. [Kakao Developers → 내 애플리케이션 → 애플리케이션 추가](https://developers.kakao.com/console/app)
+2. *앱 키* 의 **REST API 키** → `KAKAO_CLIENT_ID`
+3. *카카오 로그인* 활성화 → *Redirect URI* 에 `https://gycaawards.com/api/auth/callback/kakao` 등록
+4. *카카오 로그인 → 보안* 에서 **Client Secret 생성**, 코드 "사용함" → `KAKAO_CLIENT_SECRET`
+5. *동의항목* 에서 **닉네임**, **프로필 사진**, **카카오계정(이메일)** 을 설정. 이메일은 비즈 앱 전환 후 "필수 동의" 로 올릴 수 있으며, 이메일이 없으면 기존 계정과 자동 연결되지 않는다.
 
 참고: 로그인/회원가입 화면의 소셜 버튼은 `/api/v1/auth/providers` 가 돌려주는, 실제로 설정된
-공급자만 표시됩니다.
+공급자만 Google → Microsoft → Facebook → Kakao 순서로 표시됩니다. Apple 로그인은 Apple Developer Program(유료)
+가입이 필요해 제공하지 않습니다.
 
 Cloud Run에 환경변수 추가:
 
 ```bash
-gcloud run services update gyca --region asia-northeast3 \
-  --update-env-vars 'GOOGLE_CLIENT_ID=...,GOOGLE_CLIENT_SECRET=...'
+gcloud run services update gyca --project gyca-506504 --region asia-northeast3 \
+  --update-env-vars 'MICROSOFT_CLIENT_ID=...,MICROSOFT_CLIENT_SECRET=...,FACEBOOK_CLIENT_ID=...,FACEBOOK_CLIENT_SECRET=...,KAKAO_CLIENT_ID=...,KAKAO_CLIENT_SECRET=...'
 ```
