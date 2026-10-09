@@ -34,6 +34,9 @@ const dmSerif = DM_Serif_Display({
 export const metadata: Metadata = {
   title: "GYCA",
   description: "Young Artists Begin and Grow — A Place Where Young Artists Begin and Grow",
+  verification: {
+    google: "D-aLcR1qYRcrIWZeggeUgLlDDeq4emWHSnX-G5QGsko",
+  },
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
