@@ -2,7 +2,6 @@
 
 Next.js 16 + Tailwind CSS 4 기반 웹사이트.
 회원가입/로그인은 [Better Auth](https://better-auth.com) + PostgreSQL, UI는 [shadcn/ui](https://ui.shadcn.com)를 사용합니다.
-홈페이지 콘텐츠(공모전/뉴스/미디어/에필로그)는 DB에 저장되며 [Drizzle ORM](https://orm.drizzle.team)으로 조회하고, `/admin` 관리자 페이지에서 편집합니다.
 프로덕션은 **Google Cloud Run**에 배포하고, DB는 **Supabase(PostgreSQL)**를 사용합니다.
 
 ---
@@ -81,55 +80,22 @@ pnpm db:migrate
 > (`issuer` 컬럼 누락 등), 설치된 버전 기준으로 동작하는 `scripts/migrate.mjs`를 사용합니다.
 > 이미 최신이면 "스키마가 이미 최신입니다"가 출력되고 아무것도 변경하지 않습니다.
 
-### 2-4. 콘텐츠 테이블 생성 + 초기 데이터
-
-홈페이지 콘텐츠 테이블(`contests`, `news`, `media`, `projects`)은 Drizzle이 관리합니다
-(스키마: `src/db/schema.ts`, 설정: `drizzle.config.ts`).
-
-```bash
-pnpm db:push   # 스키마를 DB에 반영
-pnpm db:seed   # 초기 콘텐츠 삽입 (테이블이 비어 있을 때만 동작, 재실행 안전)
-```
-
-> `drizzle.config.ts`의 `tablesFilter`는 Better Auth 테이블을 Drizzle 관리 대상에서
-> 제외하는 필수 설정이므로 제거하지 말 것.
-
-### 2-5. 관리자 계정 지정
-
-`/admin` 관리자 페이지는 `user.role = 'admin'`인 계정만 접근할 수 있습니다.
-회원가입 후 아래 명령으로 역할을 부여합니다:
-
-```bash
-pnpm set-admin <이메일>
-```
-
-관리자로 로그인하면 우측 상단 계정 메뉴에 **Admin** 링크가 나타납니다.
-이후에는 `/admin/users`에서 다른 계정의 관리자 지정/차단/세션 종료가 가능합니다.
-
-### 2-6. 프로덕션 DB (Supabase)
+### 2-4. 프로덕션 DB (Supabase)
 
 1. https://supabase.com 에서 프로젝트 생성 (Region: **Northeast Asia (Seoul)** 권장)
 2. 대시보드 상단 **Connect** 버튼 → **Session pooler** 탭의 URI 복사
    - ⚠️ **Direct connection은 IPv6 전용이라 Cloud Run에서 접속 불가.** 반드시 Session pooler(포트 5432)를 사용할 것.
    - 형태: `postgresql://postgres.xxxx:<비밀번호>@aws-0-ap-northeast-2.pooler.supabase.com:5432/postgres`
-3. 프로덕션 DB에 테이블 생성 + 초기 데이터 (로컬에서 1회 실행):
+3. 프로덕션 DB에 테이블 생성 (로컬에서 1회 실행):
 
 ```powershell
 # PowerShell
-$env:DATABASE_URL="<Supabase Session pooler URI>"
-node scripts/migrate.mjs                        # 인증 테이블
-node node_modules/drizzle-kit/bin.cjs push      # 콘텐츠 테이블
-node scripts/seed-content.mjs                   # 초기 콘텐츠
-node scripts/set-admin.mjs <관리자 이메일>       # 관리자 지정 (해당 계정 가입 후)
+$env:DATABASE_URL="<Supabase Session pooler URI>"; node scripts/migrate.mjs
 ```
 
 ```bash
 # bash
-export DATABASE_URL="<Supabase Session pooler URI>"
-node scripts/migrate.mjs
-node node_modules/drizzle-kit/bin.cjs push
-node scripts/seed-content.mjs
-node scripts/set-admin.mjs <관리자 이메일>
+DATABASE_URL="<Supabase Session pooler URI>" node scripts/migrate.mjs
 ```
 
 4. 저장된 데이터는 Supabase 대시보드 → **Table Editor**에서 확인 (`user` 테이블 등)
@@ -144,11 +110,9 @@ node scripts/set-admin.mjs <관리자 이메일>
 | `pnpm build` | 프로덕션 빌드 (타입 검사 포함 — PR 전 필수 확인) |
 | `pnpm start` | 빌드 결과물로 프로덕션 서버 실행 |
 | `pnpm lint` | ESLint 검사 |
-| `pnpm db:migrate` | `.env.local`의 DB에 인증 스키마 마이그레이션 (Better Auth) |
-| `pnpm db:push` | 콘텐츠 테이블 스키마 반영 (Drizzle) |
-| `pnpm db:seed` | 초기 콘텐츠 삽입 (비어 있을 때만) |
-| `pnpm set-admin <email>` | 해당 계정에 admin 역할 부여 |
-| `node scripts/e2e-admin.mjs` | 관리자 페이지 e2e 검증 (dev 서버 + admin 계정 필요) |
+| `pnpm db:migrate` | `.env.local`의 DB에 인증 스키마 마이그레이션 |
+
+백엔드 전체 회귀 검증은 `node scripts/verify-backend.mjs`로 실행한다. 공개 파트너와 관계 확인 흐름은 [파트너 CMS 문서](docs/backend/partner-cms.md)를 참고한다.
 
 ### 인증 API 수동 테스트 (dev 서버 실행 중에)
 

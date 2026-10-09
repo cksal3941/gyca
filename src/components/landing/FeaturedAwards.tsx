@@ -129,7 +129,7 @@ function AnnualCalendar() {
   return (
     <div>
       <div className="flex items-baseline justify-between">
-        <h2 className="font-sans text-[26px] font-bold tracking-[-0.01em] text-ink-strong">
+        <h2 className="font-sans text-[26px] font-bold tracking-[0.02em] text-ink-strong">
           Annual Calendar
         </h2>
         <a
@@ -174,11 +174,11 @@ function AnnualCalendar() {
 export default function FeaturedAwards() {
   return (
     <section className="bg-white">
-      <div className="mx-auto grid max-w-shell gap-10 px-6 py-20 lg:grid-cols-3">
+      <div className="mx-auto grid max-w-page gap-10 px-6 py-20 lg:grid-cols-3">
         {/* Featured awards — 2/3 */}
         <div className="lg:col-span-2">
           <div className="flex items-center gap-3">
-            <h2 className="font-sans text-[26px] font-bold tracking-[-0.01em] text-ink-strong">
+            <h2 className="font-sans text-[26px] font-bold tracking-[0.02em] text-ink-strong">
               Featured International Awards
             </h2>
             <span className="inline-flex items-center gap-1.5 text-[16px] font-medium text-ink-strong">

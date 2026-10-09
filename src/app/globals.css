@@ -1,3 +1,7 @@
+/* Pretendard (Korean) — the font stacks list "Pretendard Variable" first but it
+   was never loaded, so Hangul fell back to a system font. Load it via the
+   official CDN (variable, dynamic subset for efficient Korean). */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -10,7 +14,10 @@
   --color-brand-orange: #e55100;
   --color-ink: #222222;
   --color-ink-strong: #111111;
-  --color-line: #eeeeee;
+  /* Divider / hairline borders — clearly visible (not a faint ghost line). */
+  --color-line: #d3d7dd;
+  /* Form control borders — a touch darker still, so inputs read as interactive. */
+  --color-field: #b9bec8;
 
   /* Reference (myslide.org) is monochrome + a single blue accent, so the
      former purple/teal accents collapse to the brand blue and backgrounds
@@ -20,18 +27,33 @@
   --color-canvas: #f7f7f8;
   --color-surface: #f1f1f2;
 
+  /* Status/semantic colors (additive — no existing utility changes). Text tones
+     are chosen for AA contrast on their soft background; status is always paired
+     with an icon + label in the UI, never conveyed by color alone. */
+  --color-success: #1a7f4b;
+  --color-success-soft: #e6f4ec;
+  --color-info: #0b05e2;
+  --color-info-soft: #e9e8fb;
+  --color-warning: #8a5a00;
+  --color-warning-soft: #f7edd6;
+  --color-danger: #b42318;
+  --color-danger-soft: #fbe9e7;
+
   /* Content max-width ~1000px */
   --container-content: 1000px;
   /* Landing shell — matches the reference's main content width: myslide.org
      uses a 1600px outer container with ~1570px inner content, which is the
      same 1570px the Header/EventSlider already use. */
   --container-shell: 1570px;
+  /* Unified content width for all sections except the site header & hero. */
+  --container-page: 1400px;
 
-  /* Fonts (measured from myslide.org) */
-  --font-display: var(--font-bebas), "Bebas Neue", sans-serif;
-  --font-nav: var(--font-quicksand), sans-serif;
+  /* Fonts (measured from myslide.org). Every stack keeps its Latin display face
+     first, then falls back to Pretendard so ALL Hangul renders in Pretendard. */
+  --font-display: var(--font-bebas), "Bebas Neue", "Pretendard Variable", Pretendard, sans-serif;
+  --font-nav: var(--font-quicksand), "Pretendard Variable", Pretendard, sans-serif;
   /* Extracted from myslide.org via extract-design-system */
-  --font-body: var(--font-manrope), "Manrope", sans-serif;
+  --font-body: var(--font-manrope), "Manrope", "Pretendard Variable", Pretendard, sans-serif;
   /* Serif titles — Latin renders in DM Serif Display (like the reference);
      Korean falls back to a gothic (as the reference does), not a batang serif. */
   --font-serif: var(--font-dm-serif), "DM Serif Display", "Pretendard Variable",
@@ -85,6 +107,19 @@
       transform: translateY(0);
     }
   }
+
+  @keyframes scrollNudge {
+    0%,
+    100% {
+      opacity: 0.55;
+      transform: translateY(0);
+    }
+    50% {
+      opacity: 1;
+      transform: translateY(5px);
+    }
+  }
+
 }
 
 html {
@@ -104,10 +139,36 @@ button {
   transition: all 0.3s ease;
 }
 
+/* Tailwind v4 no longer applies `cursor: pointer` to buttons (it matches the
+   native default). Restore the pointer for interactive buttons; disabled ones
+   keep their own cursor, and any `cursor-*` utility still wins. */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
 /* Section title: Latin/numbers render in Bebas, Korean falls back to Pretendard
    (mirrors the reference "Bebas Kai, NexonLv2Gothic" stack) */
 .font-title {
   font-family: var(--font-bebas), "Pretendard Variable", Pretendard, sans-serif;
+  /* Bebas is condensed — give titles a comfortable default letter-spacing so
+     English headings don't read cramped. Utilities can still override. */
+  letter-spacing: 0.02em;
+}
+
+/* Korean version: render EVERYTHING — including Latin/English fragments (GYCA,
+   Leipzig, labels…) — in Pretendard for a consistent look. English pages keep
+   the Latin display faces (Bebas / Quicksand / DM Serif). */
+html[lang="ko"] {
+  --font-display: "Pretendard Variable", Pretendard, sans-serif;
+  --font-nav: "Pretendard Variable", Pretendard, sans-serif;
+  --font-body: "Pretendard Variable", Pretendard, sans-serif;
+  --font-serif: "Pretendard Variable", Pretendard, sans-serif;
+}
+html[lang="ko"] .font-title {
+  font-family: "Pretendard Variable", Pretendard, sans-serif;
 }
 
 /* Hero word-up reveal */
@@ -119,6 +180,17 @@ button {
 /* Scroll reveal utility */
 .reveal {
   animation: fadeUp 0.7s var(--ease-brand) both;
+}
+
+/* Hero scroll-down indicator (chevron nudging downward) */
+.scroll-chevron {
+  animation: scrollNudge 1.6s var(--ease-brand) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-chevron {
+    animation: none;
+    opacity: 0.8;
+  }
 }
 
 /* Marquee helpers */
@@ -174,13 +246,15 @@ button {
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  /* Unified subtle corner radius — boxes, fields, tables all read ~5px.
+     (rounded-full pills and arbitrary rounded-[Npx] on buttons are separate.) */
+  --radius-sm: 4px;
+  --radius-md: 5px;
+  --radius-lg: 5px;
+  --radius-xl: 5px;
+  --radius-2xl: 5px;
+  --radius-3xl: 6px;
+  --radius-4xl: 8px;
 }
 
 :root {
@@ -207,7 +281,7 @@ button {
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  --radius: 5px;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);

@@ -12,7 +12,7 @@ const NAV = [
 export default function LandingHeader() {
   return (
     <header className="sticky top-0 z-[1000] border-b border-line bg-white/85 backdrop-blur-md">
-      <div className="mx-auto flex h-[72px] max-w-shell items-center gap-8 px-6">
+      <div className="mx-auto flex h-[72px] max-w-page items-center gap-8 px-6">
         {/* Wordmark */}
         <Link
           href="#top"

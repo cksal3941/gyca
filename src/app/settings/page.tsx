@@ -52,7 +52,7 @@ function Avatar({
 function Notice({ kind, text }: { kind: "ok" | "err"; text: string }) {
   return (
     <p
-      className={`text-xs ${kind === "ok" ? "text-green-600" : "text-destructive"}`}
+      className={`text-sm ${kind === "ok" ? "text-green-600" : "text-destructive"}`}
     >
       {text}
     </p>
@@ -100,13 +100,13 @@ function ProfileSection() {
       <CardContent className="grid gap-6 py-6">
         <div>
           <h2 className="text-base font-semibold">Public profile</h2>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-foreground">
             How you appear across GYCA.
           </p>
         </div>
         <div className="flex items-center gap-4">
           <Avatar name={name || session.user.name} image={image.trim() || null} />
-          <div className="text-xs text-muted-foreground">
+          <div className="text-sm text-foreground">
             <p className="font-medium text-foreground">{session.user.email}</p>
             <p>Avatar uses your photo URL below, or your name&apos;s initial.</p>
           </div>
@@ -198,7 +198,7 @@ function SecuritySection({ hasPassword }: { hasPassword: boolean }) {
       <CardContent className="grid gap-6 py-6">
         <div>
           <h2 className="text-base font-semibold">Change password</h2>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-foreground">
             Changing your password signs out your other devices.
           </p>
         </div>
@@ -248,7 +248,7 @@ function SecuritySection({ hasPassword }: { hasPassword: boolean }) {
             </Button>
           </form>
         ) : (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-foreground">
             You signed up with a social account, so there is no password on
             this account.
           </p>
@@ -318,13 +318,13 @@ function SessionsSection() {
       <CardContent className="grid gap-6 py-6">
         <div>
           <h2 className="text-base font-semibold">Active sessions</h2>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-foreground">
             Devices currently signed in to your account.
           </p>
         </div>
         {err && <Notice kind="err" text={err} />}
         {!rows ? (
-          <p className="text-sm text-muted-foreground">Loading...</p>
+          <p className="text-sm text-foreground">Loading...</p>
         ) : (
           <ul className="grid gap-3">
             {rows.map((r) => {
@@ -338,12 +338,12 @@ function SessionsSection() {
                     <p className="text-sm font-medium">
                       {describeAgent(r.userAgent)}
                       {isCurrent && (
-                        <span className="ml-2 rounded-full bg-brand-blue/10 px-2 py-0.5 text-[11px] font-semibold text-brand-blue">
+                        <span className="ml-2 rounded-full bg-brand-blue/10 px-2 py-0.5 text-[14px] font-semibold text-brand-blue">
                           This device
                         </span>
                       )}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-sm text-foreground">
                       {r.ipAddress || "unknown IP"} · signed in{" "}
                       {new Date(r.createdAt).toLocaleString("en-US")}
                     </p>
@@ -420,7 +420,7 @@ function AccountSection({
         <CardContent className="grid gap-4 py-6">
           <div>
             <h2 className="text-base font-semibold">Sign-in methods</h2>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-foreground">
               Ways you can sign in to this account.
             </p>
           </div>
@@ -433,7 +433,7 @@ function AccountSection({
                 <span className="font-medium">
                   {PROVIDER_LABEL[a.providerId] ?? a.providerId}
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-sm text-foreground">
                   connected {new Date(a.createdAt).toLocaleDateString("en-US")}
                 </span>
               </li>
@@ -448,7 +448,7 @@ function AccountSection({
             <h2 className="text-base font-semibold text-destructive">
               Danger zone
             </h2>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-foreground">
               Permanently delete your account and all of its data. This cannot
               be undone.
             </p>
@@ -529,7 +529,7 @@ export default function SettingsPage() {
             <h1 className="text-xl font-semibold leading-tight">
               {session.user.name}
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-foreground">
               Your personal account settings
             </p>
           </div>
@@ -552,7 +552,7 @@ export default function SettingsPage() {
             ))}
             <Link
               href="/signout"
-              className="rounded-md px-3 py-2 text-left text-sm whitespace-nowrap text-neutral-500 !transition-none hover:bg-black/5"
+              className="rounded-md px-3 py-2 text-left text-sm whitespace-nowrap text-foreground !transition-none hover:bg-black/5"
             >
               Sign out
             </Link>

@@ -1,502 +1,558 @@
 "use client";
 
-import { Suspense, useState, type ReactNode } from "react";
-import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import PageHeader from "@/components/site/PageHeader";
-import { CONTESTS, getContest } from "@/lib/site-data";
-import { ArrowRight } from "@/components/landing/icons";
+import EditorialHeader from "@/components/site/EditorialHeader";
+import { Stepper, Field, TextInput, Textarea, Select, Message, StatusBadge, Button } from "@/components/ds";
+import SaveBadge from "@/components/submit/SaveBadge";
+import UploadField, { type UploadSpec } from "@/components/submit/UploadField";
+import ConsentSection from "@/components/submit/ConsentSection";
+import ScenarioBar from "@/components/submit/ScenarioBar";
+import { REQUIRED_CONSENTS } from "@/lib/content/submit-consent";
+import { useLocale } from "@/components/i18n/LocaleProvider";
+import { getCompetitionSync, getCompetitionBySlug, type RequestState } from "@/lib/api";
+import { isLive } from "@/lib/api/mode";
+import { useSubmitFlow, type Scenario, type UploadPurpose, type SubmitFlow } from "@/lib/mock/submit-machine";
+import { useLiveSubmitFlow } from "@/lib/live/submit-flow";
+import { LEIPZIG_SLUG } from "@/lib/content/leipzig-home";
+import type { Competition, FormSpec } from "@/contracts";
+import type { Bi, Locale } from "@/lib/i18n";
 
-const STEPS = [
-  { no: "01", label: "참가자" },
-  { no: "02", label: "작품" },
-  { no: "03", label: "파일 업로드" },
-  { no: "04", label: "확인·결제" },
-  { no: "05", label: "접수 완료" },
-] as const;
+// Leipzig 2027 submit flow (MOCK; no live API). Six form steps, all driven by the
+// server FormSpec, with a dev scenario switcher to reproduce every required case.
+// Nothing here treats a client check as final, marks a failed save as saved, or
+// treats "arrived at success" as "entry received" — the mock server decides.
 
-/** Horizontal stepper. Completed steps filled, current highlighted, future muted. */
-function Stepper({ current }: { current: number }) {
+const STEP_LABELS: Bi[] = [
+  { en: "Participant", ko: "참가자" },
+  { en: "Work", ko: "작품" },
+  { en: "Files", ko: "파일" },
+  { en: "Review", ko: "확인·동의" },
+  { en: "Payment", ko: "결제" },
+  { en: "Result", ko: "결과" },
+];
+
+const LABELS: Record<string, Bi> = {
+  "participant.name": { en: "Name", ko: "이름" },
+  "participant.nameEn": { en: "Name (English)", ko: "영문명" },
+  "participant.dateOfBirth": { en: "Date of birth", ko: "생년월일" },
+  "participant.residenceCountry": { en: "Country of residence", ko: "거주 국가" },
+  "participant.nationality": { en: "Nationality", ko: "국적" },
+  "participant.school": { en: "School", ko: "학교" },
+  "participant.grade": { en: "Grade", ko: "학년" },
+  "work.title": { en: "Work title", ko: "작품명" },
+  "work.description": { en: "Work description", ko: "작품 소개" },
+  "work.englishTitle": { en: "Work title (English)", ko: "영문 작품명" },
+  "work.englishDescription": { en: "Work description (English)", ko: "영문 작품 소개" },
+  "work.creatorBio": { en: "Creator bio", ko: "작가 소개" },
+  "work.category": { en: "Category", ko: "부문" },
+  "work.language": { en: "Language", ko: "언어" },
+  "work.publicationStatus": { en: "Publication status", ko: "출판 여부" },
+};
+
+const money = (amountMinor: number) => `€${(amountMinor / 100).toFixed(amountMinor % 100 === 0 ? 0 : 2)}`;
+
+function SubmitForm({
+  flow,
+  competition,
+  formSpec,
+  locale,
+  showOptional,
+}: {
+  flow: SubmitFlow;
+  competition: Competition;
+  formSpec: FormSpec;
+  locale: Locale;
+  showOptional: boolean;
+}) {
+  const ko = locale === "ko";
+  const { state } = flow;
+  const [step, setStep] = useState(1);
+  // Server confirms the entry → show the result step (never before). Derived, so
+  // once `received` the UI stays on step 6 regardless of local nav.
+  const uiStep = state.entryStatus === "received" ? 6 : step;
+
+  const participantFields = formSpec.fields.filter((f) => f.path.startsWith("participant."));
+  const workFields = formSpec.fields.filter((f) => f.path.startsWith("work."));
+  const uploadSpecs: UploadSpec[] = formSpec.uploads.map((u) => ({
+    purpose: u.purpose as UploadPurpose,
+    requiredOnSubmit: u.requiredOnSubmit,
+    allowedMediaTypes: [...u.allowedMediaTypes],
+    maxFiles: u.maxFiles,
+    maxBytes: u.maxBytes,
+    minPages: u.minPages,
+  }));
+
+  const renderField = (f: FormSpec["fields"][number]) => {
+    const label = LABELS[f.path]?.[locale] ?? f.path;
+    const required = f.requiredOnSubmit === true;
+    const value = state.values[f.path] ?? "";
+    const common = { value, onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => flow.setField(f.path, e.target.value) };
+    return (
+      <Field key={f.path} label={label} required={required}>
+        {(c) => {
+          if (f.inputType === "textarea") return <Textarea {...c} {...common} rows={4} />;
+          if (f.inputType === "date") return <TextInput {...c} type="date" {...common} />;
+          if (f.inputType === "choice" && f.path === "work.category")
+            return (
+              <Select {...c} {...common}>
+                <option value="" disabled>{ko ? "부문 선택" : "Select a category"}</option>
+                {formSpec.categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>{cat.label[locale]}</option>
+                ))}
+              </Select>
+            );
+          return <TextInput {...c} type={f.inputType === "email" ? "email" : "text"} {...common} />;
+        }}
+      </Field>
+    );
+  };
+
+  // Submit gating (mirrors what the server enforces on /submit).
+  const missingFields = formSpec.fields.filter((f) => f.requiredOnSubmit === true && !(state.values[f.path] ?? "").trim());
+  const requiredUploads = uploadSpecs.filter((u) => u.requiredOnSubmit === true);
+  const uploadsNotReady = requiredUploads.filter((u) => state.assets[u.purpose]?.state !== "ready");
+  const consentsMissing = REQUIRED_CONSENTS.filter((c) => !state.consents[c.kind]);
+  const canSubmit = missingFields.length === 0 && uploadsNotReady.length === 0 && consentsMissing.length === 0;
+
+  const showOptionalConsents = showOptional; // "full version" demo (mock resume) only
+
+  const nav = (opts: { back?: boolean; nextLabel?: string; onNext?: () => void; nextDisabled?: boolean }) => (
+    <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
+      <div>
+        {opts.back && (
+          <Button variant="outline" onClick={() => setStep((s) => Math.max(1, s - 1))}>
+            {ko ? "이전" : "Back"}
+          </Button>
+        )}
+      </div>
+      <div className="flex flex-wrap items-center gap-3">
+        {(uiStep === 1 || uiStep === 2) && (
+          <>
+            <SaveBadge status={state.saveStatus} locale={locale} />
+            <Button variant="outline" onClick={flow.saveDraft} disabled={state.saveStatus === "saving"}>
+              {ko ? "임시저장" : "Save draft"}
+            </Button>
+          </>
+        )}
+        {opts.onNext && (
+          <Button onClick={opts.onNext} disabled={opts.nextDisabled}>
+            {opts.nextLabel ?? (ko ? "다음" : "Next")}
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+
   return (
-    <ol className="flex flex-wrap items-center gap-y-3">
-      {STEPS.map((s, i) => {
-        const step = i + 1;
-        const done = step < current;
-        const active = step === current;
-        return (
-          <li key={s.no} className="flex items-center">
-            <div className="flex items-center gap-2.5">
-              <span
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[16px] font-bold ${
-                  active
-                    ? "bg-brand-blue text-white"
-                    : done
-                    ? "bg-brand-blue/15 text-brand-blue"
-                    : "bg-neutral-100 text-ink-strong"
-                }`}
-              >
-                {s.no}
-              </span>
-              <span
-                className={`text-[16px] font-medium ${
-                  active
-                    ? "text-ink-strong"
-                    : done
-                    ? "text-brand-blue"
-                    : "text-ink-strong"
-                }`}
-              >
-                {s.label}
-              </span>
+    <>
+      <div className="rounded-2xl border border-line bg-white px-6 py-5">
+        <Stepper current={uiStep} steps={STEP_LABELS.map((l) => ({ label: l[locale] }))} />
+      </div>
+
+      <p className="mt-4 text-[15px] leading-[1.7] text-ink-strong">
+        {isLive
+          ? ko
+            ? "임시저장하면 서버에 보관되어 새로고침·재로그인 후 이어서 작성할 수 있습니다. 민감한 지원서 데이터는 브라우저에 저장하지 않습니다."
+            : "Saved drafts are stored on the server so you can resume after a refresh or re-login. Sensitive application data is never kept in your browser."
+          : ko
+            ? "현재는 데모이며 서버 저장은 아직 연결되지 않았습니다(새로고침 시 초기화됩니다). 실제 연결 후에는 임시저장으로 서버에 보관되어 새로고침·재로그인 후 이어쓸 수 있으며, 민감한 지원서 데이터는 브라우저에 저장하지 않습니다."
+            : "This is a demo — server-side draft saving is not connected yet (a refresh resets it). Once connected, drafts are stored on the server so you can resume after a refresh or re-login, and sensitive application data is never kept in your browser."}
+      </p>
+
+      {state.saveStatus === "error" && (
+        <Message tone="danger" className="mt-4" title={ko ? "저장 실패" : "Save failed"}>
+          {state.lastError ?? (ko ? "다시 시도해 주세요." : "Please try again.")}
+        </Message>
+      )}
+
+      <div className="mt-8 rounded-2xl border border-line bg-white p-6 sm:p-8">
+        {/* STEP 1 — participant + guardian */}
+        {uiStep === 1 && (
+          <div>
+            <h2 className={`break-keep text-[22px] font-bold text-ink-strong ${ko ? "font-sans tracking-[-0.01em]" : "font-title"}`}>
+              {ko ? "참가자·보호자 정보" : "Participant & guardian"}
+            </h2>
+            <p className="mt-2 text-[15px] text-ink-strong">
+              <span className="text-danger">*</span> {ko ? "표시는 제출 시 필수 항목입니다." : "marks fields required at submission."}
+            </p>
+            <div className="mt-6 grid gap-5">{participantFields.map(renderField)}</div>
+
+            <h3 className="mt-8 text-[18px] font-bold text-ink-strong">{ko ? "보호자" : "Guardian"}</h3>
+            <div className="mt-4 grid gap-5">
+              <Field label={ko ? "보호자 이름" : "Guardian name"}>
+                {(c) => <TextInput {...c} value={state.guardian.name} onChange={(e) => flow.setGuardian("name", e.target.value)} />}
+              </Field>
+              <Field label={ko ? "보호자 이메일" : "Guardian email"}>
+                {(c) => <TextInput {...c} type="email" value={state.guardian.email} onChange={(e) => flow.setGuardian("email", e.target.value)} />}
+              </Field>
             </div>
-            {i < STEPS.length - 1 && (
-              <span
-                className={`mx-3 hidden h-px w-8 sm:block lg:w-12 ${
-                  done ? "bg-brand-blue" : "bg-line"
-                }`}
-              />
+            <p className="mt-3 text-[15px] text-ink-strong">
+              {ko
+                ? "보호자 확인은 서버 정책에 따라 별도 절차로 요구될 수 있습니다(국적으로 판단하지 않음)."
+                : "Guardian verification may be required by server policy as a separate step (not decided by nationality)."}
+            </p>
+
+            {nav({ onNext: () => setStep(2) })}
+          </div>
+        )}
+
+        {/* STEP 2 — work */}
+        {uiStep === 2 && (
+          <div>
+            <h2 className={`break-keep text-[22px] font-bold text-ink-strong ${ko ? "font-sans tracking-[-0.01em]" : "font-title"}`}>{ko ? "작품 정보" : "Work details"}</h2>
+            <p className="mt-2 text-[15px] text-ink-strong">
+              {ko ? "영문 작품명·영문 작품 소개는 필수입니다." : "English work title and description are required."}
+            </p>
+            <div className="mt-6 grid gap-5">{workFields.map(renderField)}</div>
+            {nav({ back: true, onNext: () => setStep(3) })}
+          </div>
+        )}
+
+        {/* STEP 3 — files */}
+        {uiStep === 3 && (
+          <div>
+            <h2 className={`break-keep text-[22px] font-bold text-ink-strong ${ko ? "font-sans tracking-[-0.01em]" : "font-title"}`}>{ko ? "파일 및 필수 자료" : "Files & materials"}</h2>
+            <p className="mt-2 text-[15px] text-ink-strong">
+              {ko
+                ? "허용 용량·페이지 수는 서버 설정값이며, 최종 검증은 서버가 수행합니다."
+                : "Size and page limits come from the server; final validation is server-side."}
+            </p>
+            <div className="mt-6 grid gap-5">
+              {uploadSpecs.map((spec) => (
+                <UploadField
+                  key={spec.purpose}
+                  spec={spec}
+                  asset={state.assets[spec.purpose]}
+                  locale={locale}
+                  onSelect={(file) => flow.selectFile(spec.purpose, file)}
+                  onAbort={() => flow.abortUpload(spec.purpose)}
+                  onRemove={() => flow.removeAsset(spec.purpose)}
+                />
+              ))}
+            </div>
+            {nav({ back: true, onNext: () => setStep(4) })}
+          </div>
+        )}
+
+        {/* STEP 4 — review + consent + submit */}
+        {uiStep === 4 && (
+          <div>
+            <h2 className={`break-keep text-[22px] font-bold text-ink-strong ${ko ? "font-sans tracking-[-0.01em]" : "font-title"}`}>{ko ? "입력 내용 확인 및 동의" : "Review & consent"}</h2>
+
+            <dl className="mt-6 border-t border-line">
+              {[
+                [ko ? "공모명" : "Competition", competition.title[locale]],
+                [ko ? "영문 작품명" : "Work title (EN)", state.values["work.englishTitle"] || "—"],
+                [ko ? "참가자" : "Participant", state.values["participant.name"] || "—"],
+                [ko ? "출품비" : "Entry fee", competition.fee ? money(competition.fee.amountMinor) : "—"],
+              ].map(([k, v]) => (
+                <div key={k} className="flex justify-between gap-4 border-b border-line py-3 text-[16px]">
+                  <dt className="text-ink-strong">{k}</dt>
+                  <dd className="font-semibold text-ink-strong">{v}</dd>
+                </div>
+              ))}
+            </dl>
+
+            {!canSubmit && (
+              <Message tone="warning" className="mt-6" title={ko ? "제출 전 확인" : "Before you submit"}>
+                <span className="block">
+                  {missingFields.length > 0 && (ko ? `필수 입력 누락: ${missingFields.map((f) => LABELS[f.path]?.ko ?? f.path).join(", ")}. ` : `Missing fields: ${missingFields.map((f) => LABELS[f.path]?.en ?? f.path).join(", ")}. `)}
+                  {uploadsNotReady.length > 0 && (ko ? "필수 파일 검증 미완료. " : "Required files not verified. ")}
+                  {consentsMissing.length > 0 && (ko ? "필수 동의 미완료." : "Required consents pending.")}
+                </span>
+              </Message>
             )}
-          </li>
-        );
-      })}
-    </ol>
+
+            <h3 className="mt-8 text-[18px] font-bold text-ink-strong">{ko ? "동의" : "Consents"}</h3>
+            <div className="mt-4">
+              <ConsentSection
+                locale={locale}
+                consents={state.consents}
+                onToggle={flow.toggleConsent}
+                optional={state.optionalConsents}
+                onToggleOptional={flow.toggleOptional}
+                showOptional={showOptionalConsents}
+              />
+            </div>
+
+            {state.lastError && state.blockingReasons.includes("DEADLINE_PASSED") && (
+              <Message tone="danger" className="mt-6" title={ko ? "접수 마감" : "Deadline passed"}>
+                {state.lastError}
+              </Message>
+            )}
+
+            {nav({
+              back: true,
+              nextLabel: ko ? "제출하기" : "Submit",
+              nextDisabled: !canSubmit,
+              onNext: () => flow.submit(),
+            })}
+          </div>
+        )}
+
+        {/* STEP 5 — payment */}
+        {uiStep === 5 && (
+          <PaymentStep flow={flow} competition={competition} locale={locale} onBack={() => setStep(4)} />
+        )}
+
+        {/* STEP 6 — result (only when server-confirmed received) */}
+        {uiStep === 6 && (
+          <ResultStep state={state} competition={competition} locale={locale} />
+        )}
+      </div>
+    </>
   );
 }
 
-/* ---- small styled form primitives, matching site tokens ---- */
-
-function Field({
-  label,
-  children,
-  hint,
+function PaymentStep({
+  flow,
+  competition,
+  locale,
+  onBack,
 }: {
-  label: string;
-  children: ReactNode;
-  hint?: string;
+  flow: ReturnType<typeof useSubmitFlow>;
+  competition: Competition;
+  locale: Locale;
+  onBack: () => void;
 }) {
-  return (
-    <label className="block">
-      <span className="mb-1.5 block text-[16px] font-semibold text-ink-strong">
-        {label}
-      </span>
-      {children}
-      {hint && <span className="mt-1 block text-[16px] text-ink-strong">{hint}</span>}
-    </label>
-  );
-}
+  const ko = locale === "ko";
+  const { state } = flow;
+  const p = state.payment;
+  const fee = competition.fee ? money(competition.fee.amountMinor) : "—";
 
-const inputCls =
-  "w-full rounded-lg border border-line px-4 py-2.5 text-[16px] text-ink-strong placeholder:text-ink-strong focus:border-brand-blue focus:outline-none";
-
-function TextInput(props: { placeholder?: string; type?: string }) {
-  return <input type={props.type ?? "text"} placeholder={props.placeholder} className={inputCls} />;
-}
-
-function Select({
-  children,
-  defaultValue = "",
-}: {
-  children: ReactNode;
-  defaultValue?: string;
-}) {
-  return (
-    <select className={`${inputCls} bg-white`} defaultValue={defaultValue}>
-      {children}
-    </select>
-  );
-}
-
-function Textarea({ placeholder, rows = 4 }: { placeholder?: string; rows?: number }) {
-  return <textarea rows={rows} placeholder={placeholder} className={inputCls} />;
-}
-
-function Dropzone({ label, hint }: { label: string; hint: string }) {
   return (
     <div>
-      <p className="mb-1.5 text-[16px] font-semibold text-ink-strong">{label}</p>
-      <div className="flex flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-line bg-canvas px-6 py-8 text-center transition-colors hover:border-brand-blue">
-        <p className="text-[16px] font-medium text-ink-strong">
-          파일을 끌어다 놓거나 클릭하여 선택
-        </p>
-        <p className="text-[16px] text-ink-strong">{hint}</p>
-        <span className="mt-2 rounded-lg border border-line px-4 py-2 text-[16px] font-semibold text-ink-strong hover:border-brand-blue">
-          파일 선택
-        </span>
+      <h2 className={`break-keep text-[22px] font-bold text-ink-strong ${ko ? "font-sans tracking-[-0.01em]" : "font-title"}`}>{ko ? "결제" : "Payment"}</h2>
+      <p className="mt-3 flex items-baseline gap-2">
+        <span className="text-[16px] text-ink-strong">{ko ? "출품비" : "Entry fee"}</span>
+        <span className="text-[24px] font-extrabold text-ink-strong">{fee}</span>
+      </p>
+      <p className="mt-1 text-[15px] text-ink-strong">
+        {ko ? "금액·통화는 서버가 제공합니다. 실제 결제창은 준비 중입니다(PG 연동 Codex 담당)." : "Amount and currency come from the server. The real payment window is not wired yet (PG is Codex's)."}
+      </p>
+
+      <div className="mt-6">
+        {/* State-specific UI */}
+        {(p === "none" || p === "failed" || p === "cancelled") && (
+          <>
+            {p === "failed" && <Message tone="danger" className="mb-4" title={ko ? "결제 실패" : "Payment failed"}>{ko ? "결제가 완료되지 않았습니다. 작품 정보와 업로드는 그대로 유지됩니다." : "Payment did not complete. Your work and uploads are preserved."}</Message>}
+            {p === "cancelled" && <Message tone="warning" className="mb-4" title={ko ? "결제 취소됨" : "Payment cancelled"}>{ko ? "결제가 취소되었습니다. 다시 시도해도 입력·업로드는 유지됩니다." : "Payment was cancelled. Retrying keeps your entry and uploads."}</Message>}
+            <Button onClick={flow.startPayment}>
+              {p === "none" ? (ko ? "결제 진행" : "Proceed to payment") : ko ? "다시 시도" : "Retry payment"}
+            </Button>
+          </>
+        )}
+
+        {p === "redirecting" && <StatusBadge tone="info">{ko ? "결제창으로 이동 중…" : "Opening payment window…"}</StatusBadge>}
+        {p === "checking" && <StatusBadge tone="info">{ko ? "승인 확인 중…" : "Verifying approval…"}</StatusBadge>}
+
+        {p === "pending" && (
+          <div>
+            <Message tone="warning" title={ko ? "결제 대기 · 승인 지연" : "Payment pending · approval delayed"}>
+              {ko ? "승인 확인에 시간이 걸리고 있습니다. 성공 URL 도착만으로 완료로 표시하지 않으며, 서버 상태를 재확인합니다." : "Approval is taking longer. Arriving at a success URL is not treated as complete; we re-check the server."}
+            </Message>
+            <Button className="mt-4" variant="outline" onClick={flow.refreshPayment}>{ko ? "상태 재확인" : "Re-check status"}</Button>
+          </div>
+        )}
+
+        {p === "succeeded" && state.entryStatus !== "received" && (
+          <div>
+            <Message tone="info" title={ko ? "결제 완료 · 접수 확정 확인 중" : "Paid · confirming entry"}>
+              {ko ? "결제는 확인됐지만 접수 확정을 서버에서 확인하는 중입니다. 확정되면 접수번호가 발급됩니다." : "Payment is confirmed, but the server is still confirming the entry. A receipt number is issued once confirmed."}
+            </Message>
+            <Button className="mt-4" variant="outline" onClick={flow.refreshPayment}>{ko ? "접수 확정 재확인" : "Re-check confirmation"}</Button>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-8">
+        <Button variant="outline" onClick={onBack}>{ko ? "이전" : "Back"}</Button>
       </div>
     </div>
   );
 }
 
-/* ---- button helpers ---- */
+function ResultStep({
+  state,
+  competition,
+  locale,
+}: {
+  state: ReturnType<typeof useSubmitFlow>["state"];
+  competition: Competition;
+  locale: Locale;
+}) {
+  const ko = locale === "ko";
+  // Only render receipt details when the server confirmed the entry.
+  if (state.entryStatus !== "received" || !state.receiptNumber) {
+    return (
+      <Message tone="info" title={ko ? "접수 확정 대기" : "Awaiting confirmation"}>
+        {ko ? "서버가 접수를 확정하면 결과가 표시됩니다." : "Results appear once the server confirms your entry."}
+      </Message>
+    );
+  }
+  const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleString(ko ? "ko-KR" : "en-GB") : "—");
 
-function PrimaryBtn({ children, onClick }: { children: ReactNode; onClick?: () => void }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="inline-flex items-center gap-1.5 rounded-lg bg-brand-blue px-5 py-3 text-[16px] font-semibold text-white hover:-translate-y-0.5"
-    >
-      {children}
-    </button>
-  );
-}
+    <div>
+      <div className="flex flex-col items-center rounded-2xl border border-line bg-canvas px-6 py-10 text-center">
+        <StatusBadge tone="success">{ko ? "접수 완료" : "Entry received"}</StatusBadge>
+        <h2 className={`mt-4 break-keep text-[24px] font-bold text-ink-strong ${ko ? "font-sans tracking-[-0.01em]" : "font-title"}`}>
+          {ko ? "접수가 완료되었습니다" : "Your entry is received"}
+        </h2>
+        <dl className="mt-8 w-full max-w-md space-y-3 text-left text-[16px]">
+          {[
+            [ko ? "접수번호" : "Receipt no.", state.receiptNumber],
+            [ko ? "공모명" : "Competition", competition.title[locale]],
+            [ko ? "작품명" : "Work title", state.values["work.englishTitle"] || "—"],
+            [ko ? "결제내역" : "Payment", `${money(state.amountMinor)} · ${ko ? "결제 완료" : "paid"}`],
+            [ko ? "접수 시각" : "Received at", fmt(state.receivedAt)],
+          ].map(([k, v]) => (
+            <div key={k} className="flex justify-between gap-4 border-b border-line pb-2">
+              <dt className="text-ink-strong">{k}</dt>
+              <dd className="font-semibold text-ink-strong">{v}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
 
-function OutlineBtn({ children, onClick }: { children: ReactNode; onClick?: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="rounded-lg border border-line px-5 py-3 text-[16px] font-semibold text-ink-strong hover:border-brand-blue"
-    >
-      {children}
-    </button>
-  );
-}
+      <Message tone="info" className="mt-6">
+        {ko
+          ? "확인 이메일 발송이 지연·실패해도 접수 자체는 완료된 상태입니다. 접수 여부는 마이페이지에서 확인하세요."
+          : "Even if the confirmation email is delayed or fails, your entry is still received. Check My Page for status."}
+      </Message>
 
-/** Section card wrapper for each step. */
-function StepCard({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <div className="rounded-2xl border border-line bg-white p-6 sm:p-8">
-      <h2 className="font-serif text-[22px] font-bold text-ink-strong">{title}</h2>
-      <div className="mt-6">{children}</div>
+      <div className="mt-6 flex flex-wrap gap-3">
+        <Button href="/mypage">{ko ? "마이페이지" : "My Page"}</Button>
+        <Button href="/mypage" variant="outline">{ko ? "내 접수 보기" : "View my entries"}</Button>
+      </div>
     </div>
   );
 }
 
-function SubmitFlow() {
-  const searchParams = useSearchParams();
-  const contestSlug = searchParams.get("contest");
-  const contest = contestSlug ? getContest(contestSlug) : undefined;
-
-  const [step, setStep] = useState(1);
-  const next = () => setStep((s) => Math.min(5, s + 1));
-  const prev = () => setStep((s) => Math.max(1, s - 1));
-
-  const contestTitle = contest?.title ?? "국제 청소년 공모전";
-
+/** MOCK wrapper — calls the scenario-driven machine (dev preview). */
+function MockSubmitInner({
+  scenario,
+  competition,
+  formSpec,
+  locale,
+}: {
+  scenario: Scenario;
+  competition: Competition;
+  formSpec: FormSpec;
+  locale: Locale;
+}) {
+  const flow = useSubmitFlow(scenario);
   return (
-    <>
-      <PageHeader
-        eyebrow="Submission"
-        title="작품 접수"
-        description={
-          contest
-            ? `${contest.title} · ${contest.categoryEn} 부문 접수`
-            : "참가자 정보부터 결제까지, 단계별로 작품을 접수하세요."
-        }
-        crumbs={[{ label: "작품 접수" }]}
-      />
-
-      <section className="mx-auto max-w-shell px-6 py-12">
-        {/* Stepper */}
-        <div className="rounded-2xl border border-line bg-white px-6 py-5">
-          <Stepper current={step} />
-        </div>
-
-        {/* UX rule note */}
-        <p className="mt-4 text-[16px] leading-[1.7] text-ink-strong">
-          입력 내용은 단계 이동 시 자동 저장되며, 이탈 후 재로그인해도 이어서 작성할 수 있습니다.
-        </p>
-
-        <div className="mt-8">
-          {/* STEP 01 참가자 */}
-          {step === 1 && (
-            <StepCard title="참가자 정보">
-              <div className="grid gap-5 sm:grid-cols-2">
-                <Field label="이름">
-                  <TextInput placeholder="홍길동" />
-                </Field>
-                <Field label="영문명">
-                  <TextInput placeholder="Gildong Hong" />
-                </Field>
-                <Field label="생년월일">
-                  <TextInput type="date" />
-                </Field>
-                <Field label="학교">
-                  <TextInput placeholder="OO중학교 / OO고등학교" />
-                </Field>
-                <Field label="학년">
-                  <Select>
-                    <option value="" disabled>
-                      학년 선택
-                    </option>
-                    <option>초등</option>
-                    <option>중1</option>
-                    <option>중2</option>
-                    <option>중3</option>
-                    <option>고1</option>
-                    <option>고2</option>
-                    <option>고3</option>
-                  </Select>
-                </Field>
-                <Field label="국가">
-                  <Select>
-                    <option value="" disabled>
-                      국가 선택
-                    </option>
-                    <option>대한민국</option>
-                    <option>United States</option>
-                    <option>Japan</option>
-                    <option>기타</option>
-                  </Select>
-                </Field>
-                <Field label="보호자" hint="미성년자는 보호자 정보가 필요합니다.">
-                  <TextInput placeholder="보호자 이름 / 연락처" />
-                </Field>
-              </div>
-
-              <label className="mt-6 flex items-start gap-3 rounded-lg border border-line bg-canvas p-4">
-                <input type="checkbox" className="mt-0.5 h-4 w-4 accent-brand-blue" />
-                <span className="text-[16px] leading-[1.6] text-ink-strong">
-                  개인정보 수집·이용 및 참가 약관에 동의합니다. (필수)
-                </span>
-              </label>
-
-              <div className="mt-8 flex flex-wrap items-center justify-end gap-3">
-                <OutlineBtn>임시저장</OutlineBtn>
-                <PrimaryBtn onClick={next}>
-                  다음 <ArrowRight size={16} />
-                </PrimaryBtn>
-              </div>
-            </StepCard>
-          )}
-
-          {/* STEP 02 작품 */}
-          {step === 2 && (
-            <StepCard title="작품 정보">
-              <div className="grid gap-5 sm:grid-cols-2">
-                <Field label="공모전">
-                  <Select defaultValue={contest?.title ?? ""}>
-                    <option value="" disabled>
-                      공모전 선택
-                    </option>
-                    {CONTESTS.map((c) => (
-                      <option key={c.slug} value={c.title}>
-                        {c.title}
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
-                <Field label="부문">
-                  <Select>
-                    <option value="" disabled>
-                      부문 선택
-                    </option>
-                    <option>도서·일러스트</option>
-                    <option>미술</option>
-                    <option>음악·공연</option>
-                    <option>UX·기술</option>
-                    <option>비즈니스</option>
-                  </Select>
-                </Field>
-                <Field label="제목">
-                  <TextInput placeholder="작품 제목" />
-                </Field>
-                <Field label="영문제목">
-                  <TextInput placeholder="Work Title" />
-                </Field>
-              </div>
-
-              <div className="mt-5 grid gap-5">
-                <Field label="설명">
-                  <Textarea placeholder="작품에 대한 설명을 입력하세요." />
-                </Field>
-                <Field label="제작의도">
-                  <Textarea placeholder="작품을 제작하게 된 의도와 메시지를 입력하세요." />
-                </Field>
-              </div>
-
-              <fieldset className="mt-6">
-                <legend className="mb-2 text-[16px] font-semibold text-ink-strong">
-                  참가 형태
-                </legend>
-                <div className="flex flex-wrap gap-3">
-                  <label className="flex items-center gap-2 rounded-lg border border-line px-4 py-2.5 text-[16px] text-ink-strong hover:border-brand-blue">
-                    <input type="radio" name="teamType" defaultChecked className="h-4 w-4 accent-brand-blue" />
-                    개인
-                  </label>
-                  <label className="flex items-center gap-2 rounded-lg border border-line px-4 py-2.5 text-[16px] text-ink-strong hover:border-brand-blue">
-                    <input type="radio" name="teamType" className="h-4 w-4 accent-brand-blue" />
-                    팀
-                  </label>
-                </div>
-              </fieldset>
-
-              <div className="mt-8 flex flex-wrap items-center justify-end gap-3">
-                <OutlineBtn onClick={prev}>이전</OutlineBtn>
-                <OutlineBtn>임시저장</OutlineBtn>
-                <PrimaryBtn onClick={next}>
-                  다음 <ArrowRight size={16} />
-                </PrimaryBtn>
-              </div>
-            </StepCard>
-          )}
-
-          {/* STEP 03 파일 업로드 */}
-          {step === 3 && (
-            <StepCard title="파일 업로드">
-              <div className="grid gap-6 sm:grid-cols-2">
-                <Dropzone label="이미지" hint="JPG, PNG · 최대 20MB · 최대 10장" />
-                <Dropzone label="PDF" hint="PDF · 최대 50MB" />
-                <Dropzone label="음원" hint="MP3, WAV · 최대 50MB" />
-                <Dropzone label="포트폴리오" hint="PDF, ZIP · 최대 100MB" />
-              </div>
-
-              <div className="mt-6">
-                <Field label="영상 링크" hint="YouTube 또는 Vimeo 링크를 입력하세요.">
-                  <TextInput placeholder="https://youtube.com/..." />
-                </Field>
-              </div>
-
-              <div className="mt-8 flex flex-wrap items-center justify-end gap-3">
-                <OutlineBtn onClick={prev}>이전</OutlineBtn>
-                <OutlineBtn>업로드</OutlineBtn>
-                <PrimaryBtn onClick={next}>
-                  다음 <ArrowRight size={16} />
-                </PrimaryBtn>
-              </div>
-            </StepCard>
-          )}
-
-          {/* STEP 04 확인·결제 */}
-          {step === 4 && (
-            <StepCard title="확인 및 결제">
-              <div className="rounded-2xl border border-line bg-canvas p-5">
-                <p className="text-[16px] font-bold uppercase tracking-[0.12em] text-brand-blue">
-                  Review
-                </p>
-                <dl className="mt-4 grid gap-x-6 gap-y-3 text-[16px] sm:grid-cols-2">
-                  <div className="flex justify-between border-b border-line pb-2">
-                    <dt className="text-ink-strong">공모전</dt>
-                    <dd className="font-medium text-ink-strong">{contestTitle}</dd>
-                  </div>
-                  <div className="flex justify-between border-b border-line pb-2">
-                    <dt className="text-ink-strong">부문</dt>
-                    <dd className="font-medium text-ink-strong">
-                      {contest?.categoryEn ?? "미선택"}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between border-b border-line pb-2">
-                    <dt className="text-ink-strong">참가자</dt>
-                    <dd className="font-medium text-ink-strong">홍길동</dd>
-                  </div>
-                  <div className="flex justify-between border-b border-line pb-2">
-                    <dt className="text-ink-strong">작품명</dt>
-                    <dd className="font-medium text-ink-strong">Quiet Morning</dd>
-                  </div>
-                </dl>
-              </div>
-
-              <div className="mt-6 grid gap-5 sm:grid-cols-2">
-                <div className="rounded-2xl border border-line bg-white p-5">
-                  <p className="text-[16px] font-semibold text-ink-strong">참가비</p>
-                  <p className="mt-2 font-serif text-[26px] font-bold text-ink-strong">
-                    {contest?.fee ?? "₩60,000"}
-                  </p>
-                  <p className="mt-1 text-[16px] text-ink-strong">
-                    카드 · 계좌이체 · 간편결제 지원
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-line bg-white p-5">
-                  <p className="text-[16px] font-semibold text-ink-strong">환불규정</p>
-                  <p className="mt-2 text-[16px] leading-[1.7] text-ink-strong">
-                    접수 마감 전 취소 시 전액 환불되며, 마감 이후에는 환불이 불가합니다.
-                    심사 시작 이후 접수 취소는 불가합니다.
-                  </p>
-                </div>
-              </div>
-
-              <label className="mt-6 flex items-start gap-3 rounded-lg border border-line bg-canvas p-4">
-                <input type="checkbox" className="mt-0.5 h-4 w-4 accent-brand-blue" />
-                <span className="text-[16px] leading-[1.6] text-ink-strong">
-                  접수 내용과 환불규정을 확인하였으며, 최종 제출에 동의합니다. (필수)
-                </span>
-              </label>
-
-              <div className="mt-8 flex flex-wrap items-center justify-end gap-3">
-                <OutlineBtn onClick={prev}>수정</OutlineBtn>
-                <PrimaryBtn onClick={next}>
-                  결제하고 완료 <ArrowRight size={16} />
-                </PrimaryBtn>
-              </div>
-            </StepCard>
-          )}
-
-          {/* STEP 05 접수 완료 */}
-          {step === 5 && (
-            <StepCard title="접수 완료">
-              <div className="flex flex-col items-center rounded-2xl border border-line bg-canvas px-6 py-10 text-center">
-                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-blue/15 text-[26px] text-brand-blue">
-                  ✓
-                </span>
-                <h3 className="mt-4 font-serif text-[24px] font-bold text-ink-strong">
-                  접수가 완료되었습니다
-                </h3>
-                <p className="mt-2 text-[16px] text-ink-strong">
-                  접수 확인 메일을 발송했습니다. 마이페이지에서 진행 상황을 확인하세요.
-                </p>
-
-                <dl className="mt-8 w-full max-w-md space-y-3 text-left text-[16px]">
-                  <div className="flex justify-between border-b border-line pb-2">
-                    <dt className="text-ink-strong">접수번호</dt>
-                    <dd className="font-semibold text-brand-blue">GYCA-2026-000123</dd>
-                  </div>
-                  <div className="flex justify-between border-b border-line pb-2">
-                    <dt className="text-ink-strong">작품명</dt>
-                    <dd className="font-medium text-ink-strong">Quiet Morning</dd>
-                  </div>
-                  <div className="flex justify-between border-b border-line pb-2">
-                    <dt className="text-ink-strong">결제정보</dt>
-                    <dd className="font-medium text-ink-strong">
-                      {contest?.fee ?? "₩60,000"} · 카드 결제 완료
-                    </dd>
-                  </div>
-                  <div className="flex justify-between border-b border-line pb-2">
-                    <dt className="text-ink-strong">결과발표일</dt>
-                    <dd className="font-medium text-ink-strong">2026.09.15</dd>
-                  </div>
-                </dl>
-              </div>
-
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-                <OutlineBtn>접수증</OutlineBtn>
-                <Link
-                  href="/mypage"
-                  className="rounded-lg border border-line px-5 py-3 text-[16px] font-semibold text-ink-strong hover:border-brand-blue"
-                >
-                  내 접수
-                </Link>
-                <PrimaryBtn onClick={() => setStep(1)}>추가 접수</PrimaryBtn>
-              </div>
-            </StepCard>
-          )}
-        </div>
-      </section>
-    </>
+    <SubmitForm
+      flow={flow}
+      competition={competition}
+      formSpec={formSpec}
+      locale={locale}
+      showOptional={scenario === "resume"}
+    />
   );
 }
 
-function SubmitFallback() {
+/** LIVE wrapper — calls the real-adapter flow. */
+function LiveSubmitInner({
+  competition,
+  formSpec,
+  locale,
+}: {
+  competition: Competition;
+  formSpec: FormSpec;
+  locale: Locale;
+}) {
+  const flow = useLiveSubmitFlow({ competition, locale });
   return (
-    <>
-      <PageHeader
-        eyebrow="Submission"
-        title="작품 접수"
-        crumbs={[{ label: "작품 접수" }]}
-      />
-      <section className="mx-auto max-w-shell px-6 py-12">
-        <div className="rounded-2xl border border-line bg-white px-6 py-5">
-          <Stepper current={1} />
-        </div>
-      </section>
-    </>
+    <SubmitForm flow={flow} competition={competition} formSpec={formSpec} locale={locale} showOptional={false} />
   );
+}
+
+/** Loads the competition (live: by slug) and mounts the live form. */
+function LiveSubmit({ slug, locale }: { slug: string; locale: Locale }) {
+  const ko = locale === "ko";
+  const [comp, setComp] = useState<RequestState<Competition>>({ kind: "loading" });
+
+  useEffect(() => {
+    let active = true;
+    getCompetitionBySlug(slug).then((r) => {
+      if (active) setComp(r);
+    });
+    return () => {
+      active = false;
+    };
+  }, [slug]);
+
+  if (comp.kind === "loading") return <p className="text-[16px] text-ink-strong">{ko ? "불러오는 중…" : "Loading…"}</p>;
+  if (comp.kind !== "success")
+    return (
+      <Message tone="danger" title={ko ? "공모 정보를 불러오지 못했습니다" : "Could not load the competition"}>
+        {comp.kind === "error" ? comp.message : ""}
+      </Message>
+    );
+  if (!comp.data.formSpec)
+    return (
+      <Message tone="warning" title={ko ? "접수 준비 중" : "Applications being prepared"}>
+        {ko ? "접수 폼이 아직 구성되지 않았습니다." : "The entry form is not configured yet."}
+      </Message>
+    );
+  return <LiveSubmitInner competition={comp.data} formSpec={comp.data.formSpec} locale={locale} />;
 }
 
 export default function SubmitPage() {
+  const { locale } = useLocale();
+  const ko = locale === "ko";
+  const [scenario, setScenario] = useState<Scenario>("happy");
+  const searchParams = useSearchParams();
+  const slug = searchParams.get("contest") || LEIPZIG_SLUG;
+
+  const comp = useMemo(() => getCompetitionSync("open-ready"), []);
+
   return (
-    <Suspense fallback={<SubmitFallback />}>
-      <SubmitFlow />
-    </Suspense>
+    <>
+      <EditorialHeader
+        eyebrow="Submission"
+        title={ko ? "작품 접수" : "Submit your work"}
+        crumbs={[
+          { label: ko ? "라이프치히 2027" : "Leipzig 2027", href: "/contests/leipzig-2027" },
+          { label: ko ? "작품 접수" : "Submit" },
+        ]}
+        locale={locale}
+      />
+
+      <section className="mx-auto max-w-page px-6 py-12">
+        {isLive ? (
+          <LiveSubmit slug={slug} locale={locale} />
+        ) : (
+          <>
+            {/* Dev scenario switcher (mock only) */}
+            <div className="mb-6">
+              <ScenarioBar scenario={scenario} onChange={setScenario} locale={locale} />
+            </div>
+
+            {comp.kind !== "success" ? (
+              <Message tone="danger" title={ko ? "공모 정보를 불러오지 못했습니다" : "Could not load the competition"}>
+                {comp.kind === "error" ? comp.message : ""}
+              </Message>
+            ) : !comp.data.formSpec ? (
+              <Message tone="warning" title={ko ? "접수 준비 중" : "Applications being prepared"}>
+                {ko ? "접수 폼이 아직 구성되지 않았습니다." : "The entry form is not configured yet."}
+              </Message>
+            ) : (
+              // Remount on scenario change so the mock flow resets cleanly.
+              <MockSubmitInner
+                key={scenario}
+                scenario={scenario}
+                competition={comp.data}
+                formSpec={comp.data.formSpec}
+                locale={locale}
+              />
+            )}
+          </>
+        )}
+      </section>
+    </>
   );
 }
