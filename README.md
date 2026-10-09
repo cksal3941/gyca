@@ -222,9 +222,30 @@ gcloud run services logs read gyca --region asia-northeast3 --limit 50   # 컨�
 
 ### Apple
 
-1. Apple Developer Program 가입 필요 (연 $99)
-2. Service ID 생성 후 콜백 등록: `https://<서비스 URL>/api/auth/callback/apple`
-3. 환경변수 추가: `APPLE_CLIENT_ID`, `APPLE_CLIENT_SECRET`
+Apple 은 client secret 으로 고정 문자열이 아니라 **최대 6개월짜리 JWT** 를 요구합니다.
+만료 전에 다시 생성해 환경변수를 갱신해야 합니다 (아래 4단계).
+
+1. [Apple Developer Program](https://developer.apple.com/programs/) 가입 (연 $99, 개인 또는 조직)
+2. [Certificates, Identifiers & Profiles](https://developer.apple.com/account/resources/identifiers/list) 에서:
+   - **App ID** 생성 (예: `com.gycaawards.web`) → Capabilities 에서 *Sign in with Apple* 체크
+   - **Services ID** 생성 (예: `com.gycaawards.web.signin`) → *Sign in with Apple* 체크 → Configure:
+     - Primary App ID: 위 App ID
+     - Domains and Subdomains: `gycaawards.com`
+     - Return URLs: `https://gycaawards.com/api/auth/callback/apple`
+   - **Keys** 에서 키 생성 → *Sign in with Apple* 체크 → `AuthKey_<KEY_ID>.p8` 다운로드 (한 번만 받을 수 있음)
+   - 계정 우측 상단의 **Team ID** 를 메모
+3. client secret(JWT) 생성 (저장소 밖에서 실행, 출력값을 채팅/Git 에 남기지 말 것):
+
+```bash
+node scripts/apple-client-secret.mjs --team <TEAM_ID> --key-id <KEY_ID> \
+  --client-id <Services ID> --key /path/AuthKey_<KEY_ID>.p8 --days 180
+```
+
+4. 환경변수 추가: `APPLE_CLIENT_ID`=Services ID, `APPLE_CLIENT_SECRET`=위 JWT.
+   JWT 만료(최대 180일) 전에 3번을 다시 실행해 갱신합니다.
+5. 참고: 로그인/회원가입 화면의 소셜 버튼은 `/api/v1/auth/providers` 가 돌려주는,
+   실제로 설정된 공급자만 표시됩니다. Apple 환경변수가 없으면 Apple 버튼이 보이지 않습니다.
+   Apple 이 "이메일 숨기기" 로 전달한 릴레이 주소는 기존 계정과 이메일이 달라 자동 연결되지 않습니다.
 
 Cloud Run에 환경변수 추가:
 

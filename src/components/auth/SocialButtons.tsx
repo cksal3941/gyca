@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { signIn } from "@/lib/auth-client";
+import type { SocialProviderId } from "@/lib/social-providers";
 
 function GoogleIcon() {
   return (
@@ -38,6 +39,19 @@ function AppleIcon() {
 export function SocialButtons() {
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // 서버에 설정된 공급자만 노출한다. 응답 전에는 항상 설정돼 있는 Google 만 보여 준다.
+  const [providers, setProviders] = useState<SocialProviderId[]>(["google"]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/v1/auth/providers", { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body: { data?: { providers?: SocialProviderId[] } } | null) => {
+        if (Array.isArray(body?.data?.providers)) setProviders(body.data.providers);
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, []);
 
   const social = async (provider: "google" | "apple") => {
     setError(null);
@@ -53,6 +67,7 @@ export function SocialButtons() {
 
   return (
     <div className="grid gap-2">
+      {providers.includes("google") && (
       <Button
         type="button"
         variant="outline"
@@ -63,6 +78,8 @@ export function SocialButtons() {
         <GoogleIcon />
         Continue with Google
       </Button>
+      )}
+      {providers.includes("apple") && (
       <Button
         type="button"
         variant="outline"
@@ -73,6 +90,7 @@ export function SocialButtons() {
         <AppleIcon />
         Continue with Apple
       </Button>
+      )}
       {error && <p className="text-destructive text-sm">{error}</p>}
     </div>
   );

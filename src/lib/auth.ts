@@ -4,24 +4,27 @@ import { Pool } from "pg";
 import { configuredReceiptMailer } from "../server/notifications/resend";
 import { createVerificationEmail } from "../server/notifications/verification-email";
 import { createPasswordResetEmail } from "../server/notifications/password-reset-email";
+import { enabledSocialProviders } from "./social-providers";
 
 const verifyEmail = process.env.AUTH_EMAIL_VERIFICATION_ENABLED === "true";
 const resetPassword = process.env.AUTH_PASSWORD_RESET_ENABLED === "true";
 
-// 소셜 로그인은 환경변수가 설정된 경우에만 활성화 (없어도 앱은 동작)
+// 소셜 로그인은 환경변수가 설정된 경우에만 활성화 (없어도 앱은 동작).
+// 활성 여부 판정은 src/lib/social-providers.ts 와 공유한다.
 const socialProviders: Record<
   string,
   { clientId: string; clientSecret: string }
 > = {};
+const enabled = enabledSocialProviders();
 
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+if (enabled.includes("google") && process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   socialProviders.google = {
     clientId: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   };
 }
 
-if (process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET) {
+if (enabled.includes("apple") && process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET) {
   socialProviders.apple = {
     clientId: process.env.APPLE_CLIENT_ID,
     clientSecret: process.env.APPLE_CLIENT_SECRET,
