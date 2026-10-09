@@ -24,13 +24,6 @@ if (enabled.includes("google") && process.env.GOOGLE_CLIENT_ID && process.env.GO
   };
 }
 
-if (enabled.includes("apple") && process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET) {
-  socialProviders.apple = {
-    clientId: process.env.APPLE_CLIENT_ID,
-    clientSecret: process.env.APPLE_CLIENT_SECRET,
-  };
-}
-
 export const auth = betterAuth({
   database: new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -59,15 +52,13 @@ export const auth = betterAuth({
   account: {
     accountLinking: {
       enabled: true,
-      // Google/Apple 이 검증한 이메일이 기존 이메일·비밀번호 계정과 같으면 그 계정에
+      // Google 이 검증한 이메일이 기존 이메일·비밀번호 계정과 같으면 그 계정에
       // 자동으로 연결한다 (별도 계정이 생기지 않음).
-      trustedProviders: ["google", "apple"],
+      trustedProviders: ["google"],
       // 이메일 인증 기능이 꺼져 있어 로컬 계정의 emailVerified 가 false 로 남는다.
       // 공급자가 이메일 소유를 검증했으므로 로컬 미확인 상태여도 연결을 허용한다.
       requireLocalEmailVerified: false,
     },
   },
-  // Apple 로그인의 form_post 콜백을 허용하기 위해 필요
-  trustedOrigins: ["https://appleid.apple.com"],
   plugins: [nextCookies()],
 });
