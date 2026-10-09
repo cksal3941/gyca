@@ -33,6 +33,15 @@ export default function Footer() {
               Address · 서울특별시 강남구 압구정로 401, 55동 807호 (압구정동, 한양아파트)
             </p>
             <p>Business registration · 454-25-02305</p>
+            <p className="mt-3">
+              <a href="/privacy" className="text-white underline-offset-2 hover:underline">
+                Privacy Policy
+              </a>
+              {" · "}
+              <a href="/terms" className="text-white underline-offset-2 hover:underline">
+                Terms of Service
+              </a>
+            </p>
             {/* Social channels — placeholders until the official channels open. */}
             <div className="mt-5 flex items-center gap-4">
               {SNS.map((s) => (
