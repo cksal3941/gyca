@@ -1,4 +1,4 @@
-type Project = {
+export type Project = {
   badge: string;
   title: string[];
   desc: string;
@@ -6,24 +6,6 @@ type Project = {
   links: string[];
   reverse?: boolean;
 };
-
-const PROJECTS: Project[] = [
-  {
-    badge: "예필로그",
-    title: ["2026 카쟈: 한국 청소년 아트", "페스티벌 전시회"],
-    desc: "마이슬라이드가 주최한 2026 카쟈 청소년 미술 대회의 1차 수상작들을 이어가던 전시회이며, 서울 인사동에 위치고 하고 있는 마루아트센터 특별관 에서 진행되었습니다. 컬러 세계 · 스타일로 · 회의워클 · 밀알복지재단이 함께 했습니다.",
-    image: "/images/projects/kajaa-exhibition.jpg",
-    links: ["예필로그", "수상작", "공고보기"],
-  },
-  {
-    badge: "예필로그",
-    title: ["2025 IYAC GLOBAL YOUTH ART CONTEST", "NEW YORK EXHIBITION"],
-    desc: "전 세계적으로 진행된 청소년 미술 대회의 1차 수상작들을 이어가던 전시회이며, 뉴욕 맨해튼에 위치 하고 있는 Detour Gallery 에서 진행되었습니다. 분선에서 최종 선발된 5작품은 미국 뉴저지 상설전용관이 수여됩니다.",
-    image: "/images/projects/iyac-newyork.jpg",
-    links: ["예필로그", "수상작", "공고보기"],
-    reverse: true,
-  },
-];
 
 function LinkRow({ label }: { label: string }) {
   return (
@@ -84,10 +66,12 @@ function ProjectBlock({ p }: { p: Project }) {
   );
 }
 
-export default function DarkProjects() {
+export default function DarkProjects({ projects }: { projects: Project[] }) {
+  if (!projects.length) return null;
+
   return (
     <section className="bg-black">
-      {PROJECTS.map((p) => (
+      {projects.map((p) => (
         <ProjectBlock key={p.title.join("")} p={p} />
       ))}
     </section>

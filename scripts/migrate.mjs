@@ -2,11 +2,14 @@
 // 사용법: node --env-file=.env.local scripts/migrate.mjs
 import { getMigrations } from "better-auth/db/migration";
 import { betterAuth } from "better-auth";
+import { admin } from "better-auth/plugins";
 import { Pool } from "pg";
 
+// 주의: src/lib/auth.ts의 스키마 관련 옵션과 일치해야 한다.
 const auth = betterAuth({
   database: new Pool({ connectionString: process.env.DATABASE_URL }),
   emailAndPassword: { enabled: true },
+  plugins: [admin()],
 });
 
 const { toBeAdded, toBeCreated, runMigrations } = await getMigrations(

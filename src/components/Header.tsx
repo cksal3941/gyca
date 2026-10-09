@@ -112,6 +112,16 @@ function AccountMenu() {
             </p>
           </div>
           <nav className="py-1">
+            {session.user.role === "admin" && (
+              <Link
+                href="/admin"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2.5 px-4 py-2 text-[13px] !transition-none hover:bg-brand-blue hover:text-white"
+              >
+                <Icon name="shield" size={14} />
+                Admin
+              </Link>
+            )}
             <Link
               href="/settings"
               onClick={() => setOpen(false)}
