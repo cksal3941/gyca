@@ -36,6 +36,9 @@ export const metadata: Metadata = {
   description: "Young Artists Begin and Grow — A Place Where Young Artists Begin and Grow",
   verification: {
     google: "D-aLcR1qYRcrIWZeggeUgLlDDeq4emWHSnX-G5QGsko",
+    other: {
+      "naver-site-verification": "4a1154f1c0d397f4f253e43a6f8928d447328360",
+    },
   },
 };
 
