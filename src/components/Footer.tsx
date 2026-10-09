@@ -16,7 +16,7 @@ export default function Footer() {
               GYCA
             </span>
             <p className="mt-4 text-[16px] leading-5 tracking-wide text-white">
-              COPYRIGHT© 2026 GYCA CORP.
+              COPYRIGHT© 2026 GYCA.
               <br />
               ALL RIGHTS RESERVED.
             </p>
@@ -29,8 +29,10 @@ export default function Footer() {
                 admin@gyca.org
               </a>
             </p>
-            <p>Address · 준비 중 (To be announced)</p>
-            <p>Business registration · 준비 중</p>
+            <p>
+              Address · 서울특별시 강남구 압구정로 401, 55동 807호 (압구정동, 한양아파트)
+            </p>
+            <p>Business registration · 454-25-02305</p>
             {/* Social channels — placeholders until the official channels open. */}
             <div className="mt-5 flex items-center gap-4">
               {SNS.map((s) => (
@@ -63,10 +65,9 @@ export default function Footer() {
 
       <div className="border-t border-white/10">
         <p className="mx-auto max-w-page px-6 py-5 text-[16px] leading-5 text-white">
-          Company: GYCA · CEO: 준비 중 · Business registration no.: 준비 중 ·
-          E-commerce permit: 준비 중 · Privacy officer: admin@gyca.org · Hosting
-          provider: 준비 중
-          <span className="ml-1 text-white/70">(사업자 정보 준비 중 · business details to be confirmed)</span>
+          Company: 글로벌 영 크리에이트 어워드 (GYCA) · CEO: 구민영 · Business
+          registration no.: 454-25-02305 · E-commerce permit: 준비 중 · Privacy
+          officer: admin@gyca.org · Hosting provider: Google Cloud
         </p>
       </div>
     </footer>
