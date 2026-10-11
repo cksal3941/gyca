@@ -1,9 +1,12 @@
+import Logo from "./Logo";
+
 // GYCA's own social channels. Icons are Simple Icons (CC0), self-hosted and
-// recolored via CSS mask. Links point to the official channels once available.
-const SNS = [
-  { label: "Instagram", icon: "/images/icons/instagram.svg" },
-  { label: "Facebook", icon: "/images/icons/facebook.svg" },
-  { label: "YouTube", icon: "/images/icons/youtube.svg" },
+// recolored via CSS mask. A channel with `href` links out; others stay as
+// "coming soon" placeholders until the official channels open.
+const SNS: { label: string; icon: string; href?: string }[] = [
+  { label: "Instagram", icon: "/images/instagram.svg", href: "https://www.instagram.com/gyca.official" },
+  { label: "Facebook", icon: "/images/facebook.svg" },
+  { label: "YouTube", icon: "/images/youtube.svg" },
 ];
 
 export default function Footer() {
@@ -12,9 +15,7 @@ export default function Footer() {
       <div className="mx-auto max-w-page px-6 py-14">
         <div className="flex flex-col justify-between gap-10 md:flex-row md:items-start">
           <div>
-            <span className="font-display text-[34px] italic tracking-[-0.5px] text-white">
-              GYCA
-            </span>
+            <Logo variant="light" />
             <p className="mt-4 text-[16px] leading-5 tracking-wide text-white">
               COPYRIGHT© 2026 GYCA CORP.
               <br />
@@ -29,17 +30,12 @@ export default function Footer() {
                 admin@gyca.org
               </a>
             </p>
-            <p>Address · 준비 중 (To be announced)</p>
-            <p>Business registration · 준비 중</p>
-            {/* Social channels — placeholders until the official channels open. */}
+            <p>Address · 서울특별시 서초구 서초중앙로33길 7 유진빌딩 201호</p>
+            <p>Business registration · 454-25-02305</p>
+            {/* Social channels — linked when live, otherwise "coming soon". */}
             <div className="mt-5 flex items-center gap-4">
-              {SNS.map((s) => (
-                <span
-                  key={s.label}
-                  aria-label={`${s.label} · 준비 중`}
-                  title={`${s.label} · 준비 중 (coming soon)`}
-                  className="text-white/70"
-                >
+              {SNS.map((s) => {
+                const glyph = (
                   <span
                     aria-hidden
                     className="block h-6 w-6 bg-current"
@@ -54,8 +50,30 @@ export default function Footer() {
                       WebkitMaskSize: "contain",
                     }}
                   />
-                </span>
-              ))}
+                );
+                return s.href ? (
+                  <a
+                    key={s.label}
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={s.label}
+                    title={s.label}
+                    className="text-white transition-opacity hover:opacity-80"
+                  >
+                    {glyph}
+                  </a>
+                ) : (
+                  <span
+                    key={s.label}
+                    aria-label={`${s.label} · 준비 중`}
+                    title={`${s.label} · 준비 중 (coming soon)`}
+                    className="text-white/70"
+                  >
+                    {glyph}
+                  </span>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -63,10 +81,10 @@ export default function Footer() {
 
       <div className="border-t border-white/10">
         <p className="mx-auto max-w-page px-6 py-5 text-[16px] leading-5 text-white">
-          Company: GYCA · CEO: 준비 중 · Business registration no.: 준비 중 ·
-          E-commerce permit: 준비 중 · Privacy officer: admin@gyca.org · Hosting
-          provider: 준비 중
-          <span className="ml-1 text-white/70">(사업자 정보 준비 중 · business details to be confirmed)</span>
+          Company: 글로벌영크리에이트 (GYCA) · CEO: 구민영 · Business
+          registration no.: 454-25-02305 · E-commerce permit: 준비 중 · Privacy
+          officer: admin@gyca.org · Hosting provider: 가비아 (Gabia)
+          <span className="ml-1 text-white/70">(일부 사업자 정보 준비 중 · some business details to be confirmed)</span>
         </p>
       </div>
     </footer>

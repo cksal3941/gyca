@@ -24,7 +24,7 @@ const SLIDES: Slide[] = [
       ko: ["세상이 당신의 그림을 기다립니다.", "7–18세 창작자가 국제 무대에 데뷔하는 아트북 어워드."],
     },
     tag: "Leipzig 2027",
-    image: "/images/hero/iyac.jpg",
+    image: "/images/iyac.jpg",
   },
   {
     title: {
@@ -36,7 +36,7 @@ const SLIDES: Slide[] = [
       ko: ["당신의 작은 이야기가 세계의 인정을 받습니다.", "GYCA 공식 선정이 그 첫 무대입니다."],
     },
     tag: "Open Call",
-    image: "/images/hero/kajaa.jpg",
+    image: "/images/kajaa.jpg",
   },
   {
     title: {
@@ -48,7 +48,7 @@ const SLIDES: Slide[] = [
       ko: ["라이프치히에서 세계 관객과 마주하세요.", "당신의 책이 국제 전시의 주인공이 됩니다."],
     },
     tag: "Finalist",
-    image: "/images/hero/led-wall.jpg",
+    image: "/images/led-wall.jpg",
   },
 ];
 

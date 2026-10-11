@@ -26,7 +26,7 @@ const PROJECTS: Project[] = [
       en: "A completed project run from the open call through selection to the Vienna exhibition and award ceremony, where selected young artists' works were shown. Presented as a flagship completed case — not a new open call.",
       ko: "공모부터 선정, 비엔나 현지 전시와 수여식까지 운영한 완료 프로젝트입니다. 선정된 청소년 작가들의 작품을 비엔나에서 선보였습니다. 신규 모집 대상이 아닌 대표 완료 사례로 소개합니다.",
     },
-    image: "/images/projects/iyac-newyork.jpg",
+    image: "/images/iyac-newyork.jpg",
     links: [
       { en: "View project", ko: "프로젝트 보기", href: KLIMT_ARCHIVE_HREF },
       { en: "Exhibition archive", ko: "전시 아카이브", href: `${KLIMT_ARCHIVE_HREF}#exhibition_photos` },
@@ -43,7 +43,7 @@ const PROJECTS: Project[] = [
       en: "Following the exhibition, this completed case continued through artwork sales, buyer interviews, and exhibition and sales certificates. It is an archive of past operations, not a new sales feature.",
       ko: "전시에 이어 작품 판매와 구매자 인터뷰, 전시·판매 인증서 발급까지 이어진 완료 사례입니다. 실제 판매 기능을 새로 여는 것이 아니라, 운영 실적을 소개하는 아카이브입니다.",
     },
-    image: "/images/projects/kajaa-exhibition.jpg",
+    image: "/images/kajaa-exhibition.jpg",
     links: [
       { en: "Buyer interviews", ko: "구매자 인터뷰", href: `${KLIMT_ARCHIVE_HREF}#buyer_interviews` },
       { en: "Sales certificate", ko: "판매 인증서", href: `${KLIMT_ARCHIVE_HREF}#sales_certificate` },

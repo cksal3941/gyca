@@ -33,7 +33,7 @@ function AwardChip({ w, locale }: { w: Winner; locale: Locale }) {
 }
 
 const bg = (w: Winner) => ({
-  backgroundImage: coverBg(w.slug, `/images/winners/${w.slug}.jpg`),
+  backgroundImage: coverBg(w.slug, `/images/${w.slug}.jpg`),
 });
 
 /** Large featured winner — full-width image with the caption below it. */

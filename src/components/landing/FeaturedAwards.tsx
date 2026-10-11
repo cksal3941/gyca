@@ -20,7 +20,7 @@ type Award = {
 
 const AWARDS: Award[] = [
   {
-    image: "/images/awards/klimt.jpg",
+    image: "/images/klimt.jpg",
     tint: "linear-gradient(135deg,#efd189,#c68f2c)",
     title: ["International Klimt", "Youth Award"],
     tags: "Art · Youth",
@@ -29,7 +29,7 @@ const AWARDS: Award[] = [
     statusColor: "bg-brand-teal",
   },
   {
-    image: "/images/awards/bach.jpg",
+    image: "/images/bach.jpg",
     tint: "linear-gradient(135deg,#7a4b2b,#1b1b1b)",
     title: ["Bach Festival", "International Competition"],
     tags: "Music · Performance",
@@ -38,7 +38,7 @@ const AWARDS: Award[] = [
     statusColor: "bg-brand-teal",
   },
   {
-    image: "/images/awards/viyba.jpg",
+    image: "/images/viyba.jpg",
     tint: "linear-gradient(135deg,#e6e6e6,#a6a6a6)",
     title: ["VIYBA Vienna International", "Youth Book Award"],
     tags: "Book · Illustration",

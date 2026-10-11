@@ -11,6 +11,7 @@ export default function EditorialHeader({
   eyebrow,
   title,
   description,
+  descriptionClassName,
   crumbs,
   action,
   locale = "en",
@@ -19,6 +20,9 @@ export default function EditorialHeader({
   eyebrow?: string;
   title: string;
   description?: string;
+  /** Override the description paragraph classes (e.g. to force a two-line
+   *  layout with `whitespace-pre-line`). Falls back to the default below. */
+  descriptionClassName?: string;
   crumbs?: Crumb[];
   action?: ReactNode;
   locale?: Locale;
@@ -49,7 +53,7 @@ export default function EditorialHeader({
                 {title}
               </h1>
               {description && (
-                <p className="mt-3 max-w-[46rem] text-[16px] leading-[1.7] text-ink-strong">
+                <p className={descriptionClassName ?? "mt-3 max-w-[46rem] text-[16px] leading-[1.7] text-ink-strong"}>
                   {description}
                 </p>
               )}

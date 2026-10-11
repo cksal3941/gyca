@@ -64,105 +64,39 @@ export type Contest = {
   summary: Bi;
   tint: string;
   /** Demo placeholder (not a real/approved open call). Rendered as "샘플·준비 중",
-   *  never as recruiting, and without an Apply CTA. Only Leipzig 2027 is real. */
+   *  never as recruiting, and without an Apply CTA. Only VIYBA 2026 is real. */
   sample?: boolean;
+  /** External Apply destination (e.g. official Google Form). When set, the Apply
+   *  CTA links here instead of the on-site /submit flow. */
+  applyUrl?: string;
+  /** Absolute entry-close instant (ISO). When set and now is past it, the row's
+   *  effective status becomes "closed" (종료), regardless of the authored status. */
+  deadlineAt?: string;
 };
 
 export const CONTESTS: Contest[] = [
-  // Real first-launch open call (has a dedicated detail route /contests/leipzig-2027).
+  // Real first-launch open call (has a dedicated detail route /contests/viyba-2026).
   {
-    slug: "leipzig-2027",
-    title: "GYCA International Youth Art Book Awards",
-    titleEn: "Art Book Awards",
+    slug: "viyba-2026",
+    title: "VIYBA 2026 | Vienna International Youth Book Awards",
+    titleEn: "Youth Book Awards",
     category: "도서·일러스트",
-    categoryEn: "ART BOOK AWARDS",
-    city: "International",
-    stage: { en: "2027 edition · Leipzig finals planned", ko: "2027 · 라이프치히 본선 예정" },
-    period: "2026.09.14 ~ 12.31",
-    deadline: "2026.12.31",
+    categoryEn: "BOOK AWARDS",
+    city: "Vienna",
+    stage: { en: "Vienna Final · 14–16 Dec 2026", ko: "비엔나 본선 · 2026.12.14–16" },
+    period: "~ 2026.11.07",
+    deadline: "2026.11.07",
     status: "open",
-    fee: "€70",
+    fee: "₩150,000",
     summary: {
-      en: "The 2027 GYCA International Youth Art Book Awards — now open for entries (€70).",
-      ko: "2027 GYCA 국제 청소년 아트북 어워드 — 접수 중 (€70).",
+      en: "Vienna International Youth Book Awards — now open. A book you can read, touch, and experience, judged as a work of art.",
+      ko: "비엔나 국제 청소년 북 어워드 — 접수 중. 읽고, 만지고, 경험하는 책 한 권을 예술작품으로 평가합니다.",
     },
-    tint: "linear-gradient(135deg,#8fb6f0,#5566d8)",
-  },
-  {
-    sample: true,
-    slug: "young-authors-award-2026",
-    title: "International Young Authors Award",
-    titleEn: "Book & Illustration",
-    category: "도서·일러스트",
-    categoryEn: "BOOK & ILLUSTRATION",
-    city: "Frankfurt",
-    stage: { en: "Frankfurt Book Fair program", ko: "프랑크푸르트 도서전 연계" },
-    period: "2026.05.06 ~ 07.15",
-    deadline: "2026.07.15",
-    status: "open",
-    fee: "₩60,000",
-    summary: {
-      en: "An international youth competition in books & illustration. Winning works are featured in a Frankfurt Book Fair program.",
-      ko: "도서·일러스트 분야 국제 청소년 공모전. 수상작은 프랑크푸르트 도서전 연계 프로그램에 소개됩니다.",
-    },
-    tint: "linear-gradient(135deg,#efd189,#c68f2c)",
-  },
-  {
-    sample: true,
-    slug: "art-for-tomorrow-2026",
-    title: "Art for Tomorrow Challenge",
-    titleEn: "Art & Social Impact",
-    category: "미술",
-    categoryEn: "ART & SOCIAL IMPACT",
-    city: "Seoul",
-    stage: { en: "Seoul & international touring", ko: "서울 및 국제 순회전" },
-    period: "2026.03.04 ~ 06.20",
-    deadline: "2026.06.20",
-    status: "open",
-    fee: "₩50,000",
-    summary: {
-      en: "An art competition carrying a social message. Outstanding works travel to Seoul and international touring exhibitions.",
-      ko: "사회적 메시지를 담은 미술 창작 공모전. 우수작은 서울 및 국제 순회 전시로 이어집니다.",
-    },
-    tint: "linear-gradient(135deg,#a8dcd0,#8fb6f0)",
-  },
-  {
-    sample: true,
-    slug: "music-performance-award-2026",
-    title: "Music & Performance Award",
-    titleEn: "Music & Performance",
-    category: "음악·공연",
-    categoryEn: "MUSIC & PERFORMANCE",
-    city: "Spoleto",
-    stage: { en: "Spoleto Festival program", ko: "스폴레토 페스티벌 연계" },
-    period: "2026.06.01 ~ 08.30",
-    deadline: "2026.08.30",
-    status: "upcoming",
-    fee: "₩70,000",
-    summary: {
-      en: "A youth competition in music & performance. Finalists are invited to the Spoleto Festival stage.",
-      ko: "음악·공연 분야 청소년 공모전. 본선 진출자는 스폴레토 페스티벌 무대에 초청됩니다.",
-    },
-    tint: "linear-gradient(135deg,#7a4b2b,#1b1b1b)",
-  },
-  {
-    sample: true,
-    slug: "young-innovators-2025",
-    title: "Young Innovators Business Challenge",
-    titleEn: "Business & Technology",
-    category: "비즈니스",
-    categoryEn: "BUSINESS & TECHNOLOGY",
-    city: "USA",
-    stage: { en: "Global showcase", ko: "글로벌 쇼케이스" },
-    period: "2025.06.01 ~ 08.30",
-    deadline: "2025.08.30",
-    status: "closed",
-    fee: "₩70,000",
-    summary: {
-      en: "A business & technology idea challenge. Finalist teams join a global showcase in the USA.",
-      ko: "비즈니스·기술 아이디어 챌린지. 최종 선발 팀은 미국 글로벌 쇼케이스에 참가합니다.",
-    },
-    tint: "linear-gradient(135deg,#e6e6e6,#a6a6a6)",
+    tint: "linear-gradient(135deg,#13294b,#0a0f1f)",
+    applyUrl:
+      "https://docs.google.com/forms/d/e/1FAIpQLScl8oMz9KT0ViWU99tgWxTjWZpLNBay7cacXMJQ_pzh_pSLIw/viewform",
+    // 2026.11.07 24:00 CET (= 23:00 UTC). After this the card shows 종료.
+    deadlineAt: "2026-11-07T23:00:00Z",
   },
 ];
 
