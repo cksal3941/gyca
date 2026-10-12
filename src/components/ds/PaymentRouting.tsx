@@ -23,9 +23,7 @@ const BLOCKING_MSG: Record<string, { en: string; ko: string }> = {
   POLICY_NOT_CONFIGURED: { en: "Payment policy is not configured yet.", ko: "결제 정책이 아직 설정되지 않았습니다." },
 };
 
-function formatMoney(amountMinor: number): string {
-  return `€${(amountMinor / 100).toFixed(amountMinor % 100 === 0 ? 0 : 2)}`;
-}
+import { formatMoney } from "@/lib/money";
 
 export default function PaymentRouting({
   locale = "en",
@@ -102,7 +100,7 @@ export default function PaymentRouting({
         <p className="mt-3 flex items-baseline gap-2">
           <span className="text-[16px] text-ink-strong">{ko ? "참가비" : "Entry fee"}</span>
           <span className="text-[22px] font-extrabold text-ink-strong">
-            {formatMoney(options.money.amountMinor)}
+            {formatMoney(options.money, locale)}
           </span>
         </p>
       )}

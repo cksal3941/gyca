@@ -47,7 +47,9 @@ Claude 진행표의 최신 하단에는 카드/아카이브/보호자 페이지,
 
 ## 3. P0 — 실제 접수·결제를 열기 위한 작업
 
-### B01. 결제창 시작·운영 PG 연결 — 미구현
+### B01. 결제창 시작·운영 PG 연결 — 2026-10-10 구현(실PG 검증 대기)
+
+> **2026-10-10 진행:** 토스페이먼츠 v2 브라우저 SDK 결제창(`launch.kind=tosspayments_sdk`), KRW/USD 통화 일반화(migration 040), `TOSS_MODE=test|live` 활성화, 성공/실패 복귀 페이지와 서버 confirm 연결, 접수 상세의 `start_payment`/`check_payment` 액션을 구현했다. 상세는 [payment-checkout.md](payment-checkout.md). 남은 것은 실제 토스 테스트 키로 브라우저 완주(결제창→승인→received→환불)와 공모별 결제 정책(routing) 입력이다. 아래 원문은 구현 전 기준이다.
 
 **근거:** `src/server/payments/provider.ts`의 `beginCheckout`은 선택 인터페이스다. `toss.ts`의 실제 공급자 반환 객체에는 구현이 없다. `service.ts:240`과 `:248`에서 이 기능이 없으면 503을 반환한다. `configuredTossProvider`는 `tosspayments-test`만 허용하고 `liveMode:false`로 고정한다. 키를 입력하는 것만으로 운영 결제가 열리지 않는다.
 

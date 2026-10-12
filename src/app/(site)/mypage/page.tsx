@@ -648,12 +648,12 @@ export default function MyPage() {
                           {o.competitionTitle[locale]}
                         </td>
                         <td className="px-5 py-4 text-ink-strong">{o.workTitle || "—"}</td>
-                        <td className="px-5 py-4 text-ink-strong">{money(o.money.amountMinor)}</td>
+                        <td className="px-5 py-4 text-ink-strong">{money(o.money, ko)}</td>
                         <td className="px-5 py-4 text-ink-strong">
                           {PAYMENT_STATE_LABEL[o.paymentState][locale]}
                           {o.refundSummary && (
                             <span className="ml-2 text-[14px] text-ink-strong">
-                              · {ko ? "환불" : "Refund"} {money(o.refundSummary.amountMinor)}
+                              · {ko ? "환불" : "Refund"} {money({ amountMinor: o.refundSummary.amountMinor, currency: o.money.currency }, ko)}
                             </span>
                           )}
                         </td>

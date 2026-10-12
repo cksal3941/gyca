@@ -22,6 +22,8 @@ import {
 import type { RequestState } from "@/lib/api";
 import { isLive } from "@/lib/api/mode";
 import type { EntryStatus, ReviewStatus, PublishedResult, PaymentState } from "@/contracts";
+import type { Money } from "@/contracts";
+import { formatMoney } from "@/lib/money";
 
 // Admin — 접수 관리 (MOCK). Search / filter / sort / paginate / select / bulk.
 // Boundaries: NO UI to change a completed payment; result-publish & certificate
@@ -59,7 +61,7 @@ const FILE_STATE: Record<string, { label: string; tone: Tone }> = {
   pending: { label: "대기", tone: "neutral" },
 };
 
-const money = (m: number) => `€${(m / 100).toFixed(0)}`;
+const money = (m: Money) => formatMoney(m, "ko");
 
 const RESULT_OPTIONS: { value: PublishedResult; label: string }[] = [
   { value: "official_selection", label: "Official Selection" },
@@ -512,7 +514,7 @@ export default function AdminEntriesPageView() {
                       <td className="px-4 py-3">
                         {e.payment ? (
                           <StatusBadge tone={PAYMENT[e.payment.state].tone}>
-                            {PAYMENT[e.payment.state].label} · {money(e.payment.amountMinor)}
+                            {PAYMENT[e.payment.state].label} · {money({ amountMinor: e.payment.amountMinor, currency: e.payment.currency })}
                           </StatusBadge>
                         ) : (
                           <span className="text-ink-strong">—</span>

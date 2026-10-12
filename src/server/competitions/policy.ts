@@ -13,7 +13,7 @@ export const CompetitionRowSchema = z.object({
 export type CompetitionRow = z.infer<typeof CompetitionRowSchema>;
 
 const shape = CompetitionSchema.unwrap().shape;
-const ContentSchema = z.object({ title: shape.title, fee: shape.fee, timezone: shape.timezone,
+const ContentSchema = z.object({ title: shape.title, fee: shape.fee, alternativeFees: shape.alternativeFees, timezone: shape.timezone,
   keyDates: shape.keyDates, formSpec: shape.formSpec, exhibition: z.unknown(), guidelines: shape.guidelines });
 const exhibitionDraft = z.object({ approvalStatus: z.enum(["pending", "approved"]), displayName: z.unknown(),
   venueName: z.unknown(), logoUrl: z.unknown(), period: z.unknown() });

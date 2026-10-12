@@ -53,7 +53,7 @@ test('payment ledger verifies evidence and atomically confirms entries', async (
     await db.query(`INSERT INTO gyca_entries(id,owner_id,competition_id,status,submitted_at) VALUES($1,'alice','test','submitted',$2)`,
       [id, new Date(base - 1000)]);
     const snapshot = { work: extra.work ?? {}, competition: { payment_closes_at: new Date(deadline).toISOString(),
-      public_content: { fee: { amountMinor: 7000, currency: 'EUR' }, ...(extra.title ? { title: extra.title } : {}) } } };
+      public_content: { fee: extra.fee ?? { amountMinor: 7000, currency: 'EUR' }, ...(extra.title ? { title: extra.title } : {}) } } };
     await db.query(`INSERT INTO gyca_submissions(entry_id,request_key,request_hash,submitted_at,snapshot,result) VALUES($1,'submit','hash',$2,$3::jsonb,'{}')`,
       [id, new Date(base - 1000), JSON.stringify(snapshot)]);
     return id;
@@ -65,7 +65,7 @@ test('payment ledger verifies evidence and atomically confirms entries', async (
   t.beforeEach(() => { current = base; remoteEvents = []; confirmationFailure = false; confirmations.length = 0; });
   try {
     await db.exec('CREATE TABLE "user" (id text PRIMARY KEY); INSERT INTO "user" VALUES (\'alice\'),(\'bob\');');
-    for (const name of ['001_entries', '002_competitions', '003_uploads', '004_submissions', '005_payments', '006_payment_confirmations', '031_refunds'])
+    for (const name of ['001_entries', '002_competitions', '003_uploads', '004_submissions', '005_payments', '006_payment_confirmations', '031_refunds', '040_currencies'])
       await db.exec(await readFile(new URL(`../migrations/${name}.sql`, import.meta.url), 'utf8'));
     await db.query(`INSERT INTO gyca_competitions(id,slug,payment_enabled,payment_policy) VALUES('test','test',true,$1::jsonb)`,
       [JSON.stringify({ version: 'fixture-v1', approvalBasis: 'provider_paid_at' })]);
@@ -349,15 +349,14 @@ test('payment ledger verifies evidence and atomically confirms entries', async (
     });
     await t.test('connects Toss-normalized approval through the actual ledger and HTTP handler', async () => {
       const calls = [];
-      const toss = createTossProvider({ secretKey: 'test_sk_fixture', merchantAccount: 'fixture', liveMode: false,
-        currencyTerms: { currency: 'EUR', amountUnit: 'major', approvalReference: 'local test only' } }, async (path, body, key) => {
+      const toss = createTossProvider({ secretKey: 'test_sk_fixture', merchantAccount: 'fixture', liveMode: false, currency: 'USD', method: 'FOREIGN_EASY_PAY' }, async (path, body, key) => {
         calls.push({ path, body, key });
         return { status: 200, body: { paymentKey: body.paymentKey, orderId: body.orderId, mId: 'fixture', type: 'NORMAL',
-          totalAmount: body.amount, currency: 'EUR', status: 'DONE', approvedAt: '2026-09-15T09:00:01+09:00', lastTransactionKey: 'transaction' } };
+          totalAmount: body.amount, currency: 'USD', status: 'DONE', approvedAt: '2026-09-15T09:00:01+09:00', lastTransactionKey: 'transaction' } };
       });
       const tossService = createPaymentService(db, toss, now);
       const tossHandlers = createPaymentHandlers({ service: tossService, now, origin: 'https://gyca.test', getUserId: async (r) => r.headers.get('x-test-user') });
-      const id = await fixture(); const o = await tossService.create('alice', id, randomUUID()); current += 2000;
+      const id = await fixture(base + 60000, { fee: { amountMinor: 7000, currency: 'USD' } }); const o = await tossService.create('alice', id, randomUUID()); current += 2000;
       const response = await tossHandlers.confirm(req({ paymentKey: 'toss-key' }), o.id);
       assert.equal(response.status, 200);
       assert.equal(calls[0].body.amount, 70);

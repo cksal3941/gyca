@@ -829,6 +829,24 @@ export async function beginCheckout(
   return { kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 결제창을 지원하지 않습니다.", retryable: false };
 }
 
+/** Confirm a payment the provider redirected back with. Live: POST /orders/{id}/confirm
+ *  {paymentKey} → PaymentOrder. The server re-reads its own order amount, calls the provider's
+ *  approval API with an idempotency key and only then issues the receipt; the browser's
+ *  success-URL parameters are never trusted as evidence. Same key + same paymentKey replays
+ *  safely; a different paymentKey for the same order is a 409. Mock: a live-only action. */
+export async function confirmOrder(
+  orderId: string,
+  paymentKey: string,
+  opts: { signal?: AbortSignal } = {},
+): Promise<RequestState<PaymentOrder>> {
+  if (isLive)
+    return httpSend("POST", `/orders/${encodeURIComponent(orderId)}/confirm`, PaymentOrderSchema, {
+      body: { paymentKey },
+      signal: opts.signal,
+    });
+  return { kind: "error", code: "NOT_CONNECTED", message: "미리보기에서는 결제 확인을 지원하지 않습니다.", retryable: false };
+}
+
 /* ---- uploads (draft file lifecycle; the browser does the presigned transfer) ---- */
 
 const RemoveUploadResultSchema = z.object({ revision: z.number().int().positive() }).readonly();

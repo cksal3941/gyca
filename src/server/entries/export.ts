@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { z } from "zod";
-import { ENTRY_STATUSES, PAYMENT_STATES, PUBLISHED_RESULTS, REVIEW_STATUSES } from "../../contracts/index.ts";
+import { CurrencySchema, ENTRY_STATUSES, PAYMENT_STATES, PUBLISHED_RESULTS, REVIEW_STATUSES } from "../../contracts/index.ts";
 import type { EntryExportRequest } from "../../contracts/entry-export.ts";
 import type { EntryDatabase } from "./database.ts";
 import { EntryFault } from "./errors.ts";
@@ -15,7 +15,7 @@ const rowSchema = z.object({
   status: z.enum(ENTRY_STATUSES), review_status: z.enum(REVIEW_STATUSES), published_result: z.enum(PUBLISHED_RESULTS).nullable(),
   created_at: z.coerce.date(), submitted_at: z.coerce.date().nullable(), received_at: z.coerce.date().nullable(),
   receipt_number: z.string().nullable(), payment_state: z.enum(PAYMENT_STATES).nullable(), amount_minor: z.coerce.number().int().nullable(),
-  currency: z.literal("EUR").nullable(), needs_review: z.boolean().nullable(),
+  currency: CurrencySchema.nullable(), needs_review: z.boolean().nullable(),
 });
 
 function csvCell(input: unknown) {

@@ -57,8 +57,15 @@ function detail(row: EntryRow, policy: Policy, now: Date): EntryDetail {
       invitationPublishedAt: row.invitation_published_at?.toISOString() ?? null,
       confirmedAt: row.final_participation_confirmed_at?.toISOString() ?? null, orderId: row.final_participation_order_id,
       allowedActions: row.final_participation_state === "invited" ? ["respond_final_participation" as const] : [] };
+  // Payment actions only route the participant to the payment page. The payment page re-reads the
+  // server-priced payment options and the order's own allowedActions before showing any pay button.
+  const paymentState = row.payment?.state ?? null;
+  const payable = row.status === "submitted" && !row.payment_needs_review && paymentState !== "succeeded";
+  const paymentActions = payable
+    ? ["start_payment" as const, ...(row.payment !== null ? ["check_payment" as const] : [])]
+    : row.status === "submitted" && !row.payment_needs_review && paymentState === "succeeded" ? ["check_payment" as const] : [];
   const allowedActions = withdrawn ? [] : submitted
-    ? ["view_submission", ...(row.certificate_count > 0 ? ["download_certificate" as const] : [])]
+    ? ["view_submission", ...paymentActions, ...(row.certificate_count > 0 ? ["download_certificate" as const] : [])]
     : blocked === null ? ["edit"] as const : [];
   const frozen = displaySnapshotSchema.safeParse(row.snapshot);
   const displayWork = frozen.success ? frozen.data.work : row.work;
@@ -79,7 +86,7 @@ function detail(row: EntryRow, policy: Policy, now: Date): EntryDetail {
     allowedActions,
     blockingReasons: withdrawn ? ["ENTRY_LOCKED"] : row.status === "received" ? [] : row.payment_needs_review ? ["RECEIPT_PENDING"]
       : row.payment?.state === "succeeded" ? ["RECEIPT_PENDING"]
-      : submitted ? ["PAYMENT_REQUIRED", "PAYMENT_UNAVAILABLE"] : blocked === null ? ["REQUIRED_FIELDS_MISSING", "POLICY_NOT_CONFIGURED"] : [blocked.code],
+      : submitted ? [paymentState === "pending" ? "PAYMENT_PENDING" : "PAYMENT_REQUIRED"] : blocked === null ? ["REQUIRED_FIELDS_MISSING", "POLICY_NOT_CONFIGURED"] : [blocked.code],
     participant: row.participant, work: row.work, guardian: row.guardian,
   });
 }

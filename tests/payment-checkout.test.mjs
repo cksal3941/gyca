@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises';
 import { PGlite } from '@electric-sql/pglite';
 import { createPaymentHandlers } from '../src/server/payments/http.ts';
 import { createPaymentService } from '../src/server/payments/service.ts';
+import { createTossProvider } from '../src/server/payments/toss.ts';
 
 test('hosted checkout sessions are owner-scoped, server-gated and browser-safe', async (t) => {
   const db = new PGlite();
@@ -74,6 +75,38 @@ test('hosted checkout sessions are owner-scoped, server-gated and browser-safe',
       current = base + 60000;
       assert.equal((await handlers.checkout(request(), order.id)).status, 409);
       assert.deepEqual((await service.get('alice', order.id)).allowedActions, ['check_payment']);
+    });
+
+    await t.test('describes a Toss browser-SDK launch with only server-fixed values', async () => {
+      for (const name of ['031_refunds', '040_currencies']) await db.exec(await readFile(new URL(`../migrations/${name}.sql`, import.meta.url), 'utf8'));
+      const krwEntry = randomUUID();
+      await db.query(`INSERT INTO gyca_entries(id,owner_id,competition_id,status,submitted_at) VALUES($1,'alice','test','submitted',$2)`, [krwEntry, new Date(base - 1000)]);
+      await db.query(`INSERT INTO gyca_submissions(entry_id,request_key,request_hash,submitted_at,snapshot,result) VALUES($1,'submit','hash',$2,$3::jsonb,'{}')`,
+        [krwEntry, new Date(base - 1000), JSON.stringify({ competition: { payment_closes_at: new Date(base + 600000).toISOString(),
+          public_content: { fee: { amountMinor: 100000, currency: 'KRW' } } } })]);
+      const toss = createTossProvider({ secretKey: 'test_sk_fixture', clientKey: 'test_ck_fixture', merchantAccount: 'fixture', liveMode: false,
+        currency: 'KRW', siteOrigin: 'https://gyca.test' }, async () => ({ status: 500, body: {} }), now);
+      const tossService = createPaymentService(db, toss, now);
+      const tossHandlers = createPaymentHandlers({ service: tossService, now, origin: 'https://gyca.test', getUserId: async (r) => r.headers.get('x-test-user') });
+      const krwOrder = await tossService.create('alice', krwEntry, 'krw-order');
+      assert.deepEqual(krwOrder.allowedActions, ['start_payment', 'check_payment']);
+      const response = await tossHandlers.checkout(request(), krwOrder.id);
+      assert.equal(response.status, 200);
+      const session = (await response.json()).data;
+      assert.equal(session.provider, 'tosspayments'); assert.equal(session.mode, 'test');
+      assert.equal(session.launch.kind, 'tosspayments_sdk');
+      assert.equal(session.launch.clientKey, 'test_ck_fixture');
+      assert.deepEqual(session.launch.amount, { currency: 'KRW', value: 100000 });
+      assert.equal(session.launch.successUrl, `https://gyca.test/mypage/entries/${krwEntry}/payment/success`);
+      assert.equal(session.launch.failUrl, `https://gyca.test/mypage/entries/${krwEntry}/payment/fail`);
+      assert.match(session.launch.customerKey, /^gyca-[a-f0-9]{40}$/);
+      // The window expires with the order's payment deadline, never beyond it.
+      assert.equal(session.expiresAt, new Date(base + 600000).toISOString());
+      const text = JSON.stringify(session);
+      assert.ok(!text.includes('test_sk_') && !text.includes('alice'));
+      // Without a client key the same provider verifies approvals but never advertises a window.
+      const verifyOnly = createTossProvider({ secretKey: 'test_sk_fixture', merchantAccount: 'fixture', liveMode: false, currency: 'KRW' }, async () => ({ status: 500, body: {} }), now);
+      assert.deepEqual((await createPaymentService(db, verifyOnly, now).get('alice', krwOrder.id)).allowedActions, ['check_payment']);
     });
 
     await t.test('keeps checkout unavailable when no configured provider can launch it', async () => {

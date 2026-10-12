@@ -5,6 +5,8 @@ import { Button, Message, StatusBadge, Select, type Tone } from "@/components/ds
 import { getAdminEntryDetail, getReviewDecision, updateReviewDecision } from "@/lib/api/ops";
 import type { AdminEntryDetailSchema } from "@/contracts/admin-entry-detail";
 import type { z } from "zod";
+import type { Money } from "@/contracts";
+import { formatMoney } from "@/lib/money";
 
 // Admin entry detail (LIVE, contract shape). CLIENT component: it fetches
 // GET /admin/competitions/{competitionId}/entries/{entryId} with the operator
@@ -63,8 +65,7 @@ const ACTION_LABEL: Record<string, string> = {
   view_guardian_consents: "보호자 동의 열람", issue_certificate: "인증서 발급",
 };
 
-const money = (m: { amountMinor: number; currency: string }) =>
-  m.currency === "EUR" ? `€${(m.amountMinor / 100).toFixed(0)}` : `${(m.amountMinor / 100).toFixed(2)} ${m.currency}`;
+const money = (m: Money) => formatMoney(m, "ko");
 const fmtBytes = (n: number) => (n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1000))} KB`);
 const fmtDateTime = (iso: string) => new Date(iso).toLocaleString("ko-KR");
 

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import { PAYMENT_STATES, ERROR_CODES } from "../../contracts/index.ts";
+import { CurrencySchema, PAYMENT_STATES, ERROR_CODES } from "../../contracts/index.ts";
 import { AcceptLatePaymentResultSchema, PAYMENT_REVIEW_REASONS, PaymentAdminActionSchema, PaymentReviewSchema,
   type AcceptLatePaymentRequest, type RequeueRecoveryRequest } from "../../contracts/payment-admin.ts";
 import type { EntryDatabase, SqlConnection } from "../entries/database.ts";
@@ -9,7 +9,7 @@ import { PaymentEvidenceSchema } from "./provider.ts";
 
 const scopeSchema = z.object({ permission: z.enum(["viewer", "operator"]) });
 const orderSchema = z.object({ id: z.uuid(), entry_id: z.uuid(), amount_minor: z.coerce.number(),
-  currency: z.literal("EUR"), state: z.enum(PAYMENT_STATES), needs_review: z.boolean(),
+  currency: CurrencySchema, state: z.enum(PAYMENT_STATES), needs_review: z.boolean(),
   recovery_state: z.enum(["pending", "running", "completed", "stalled"]).nullable(),
   attempts: z.number().int().nullable(), updated_at: z.date().nullable(),
   last_error_code: z.string().nullable(), due_at: z.date().nullable(), lease_until: z.date().nullable(),

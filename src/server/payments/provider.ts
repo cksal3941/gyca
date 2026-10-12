@@ -28,7 +28,10 @@ export interface PaymentProvider {
     idempotencyKey: string) => Promise<unknown>;
   // Creates or reuses a hosted checkout for this immutable order. Implementations must use the
   // order ID as their idempotency reference and return only a browser-safe HTTPS redirect URL.
-  readonly beginCheckout?: (order: PaymentOrder, customerReference: string) => Promise<PaymentCheckoutSession>;
+  // `context.buyerCountry` is the participant's residence country from the frozen submission; some
+  // methods (PayPal) require it for the window.
+  readonly beginCheckout?: (order: PaymentOrder, customerReference: string,
+    context?: { readonly buyerCountry?: string | null }) => Promise<PaymentCheckoutSession>;
   // Authenticate original webhook bytes before normalization; where the provider does not sign a
   // notification, use an authenticated provider lookup instead of trusting notification fields.
   readonly verifyWebhook: (bytes: Uint8Array, headers: Headers) => Promise<unknown>;

@@ -5,6 +5,10 @@ export const REVIEW_STATUSES = ["not_started", "under_review", "completed"] as c
 export const PUBLISHED_RESULTS = ["official_selection", "finalist", "not_selected"] as const;
 export const COMPETITION_STATUSES = ["upcoming", "open", "closed", "judging", "result", "archived"] as const;
 export const PAYMENT_STATES = ["pending", "succeeded", "failed", "cancelled", "expired"] as const;
+// Supported billing currencies and their minor-unit exponents. amountMinor is always an integer in the
+// smallest unit: EUR/USD cents (exponent 2), KRW won (exponent 0). Never convert between currencies.
+export const CURRENCIES = ["EUR", "KRW", "USD"] as const;
+export const CURRENCY_EXPONENT: Readonly<Record<(typeof CURRENCIES)[number], 0 | 2>> = { EUR: 2, KRW: 0, USD: 2 };
 export const ENTRY_ACTIONS = ["edit", "upload", "submit", "start_payment", "check_payment", "view_submission", "download_certificate"] as const;
 export const COMPETITION_ACTIONS = ["start_entry", "view_guidelines"] as const;
 export const BLOCKING_REASONS = ["NOT_OPEN_YET", "DEADLINE_PASSED", "COMPETITION_ARCHIVED", "POLICY_NOT_CONFIGURED", "PAYMENT_UNAVAILABLE", "ENTRY_LOCKED", "REQUIRED_FIELDS_MISSING", "FILE_NOT_READY", "CONSENT_REQUIRED", "GUARDIAN_VERIFICATION_REQUIRED", "PAYMENT_REQUIRED", "PAYMENT_PENDING", "RECEIPT_PENDING"] as const;
@@ -43,7 +47,9 @@ const text = z.string();
 const nonempty = z.string().min(1);
 export const LocalizedTextSchema = z.object({ en: text, ko: text }).readonly();
 const amountMinorSchema = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
-export const MoneySchema = z.object({ amountMinor: amountMinorSchema, currency: z.literal("EUR") }).readonly();
+export const CurrencySchema = z.enum(CURRENCIES);
+export type Currency = z.infer<typeof CurrencySchema>;
+export const MoneySchema = z.object({ amountMinor: amountMinorSchema, currency: CurrencySchema }).readonly();
 export type Money = z.infer<typeof MoneySchema>;
 export type LocalizedText = z.infer<typeof LocalizedTextSchema>;
 
@@ -80,7 +86,10 @@ export const ExhibitionSchema = z.object({
 
 export const CompetitionSchema = z.object({
   id: CompetitionIdSchema, slug: nonempty, status: z.enum(COMPETITION_STATUSES), title: LocalizedTextSchema,
-  fee: MoneySchema.nullable(), readiness: z.object({ application: z.boolean(), payment: z.boolean() }).readonly(),
+  fee: MoneySchema.nullable(),
+  // Fixed prices in other billing currencies (e.g. USD for PayPal). Never derived from `fee` by exchange rate.
+  alternativeFees: z.array(MoneySchema).max(2).readonly().default([]),
+  readiness: z.object({ application: z.boolean(), payment: z.boolean() }).readonly(),
   allowedActions: z.array(z.enum(COMPETITION_ACTIONS)).readonly(), blockingReasons: z.array(z.enum(BLOCKING_REASONS)).readonly(),
   opensAt: nullableTime, submissionClosesAtExclusive: nullableTime, paymentClosesAtExclusive: nullableTime,
   timezone: nonempty, keyDates: z.array(KeyDateSchema).readonly(), formSpec: FormSpecSchema.nullable(),
@@ -94,6 +103,8 @@ export const CompetitionSchema = z.object({
     || v.formSpec.ageReferenceDate === null || v.formSpec.fields.some((f) => f.requiredOnSubmit === null)
     || v.formSpec.uploads.some((f) => f.requiredOnSubmit === null || f.maxBytes === null))) reject("Unresolved application policy");
   if (v.readiness.payment && (v.fee === null || v.paymentClosesAtExclusive === null)) reject("Unresolved payment policy");
+  if (new Set([v.fee?.currency, ...v.alternativeFees.map((f) => f.currency)].filter((c) => c !== undefined)).size !== v.alternativeFees.length + (v.fee === null ? 0 : 1))
+    reject("Duplicate fee currency");
   if (v.opensAt !== null && v.submissionClosesAtExclusive !== null && Date.parse(v.opensAt) >= Date.parse(v.submissionClosesAtExclusive)) reject("Invalid entry window");
 }).readonly();
 export type Competition = z.infer<typeof CompetitionSchema>;
@@ -113,7 +124,7 @@ export const FinalParticipationSchema = z.object({
     ctx.addIssue({ code: "custom", message: "Participation action does not match state" });
 }).readonly();
 export const PaymentSummarySchema = z.object({
-  orderId: OrderIdSchema, state: z.enum(PAYMENT_STATES), amountMinor: amountMinorSchema, currency: z.literal("EUR"),
+  orderId: OrderIdSchema, state: z.enum(PAYMENT_STATES), amountMinor: amountMinorSchema, currency: CurrencySchema,
 }).readonly();
 export const EntrySummarySchema = z.object({
   id: EntryIdSchema, competitionId: CompetitionIdSchema, revision: z.number().int().positive(),

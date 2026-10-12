@@ -10,6 +10,8 @@ import {
   type AdminDashboard, type PaymentHealth, type PaymentReview, type AdminCompetitionRef, type RefundOverview,
 } from "@/lib/api/ops";
 import type { RequestState } from "@/lib/api";
+import type { Currency, Money } from "@/contracts";
+import { formatMoney } from "@/lib/money";
 
 // Payment operations (LIVE, organizer). Dashboard + per-competition health,
 // orders needing review, and operator mutations driven by server allowedActions:
@@ -17,7 +19,8 @@ import type { RequestState } from "@/lib/api";
 // Approved amounts are gross (pre-refund) — not settlement revenue. A button click
 // is never treated as final success: the ledger is re-fetched after each action.
 
-const money = (m: number) => `€${(m / 100).toFixed(0)}`;
+const money = (m: Money) => formatMoney(m, "ko");
+const minor = (amountMinor: number, currency: Currency): Money => ({ amountMinor, currency });
 const PAY_TONE: Record<string, Tone> = { pending: "warning", succeeded: "success", failed: "danger", cancelled: "danger", expired: "neutral" };
 
 // One review row with its operator actions (requeue / accept-late). Actions are
@@ -50,7 +53,7 @@ function ReviewRow({ competitionId, r, onDone }: { competitionId: string; r: Pay
     <li className="border-b border-line pb-3 last:border-0">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <StatusBadge tone={PAY_TONE[r.state] ?? "neutral"}>{r.state}</StatusBadge>
-        <span className="text-[16px] font-semibold text-ink-strong">{money(r.money.amountMinor)}</span>
+        <span className="text-[16px] font-semibold text-ink-strong">{money(r.money)}</span>
         <span className="text-[15px] text-ink-strong/70">{r.reviewReasons.join(", ")}</span>
         <span className="ml-auto flex gap-2">
           {r.allowedActions.includes("requeue_recovery") && <Button size="sm" variant="outline" onClick={() => { setOpen(open === "requeue" ? null : "requeue"); setMsg(null); }} disabled={busy}>복구 재큐</Button>}
@@ -112,19 +115,19 @@ function RefundPanel({ competitionId }: { competitionId: string }) {
       {ov && (
         <div className="mt-3 rounded-lg border border-line bg-surface p-3">
           <div className="flex flex-wrap gap-2">
-            <StatusBadge tone="neutral">원결제 {money(ov.money.amountMinor)}</StatusBadge>
-            <StatusBadge tone="success">환불완료 {money(ov.refundedAmountMinor)}</StatusBadge>
-            <StatusBadge tone="warning">대기 {money(ov.pendingAmountMinor)}</StatusBadge>
-            <StatusBadge tone="neutral">잔여 {money(ov.remainingAmountMinor)}</StatusBadge>
+            <StatusBadge tone="neutral">원결제 {money(ov.money)}</StatusBadge>
+            <StatusBadge tone="success">환불완료 {money(minor(ov.refundedAmountMinor, ov.money.currency))}</StatusBadge>
+            <StatusBadge tone="warning">대기 {money(minor(ov.pendingAmountMinor, ov.money.currency))}</StatusBadge>
+            <StatusBadge tone="neutral">잔여 {money(minor(ov.remainingAmountMinor, ov.money.currency))}</StatusBadge>
           </div>
           {ov.refunds.length > 0 && (
             <ul className="mt-2 flex flex-col gap-1 text-[15px] text-ink-strong">
-              {ov.refunds.map((f) => <li key={f.id}>{money(f.money.amountMinor)} · {f.state} · {f.reason}</li>)}
+              {ov.refunds.map((f) => <li key={f.id}>{money(f.money)} · {f.state} · {f.reason}</li>)}
             </ul>
           )}
           {ov.allowedActions.includes("request_refund") ? (
             <div className="mt-3 grid gap-2 sm:grid-cols-[8rem_1fr_auto]">
-              <input className="rounded-lg border border-field bg-white px-3 py-2 text-[15px] outline-none focus:border-brand-blue" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="금액 (EUR)" inputMode="decimal" />
+              <input className="rounded-lg border border-field bg-white px-3 py-2 text-[15px] outline-none focus:border-brand-blue" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="환불 금액 (최소단위: EUR·USD는 센트, KRW는 원)" inputMode="decimal" />
               <input className="rounded-lg border border-field bg-white px-3 py-2 text-[15px] outline-none focus:border-brand-blue" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="사유" />
               <Button size="sm" onClick={refund} disabled={busy}>{busy ? "처리 중…" : "환불 요청"}</Button>
             </div>
@@ -197,7 +200,7 @@ export default function AdminPaymentsPage() {
                       <td className="px-4 py-3 text-ink-strong">{c.entries.received}/{c.entries.total}</td>
                       <td className="px-4 py-3 text-ink-strong">{c.payments.succeeded}</td>
                       <td className="px-4 py-3">{c.payments.needsReview > 0 ? <StatusBadge tone="warning">{c.payments.needsReview}</StatusBadge> : <span className="text-ink-strong">0</span>}</td>
-                      <td className="px-4 py-3 text-ink-strong">{money(c.payments.succeededAmountMinor)}</td>
+                      <td className="px-4 py-3 text-ink-strong">{money(minor(c.payments.succeededAmountMinor, c.payments.currency))}</td>
                     </tr>
                   ))}
                 </tbody>

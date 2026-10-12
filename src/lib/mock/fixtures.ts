@@ -479,8 +479,8 @@ const REFUND_NOTICE = {
   ko: "접수 마감 전 취소 시 전액 환불, 마감 이후에는 환불 불가.",
 };
 const EUR70 = { amountMinor: 7000, currency: EUR };
-const routeKR = { id: "toss_kr", policyToken: POLICY_TOKEN, label: { en: "Domestic card (Toss)", ko: "국내 카드 (토스)" }, mode: "test", refundNotice: REFUND_NOTICE };
-const routeINTL = { id: "intl_card", policyToken: POLICY_TOKEN, label: { en: "International card", ko: "해외 카드" }, mode: "test", refundNotice: REFUND_NOTICE };
+const routeKR = { id: "toss_kr", policyToken: POLICY_TOKEN, label: { en: "Domestic card (Toss)", ko: "국내 카드 (토스)" }, mode: "test", refundNotice: REFUND_NOTICE, money: EUR70 };
+const routeINTL = { id: "intl_card", policyToken: POLICY_TOKEN, label: { en: "International card", ko: "해외 카드" }, mode: "test", refundNotice: REFUND_NOTICE, money: EUR70 };
 
 export const RAW_PAYMENT_OPTIONS = {
   // candidate(s) available + order creation allowed (still NOT a payment window)

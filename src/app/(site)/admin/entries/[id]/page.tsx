@@ -4,6 +4,8 @@ import { Button, Message, StatusBadge, type Tone } from "@/components/ds";
 import { getAdminEntrySync } from "@/lib/api/ops";
 import { isLive } from "@/lib/api/mode";
 import AdminEntryDetailLive from "@/components/admin/AdminEntryDetailLive";
+import type { Money } from "@/contracts";
+import { formatMoney } from "@/lib/money";
 
 // Admin entry detail (MOCK, read-oriented). Shows participant/work/files/payment/
 // consents/audit. Actions come from server allowedActions; execution is a guarded
@@ -52,7 +54,7 @@ const CONSENT_LABEL: Record<string, string> = {
   work_license: "작품 이용허락",
 };
 
-const money = (m: number) => `€${(m / 100).toFixed(0)}`;
+const money = (m: Money) => formatMoney(m, "ko");
 const fmtBytes = (n: number) => (n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)} MB` : `${Math.round(n / 1000)} KB`);
 const fmtDateTime = (iso: string) => new Date(iso).toLocaleString("ko-KR");
 
@@ -186,7 +188,7 @@ export default async function AdminEntryDetailPage({
           {e.payment ? (
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <StatusBadge tone={PAYMENT[e.payment.state].tone}>{PAYMENT[e.payment.state].label}</StatusBadge>
-              <span className="text-[16px] font-semibold text-ink-strong">{money(e.payment.amountMinor)}</span>
+              <span className="text-[16px] font-semibold text-ink-strong">{money({ amountMinor: e.payment.amountMinor, currency: e.payment.currency })}</span>
               {e.payment.needsReview && <StatusBadge tone="warning">검토 필요</StatusBadge>}
             </div>
           ) : (

@@ -6,6 +6,7 @@ import type { PaymentOptions } from "../../contracts/payment-options.ts";
 import type { EntryDatabase } from "../entries/database.ts";
 import { EntryFault } from "../entries/errors.ts";
 import type { PaymentProvider } from "./provider.ts";
+import { feeFor } from "./service.ts";
 
 import { PaymentRoutingPolicySchema } from "../../contracts/payment-policy.ts";
 export { PaymentRoutingPolicySchema } from "../../contracts/payment-policy.ts";
@@ -19,7 +20,8 @@ const rowSchema = z.object({
   order_id: z.string().nullable(),
 });
 const snapshotSchema = z.object({ participant: z.object({ residenceCountry: z.string().regex(/^[A-Z]{2}$/) }),
-  competition: z.object({ payment_closes_at: z.iso.datetime(), public_content: z.object({ fee: MoneySchema }) }),
+  competition: z.object({ payment_closes_at: z.iso.datetime(),
+    public_content: z.object({ fee: MoneySchema, alternativeFees: z.array(MoneySchema).optional() }) }),
 });
 type ProviderIdentity = Pick<PaymentProvider, "id" | "merchantAccount" | "liveMode">;
 
@@ -44,10 +46,15 @@ export function createPaymentOptions(database: EntryDatabase,
     const policy = PaymentRoutingPolicySchema.safeParse(row.payment_routing);
     if (!row.payment_enabled || !policy.success || snapshot.data.competition.public_content.fee.amountMinor <= 0)
       return PaymentOptionsSchema.parse({ ...base, blockingReasons: ["POLICY_NOT_CONFIGURED"] });
-    const routes = policy.data.routes.filter(route => route.enabled && route.countries.includes(snapshot.data.participant.residenceCountry)
-      && route.currency === snapshot.data.competition.public_content.fee.currency
-      && runtime.providers.some(provider => provider.id === route.provider && provider.merchantAccount === route.merchantAccount && provider.liveMode === route.liveMode))
-      .map(route => ({ id: route.id, policyToken: routingToken(policy.data), label: LocalizedTextSchema.parse(route.label), mode: route.liveMode ? "live" : "test", refundNotice: route.refundNotice }));
+    // A route is offered only when the frozen submission carries a fixed fee in that route's currency.
+    const content = snapshot.data.competition.public_content;
+    const routes = policy.data.routes.flatMap(route => {
+      const money = feeFor(content, route.currency);
+      return route.enabled && route.countries.includes(snapshot.data.participant.residenceCountry) && money !== null && money.amountMinor > 0
+        && runtime.providers.some(provider => provider.id === route.provider && provider.merchantAccount === route.merchantAccount && provider.liveMode === route.liveMode)
+        ? [{ id: route.id, policyToken: routingToken(policy.data), label: LocalizedTextSchema.parse(route.label), mode: route.liveMode ? "live" : "test", refundNotice: route.refundNotice, money }]
+        : [];
+    });
     return PaymentOptionsSchema.parse({ ...base, routes,
       allowedActions: routes.length > 0 ? ["create_order"] : [],
       blockingReasons: routes.length > 0 ? [] : ["PAYMENT_UNAVAILABLE"] });

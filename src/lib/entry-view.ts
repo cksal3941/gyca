@@ -4,12 +4,12 @@
 // never re-decides those facts, and the client never invents allowed actions.
 
 import { getCompetitionSync } from "@/lib/api";
-import type { EntrySummary, PaymentState, ErrorCode } from "@/contracts";
+import type { EntrySummary, PaymentState, ErrorCode, Money } from "@/contracts";
+import { formatMoney } from "@/lib/money";
 import type { Tone } from "@/components/ds";
 import type { Bi, Locale } from "@/lib/i18n";
 
-export const money = (amountMinor: number) =>
-  `€${(amountMinor / 100).toFixed(amountMinor % 100 === 0 ? 0 : 2)}`;
+export const money = (value: Money, ko = false) => formatMoney(value, ko ? "ko" : "en");
 
 export const fmtDate = (iso: string | null, ko: boolean) =>
   iso

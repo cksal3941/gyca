@@ -27,15 +27,19 @@ Basic 인증에는 비밀 키 뒤 콜론을 포함하며, 승인 요청에는 �
 
 EUR 지원·가맹 계약은 아직 확인되지 않았다. 어댑터가 있다는 사실은 EUR 계약이 있다는 뜻이 아니다. **API 금액 단위에도 기본값을 주지 않았다.** 계약된 EUR 상품 규격을 확인해 `major` 또는 `minor`를 지정해야 한다. 내부 7000은 major 설정이면 70, minor 설정이면 7000으로 전달한다. 소수 센트나 안전한 정수 범위를 벗어나는 응답은 반올림하지 않고 거부한다. 다른 통화로 환산하지 않는다.
 
-`.env.example`에 아래 항목을 추가했다. 실제 키나 계약 내용을 입력하지 않았다.
+> 2026-10-10 갱신: 결제창(토스 v2 브라우저 SDK)·KRW 청구·live 모드 활성화가 구현됐다. 아래 환경 변수 표는 현재 값이며, 이전 `tosspayments-test`/`TOSS_TEST_*`/`TOSS_EUR_*` 조합은 테스트 모드 호환용으로만 남아 있다. 결제창 계약은 [payment-checkout.md](payment-checkout.md) 참고.
 
 | 환경 변수 | 의미 |
 | --- | --- |
-| `GYCA_PAYMENT_PROVIDER` | 기본 disabled. 테스트 연결을 명시적으로 선택할 때만 `tosspayments-test` |
-| `TOSS_TEST_MID` | 테스트 가맹점 ID |
-| `TOSS_TEST_SECRET_KEY` | 해당 MID의 test 시크릿 키. 브라우저·Git·채팅에 노출하지 않음 |
-| `TOSS_EUR_AMOUNT_UNIT` | 가맹 상품 규격으로 확인한 major/minor |
-| `TOSS_EUR_APPROVAL_REFERENCE` | EUR 지원·단위 확인 기록의 참조. 참가자 동의나 비밀 키가 아님 |
+| `GYCA_PAYMENT_PROVIDER` | 기본 disabled. `tosspayments`로 활성화 |
+| `TOSS_MODE` | `test` 또는 `live`. 키 접두사(test_/live_)와 일치해야 하며 불일치면 비활성 |
+| `TOSS_MID` | 가맹점 ID. 모든 API 응답의 `mId`와 대조 |
+| `TOSS_SECRET_KEY` | 서버 시크릿 키(`*_sk_`). 브라우저·Git·채팅에 노출하지 않음 |
+| `TOSS_CLIENT_KEY` | 브라우저 SDK 클라이언트 키(`*_ck_`). 없으면 승인·웹훅 검증만 하고 결제창(start_payment)은 열리지 않음 |
+| `TOSS_CURRENCY` | 청구 통화. 기본 KRW, PayPal 해외결제 계약 시 USD. EUR 주문은 변환 없이 거부 |
+| `TOSS_APPROVAL_REFERENCE` | live 모드 필수. 가맹 계약 확인 기록의 참조(비밀 아님). 없으면 live 키가 있어도 비활성 |
+| `BETTER_AUTH_URL` | 공개 HTTPS origin. 성공/실패 복귀 URL의 기준이며 HTTPS가 아니면 결제창 비활성 |
+| `TOSS_PAYPAL_MID` / `TOSS_PAYPAL_SECRET_KEY` / `TOSS_PAYPAL_CLIENT_KEY` | 선택. PayPal 해외간편결제(USD) 전용 MID와 키 쌍. 토스는 MID당 통화 하나이므로 카드 MID와 별도다. 셋 다 비우면 카드 전용, 일부만 채우면 결제 전체 비활성 |
 
 누락·잘못된 키·live 키이면 어댑터는 활성화되지 않는다. 테스트는 별도 DB에서 진행해야 한다. 활성화 시에도 공모 payment_enabled, payment_policy, 제출 스냅샷, 마감 검사는 계속 적용된다. 테스트 키로 기록되는 received는 테스트 DB에서만 의미가 있다.
 

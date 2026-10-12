@@ -15,6 +15,7 @@
 //   - No sensitive application data is persisted to localStorage.
 
 import { useReducer, useRef, useCallback } from "react";
+import type { Currency } from "@/contracts";
 
 export type Scenario =
   | "happy"
@@ -75,7 +76,7 @@ export type FlowState = {
   entryStatus: EntryStatus;
   payment: PaymentState;
   amountMinor: number;
-  currency: "EUR";
+  currency: Currency;
   receiptNumber: string | null;
   submittedAt: string | null;
   receivedAt: string | null;

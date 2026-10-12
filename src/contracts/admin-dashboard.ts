@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { CompetitionIdSchema, LocalizedTextSchema, UtcTimestampSchema } from "./index.ts";
+import { CompetitionIdSchema, CurrencySchema, LocalizedTextSchema, UtcTimestampSchema } from "./index.ts";
 
 const count = z.number().int().nonnegative().safe();
 const entryCounts = z.object({ total: count, draft: count, submitted: count, received: count,
   withdrawn: count, expired: count, uniqueApplicants: count }).readonly();
 const paymentCounts = z.object({ total: count, pending: count, succeeded: count, failed: count,
-  cancelled: count, expired: count, needsReview: count, succeededAmountMinor: count, currency: z.literal("EUR") }).readonly();
+  cancelled: count, expired: count, needsReview: count, succeededAmountMinor: count, currency: CurrencySchema }).readonly();
 const reviewCounts = z.object({ notStarted: count, underReview: count, completed: count,
   activeAssignments: count, submittedAssignments: count }).readonly();
 const resultCounts = z.object({ notAnnounced: count, officialSelection: count, finalist: count, notSelected: count }).readonly();

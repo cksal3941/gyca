@@ -15,7 +15,7 @@
 // labelled) — the UI renders whatever settings return and never fixes scores.
 
 import type { RequestState } from "./index";
-import type { EntryStatus, ReviewStatus, PublishedResult, PaymentState, Page } from "@/contracts";
+import type { EntryStatus, ReviewStatus, PublishedResult, PaymentState, Page, Currency } from "@/contracts";
 import { AdminAccessSchema, type AdminAccess } from "@/contracts/admin-access";
 import { AdminEntrySchema, AdminEntriesPageSchema } from "@/contracts/admin-entries";
 import { AdminEntryDetailSchema } from "@/contracts/admin-entry-detail";
@@ -128,7 +128,7 @@ export type AdminEntryView = {
   reviewStatus: ReviewStatus;
   publishedResult: PublishedResult | null;
   fileState: FileAggState;
-  payment: { state: PaymentState; amountMinor: number; needsReview: boolean } | null;
+  payment: { state: PaymentState; amountMinor: number; currency: Currency; needsReview: boolean } | null;
   createdAt: string; // ISO
   submittedAt: string | null;
   certificateIssued: boolean;
@@ -181,7 +181,7 @@ function row(
   return {
     id, receiptNumber, participantName, workTitle, category, ageGroup, entryStatus, reviewStatus,
     publishedResult, fileState,
-    payment: pay ? { state: pay, amountMinor: EUR(7000), needsReview: pay === "failed" } : null,
+    payment: pay ? { state: pay, amountMinor: EUR(7000), currency: "EUR", needsReview: pay === "failed" } : null,
     createdAt: "2026-12-10T09:00:00Z", submittedAt: entryStatus === "draft" ? null : "2026-12-10T09:10:00Z",
     certificateIssued,
   };
@@ -511,7 +511,7 @@ function mapAdminEntry(a: z.infer<typeof AdminEntrySchema>): AdminEntryView {
     publishedResult: a.publishedResult,
     fileState: a.fileState,
     payment: a.payment
-      ? { state: a.payment.state, amountMinor: a.payment.money.amountMinor, needsReview: a.payment.needsReview }
+      ? { state: a.payment.state, amountMinor: a.payment.money.amountMinor, currency: a.payment.money.currency, needsReview: a.payment.needsReview }
       : null,
     createdAt: a.createdAt,
     submittedAt: a.submittedAt,

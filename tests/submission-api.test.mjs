@@ -223,7 +223,8 @@ test('submission HTTP flow freezes evidence without issuing a receipt', async (t
       assert.equal(saved.snapshot.assets[0].object_version, 'version-1');
       assert.equal(saved.snapshot.competition.public_content.fee.amountMinor, 7000);
       const read = await store.get('alice', id);
-      assert.equal(read.entryStatus, 'submitted'); assert.deepEqual(read.allowedActions, ['view_submission']);
+      assert.equal(read.entryStatus, 'submitted'); assert.deepEqual(read.allowedActions, ['view_submission', 'start_payment']);
+      assert.deepEqual(read.blockingReasons, ['PAYMENT_REQUIRED']);
       assert.equal(read.submittedAt, clock().toISOString());
       assert.equal(read.guardianVerification.status, 'not_required');
       assert.ok((await store.list('alice', null, 50)).items.some((e) => e.id === id));

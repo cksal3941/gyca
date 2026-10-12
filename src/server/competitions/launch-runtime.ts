@@ -3,14 +3,13 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { database } from "../database.ts";
 import { createAuthenticatedRunner, parseRequest } from "../entries/http.ts";
-import { configuredTossProvider } from "../payments/toss.ts";
+import { configuredTossProviders } from "../payments/toss.ts";
 import { createLaunchReadiness } from "./launch-readiness.ts";
 import { createLaunchControl } from "./launch-control.ts";
 import { createLaunchControlHandlers } from "./launch-control-http.ts";
 import { configuredS3Storage } from "../uploads/s3.ts";
 
-const provider = configuredTossProvider(process.env);
-const assess = createLaunchReadiness(database, { providers: provider === null ? [] : [provider], now: () => new Date(),
+const assess = createLaunchReadiness(database, { providers: configuredTossProviders(process.env), now: () => new Date(),
   storageConfigured: configuredS3Storage(process.env) !== null, guardianVerificationConfigured: true });
 const run = createAuthenticatedRunner({ origin: process.env.BETTER_AUTH_URL, now: () => new Date(),
   getUserId: async request => {

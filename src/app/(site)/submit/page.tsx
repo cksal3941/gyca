@@ -50,7 +50,7 @@ const LABELS: Record<string, Bi> = {
   "work.publicationStatus": { en: "Publication status", ko: "출판 여부" },
 };
 
-const money = (amountMinor: number) => `€${(amountMinor / 100).toFixed(amountMinor % 100 === 0 ? 0 : 2)}`;
+import { formatMoney as money } from "@/lib/money";
 
 function SubmitForm({
   flow,
@@ -245,7 +245,7 @@ function SubmitForm({
                 [ko ? "공모명" : "Competition", competition.title[locale]],
                 [ko ? "영문 작품명" : "Work title (EN)", state.values["work.englishTitle"] || "—"],
                 [ko ? "참가자" : "Participant", state.values["participant.name"] || "—"],
-                [ko ? "출품비" : "Entry fee", competition.fee ? money(competition.fee.amountMinor) : "—"],
+                [ko ? "출품비" : "Entry fee", competition.fee ? money(competition.fee, locale) : "—"],
               ].map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-4 border-b border-line py-3 text-[16px]">
                   <dt className="text-ink-strong">{k}</dt>
@@ -319,7 +319,7 @@ function PaymentStep({
   const ko = locale === "ko";
   const { state } = flow;
   const p = state.payment;
-  const fee = competition.fee ? money(competition.fee.amountMinor) : "—";
+  const fee = competition.fee ? [competition.fee, ...competition.alternativeFees].map((f) => money(f, locale)).join(ko ? " 또는 " : " or ") : "—";
 
   return (
     <div>
@@ -405,7 +405,7 @@ function ResultStep({
             [ko ? "접수번호" : "Receipt no.", state.receiptNumber],
             [ko ? "공모명" : "Competition", competition.title[locale]],
             [ko ? "작품명" : "Work title", state.values["work.englishTitle"] || "—"],
-            [ko ? "결제내역" : "Payment", `${money(state.amountMinor)} · ${ko ? "결제 완료" : "paid"}`],
+            [ko ? "결제내역" : "Payment", `${money({ amountMinor: state.amountMinor, currency: state.currency }, locale)} · ${ko ? "결제 완료" : "paid"}`],
             [ko ? "접수 시각" : "Received at", fmt(state.receivedAt)],
           ].map(([k, v]) => (
             <div key={k} className="flex justify-between gap-4 border-b border-line pb-2">

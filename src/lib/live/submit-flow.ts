@@ -34,6 +34,7 @@ import {
   getEntryDetail,
   newIdempotencyKey,
 } from "@/lib/api";
+import { launchCheckout } from "@/lib/payments/launch";
 import { REQUIRED_CONSENTS } from "@/lib/content/submit-consent";
 import type { Competition, PaymentState as ServerPaymentState } from "@/contracts";
 import type {
@@ -88,7 +89,7 @@ function initialState(competition: Competition, entryId: string | null): FlowSta
     entryStatus: "draft",
     payment: "none",
     amountMinor: competition.fee?.amountMinor ?? 0,
-    currency: "EUR",
+    currency: competition.fee?.currency ?? "EUR",
     receiptNumber: null,
     submittedAt: null,
     receivedAt: null,
@@ -400,7 +401,11 @@ export function useLiveSubmitFlow({
     if (order.data.state === "pending") {
       const checkout = await beginCheckout(order.data.id);
       if (checkout.kind === "success") {
-        window.location.href = checkout.data.launch.url;
+        const outcome = await launchCheckout(checkout.data);
+        if (outcome.kind === "navigating") return;
+        dispatch({ type: "ERROR", message: outcome.kind === "cancelled"
+          ? "결제창을 닫았습니다. 결제는 진행되지 않았으며 다시 시도할 수 있습니다."
+          : outcome.message });
         return;
       }
       dispatch({

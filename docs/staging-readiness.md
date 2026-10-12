@@ -41,7 +41,7 @@
 1. **DB:** 관리형 Postgres 생성 → `DATABASE_URL` → `scripts/migrate-all.mjs`(001~039) → `scripts/database-check.mjs` 통과. → `NEXT_PUBLIC_API_MODE=live`, `BETTER_AUTH_SECRET/URL` 설정 후 앱 기동, 가입/로그인/공모 조회 200 확인.
 2. **S3:** 버킷(private·versioned·public 차단·CORS) → `GYCA_STORAGE_PROVIDER=s3`+`GYCA_S3_*` → `scripts/storage-check.mjs` 통과 → 브라우저 업로드 PUT→complete→다운로드 서명URL, 블라인드/인증서 워커 확인. launch-readiness.storage=configured 증거 등록.
 3. **메일:** 발신 도메인·발신자 검증 → `GYCA_EMAIL_PROVIDER=…`+키, `*_ENABLED` → 인증 메일·접수 영수증·보호자 링크 수신 확인(격리 수신함). `GYCA_GUARDIAN_CONSENT_ENABLED=true`는 HTTPS origin+메일 준비 후에만.
-4. **PG(결제):** 사업자 등록→PG 가맹계약(통화/해외카드) → `GYCA_PAYMENT_PROVIDER=tosspayments-test`(먼저 테스트키)+`TOSS_*` → 주문→checkout→승인→접수확정→환불 해피패스, `POST .../launch-verifications`에 live_payment 증거 등록. 실키 전환은 최종.
+4. **PG(결제):** 사업자 등록→PG 가맹계약(통화/해외카드) → `GYCA_PAYMENT_PROVIDER=tosspayments`+`TOSS_MODE=test`(먼저 테스트키)+`TOSS_MID/SECRET_KEY/CLIENT_KEY/CURRENCY`, 토스 대시보드에 웹훅 `POST /api/v1/payments/webhook` 등록 → 주문→checkout→승인→접수확정→환불 해피패스, `POST .../launch-verifications`에 live_payment 증거 등록. 실키 전환은 최종.
 5. **오픈:** launch-readiness 13개 check 전부 configured → `canOpen=true` → `POST .../open-applications`. 플래그/DB 직접 수정으로 통과시키지 않는다.
 6. **부하·장애:** 마감 직전 동시 업로드/결제, 콜백 중복/지연, 백업 복원 — 사용자 확인 목표치로 검증.
 

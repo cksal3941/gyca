@@ -25,13 +25,13 @@ test('payment route eligibility uses frozen submission and verified configuratio
   const get = createPaymentOptions(db, { providers: [provider], now: () => at });
   const handler = createPaymentOptionsHandler({ service: get, now: () => at, origin: undefined,
     getUserId: async request => request.headers.get('x-test-user') });
-  async function fixture(country = 'KR', cutoff = '2026-09-16T00:00:00Z') {
+  async function fixture(country = 'KR', cutoff = '2026-09-16T00:00:00Z', content = { fee: { amountMinor: 7000, currency: 'EUR' } }) {
     const id = randomUUID();
     await db.query(`INSERT INTO gyca_entries(id,owner_id,competition_id,status,submitted_at)
       VALUES($1,'alice','one','submitted',$2)`, [id, at]);
     await db.query(`INSERT INTO gyca_submissions(entry_id,request_key,request_hash,submitted_at,snapshot,result)
       VALUES($1,'key','hash',$2,$3::jsonb,'{}')`, [id, at, JSON.stringify({ participant: { residenceCountry: country },
-        competition: { payment_closes_at: cutoff, public_content: { fee: { amountMinor: 7000, currency: 'EUR' } } } })]);
+        competition: { payment_closes_at: cutoff, public_content: content } })]);
     return id;
   }
   async function configure(value) { await db.query('UPDATE gyca_competitions SET payment_routing=$1::jsonb', [value === null ? null : JSON.stringify(value)]); }
@@ -42,6 +42,30 @@ test('payment route eligibility uses frozen submission and verified configuratio
       await db.exec(await readFile(new URL(`../migrations/${name}.sql`, import.meta.url), 'utf8'));
     await db.exec(`INSERT INTO gyca_competitions(id,slug,payment_enabled) VALUES('one','one',true)`);
     await db.exec(`UPDATE gyca_competitions SET payment_policy='{"version":"test","approvalBasis":"provider_paid_at"}'`);
+    await t.test('a route in another currency is offered only with a fixed fee in that currency and charges exactly it', async () => {
+      for (const name of ['031_refunds', '040_currencies']) await db.exec(await readFile(new URL(`../migrations/${name}.sql`, import.meta.url), 'utf8'));
+      const paypal = { id: 'tosspayments', merchantAccount: 'paypal-mid', liveMode: false, reconcile: async () => [], verifyWebhook: async () => { throw new Error('not used'); } };
+      const usdRoute = { ...route, id: 'paypal', provider: paypal.id, merchantAccount: paypal.merchantAccount, countries: ['DE', 'US'], currency: 'USD' };
+      await configure({ version: 'dual', routes: [route, usdRoute] });
+      const dualGet = createPaymentOptions(db, { providers: [provider, paypal], now: () => at });
+      const dualCreate = createRoutedOrders(db, { providers: [provider, paypal], now: () => at });
+      // No USD fee frozen: the route is hidden rather than priced by conversion.
+      const withoutUsd = await dualGet('alice', await fixture('DE'));
+      assert.deepEqual(withoutUsd.routes, []); assert.deepEqual(withoutUsd.blockingReasons, ['PAYMENT_UNAVAILABLE']);
+      const id = await fixture('DE', '2026-09-16T00:00:00Z', { fee: { amountMinor: 7000, currency: 'EUR' }, alternativeFees: [{ amountMinor: 5500, currency: 'USD' }] });
+      const options = await dualGet('alice', id);
+      assert.deepEqual(options.routes.map(r => [r.id, r.money]), [['paypal', { amountMinor: 5500, currency: 'USD' }]]);
+      assert.deepEqual(options.money, { amountMinor: 7000, currency: 'EUR' });
+      const chosen = options.routes[0];
+      const order = await dualCreate('alice', { entryId: id, key: randomUUID() }, { routeId: chosen.id, policyToken: chosen.policyToken, acceptedRefundNotice: true });
+      assert.deepEqual(order.money, { amountMinor: 5500, currency: 'USD' });
+      const saved = (await db.query('SELECT provider,merchant_account,currency,amount_minor FROM gyca_orders WHERE id=$1', [order.id])).rows[0];
+      assert.deepEqual(saved, { provider: 'tosspayments', merchant_account: 'paypal-mid', currency: 'USD', amount_minor: 5500 });
+      // The KRW/EUR card route is still served by the card provider for a domestic participant.
+      const domestic = await dualGet('alice', await fixture('KR', '2026-09-16T00:00:00Z', { fee: { amountMinor: 7000, currency: 'EUR' }, alternativeFees: [{ amountMinor: 5500, currency: 'USD' }] }));
+      assert.deepEqual(domestic.routes.map(r => [r.id, r.money.currency]), [['domestic', 'EUR']]);
+      await configure(policy);
+    });
     await t.test('selected route creates one order and immutable accepted terms', async () => {
       const id = await fixture(); const input = await selection(id); const target = { entryId: id, key: randomUUID() };
       const order = await create('alice', target, input);

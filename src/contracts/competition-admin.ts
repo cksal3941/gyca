@@ -4,7 +4,7 @@ import { CompetitionSchema, UtcTimestampSchema } from "./index.ts";
 const shape = CompetitionSchema.unwrap().shape;
 export const CompetitionContentSchema = z.strictObject({
   title: z.strictObject({ en: z.string().trim().min(1).max(500), ko: z.string().trim().min(1).max(500) }).readonly(),
-  fee: shape.fee, timezone: z.string().refine(value => {
+  fee: shape.fee, alternativeFees: shape.alternativeFees.optional(), timezone: z.string().refine(value => {
     try { new Intl.DateTimeFormat("en", { timeZone: value }); return true; } catch { return false; }
   }), keyDates: shape.keyDates, formSpec: shape.formSpec, exhibition: shape.exhibition, guidelines: shape.guidelines,
 }).readonly();

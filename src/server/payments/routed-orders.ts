@@ -4,7 +4,7 @@ import type { SelectPaymentRoute } from "../../contracts/payment-options.ts";
 import type { EntryDatabase } from "../entries/database.ts";
 import { EntryFault } from "../entries/errors.ts";
 import { PaymentRoutingPolicySchema, routingToken } from "./options.ts";
-import { createPaymentService } from "./service.ts";
+import { createPaymentService, feeFor } from "./service.ts";
 import type { PaymentProvider } from "./provider.ts";
 
 export function createRoutedOrders(database: EntryDatabase,
@@ -34,14 +34,15 @@ export function createRoutedOrders(database: EntryDatabase,
       const route = policy.data.routes.find(r => r.id === input.routeId && r.enabled);
       if (route === undefined) throw new EntryFault("PAYMENT_UNAVAILABLE", 409);
       const saved = z.object({ snapshot: z.object({ participant: z.object({ residenceCountry: z.string() }),
-        competition: z.object({ public_content: z.object({ fee: MoneySchema }) }) }) }).safeParse(
+        competition: z.object({ public_content: z.object({ fee: MoneySchema, alternativeFees: z.array(MoneySchema).optional() }) }) }) }).safeParse(
         (await db.query("SELECT snapshot FROM gyca_submissions WHERE entry_id=$1", [entry.id])).rows[0]);
       if (!saved.success) throw new EntryFault("POLICY_NOT_CONFIGURED", 503);
-      if (!route.countries.includes(saved.data.snapshot.participant.residenceCountry) || route.currency !== saved.data.snapshot.competition.public_content.fee.currency)
+      if (!route.countries.includes(saved.data.snapshot.participant.residenceCountry) || feeFor(saved.data.snapshot.competition.public_content, route.currency) === null)
         throw new EntryFault("PAYMENT_UNAVAILABLE", 409);
       const provider = runtime.providers.find(p => p.id === route.provider && p.merchantAccount === route.merchantAccount && p.liveMode === route.liveMode);
       if (provider === undefined) throw new EntryFault("PAYMENT_UNAVAILABLE", 503);
-      const order = await createPaymentService(atomic, provider, runtime.now).create(actor, entry.id, target.key);
+      // The order charges the frozen fee in the route's currency through the route's own provider.
+      const order = await createPaymentService(atomic, provider, runtime.now).create(actor, entry.id, target.key, route.currency);
       await db.query(`INSERT INTO gyca_order_routes(order_id,route_id,policy_token,terms,actor_id,accepted_at)
         VALUES($1,$2,$3,$4::jsonb,$5,$6)`, [order.id, route.id, input.policyToken,
         JSON.stringify({ policyVersion: policy.data.version, route, acceptedRefundNotice: true }), actor, runtime.now()]);

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { AdminDashboardSchema } from "../../contracts/admin-dashboard.ts";
-import { LocalizedTextSchema } from "../../contracts/index.ts";
+import { CurrencySchema, LocalizedTextSchema } from "../../contracts/index.ts";
 import type { EntryDatabase } from "../entries/database.ts";
 import { EntryFault } from "../entries/errors.ts";
 import { createAuthenticatedRunner, parseRequest } from "../entries/http.ts";
@@ -11,7 +11,7 @@ const competitionRowSchema = z.object({
   phase: z.enum(["scheduled", "judging", "result", "archived"]), total_entries: count, unique_applicants: count,
   draft: count, submitted: count, received: count, withdrawn: count, expired_entries: count,
   total_payments: count, pending_payments: count, succeeded_payments: count, failed_payments: count,
-  cancelled_payments: count, expired_payments: count, needs_review: count, succeeded_amount_minor: count,
+  cancelled_payments: count, expired_payments: count, needs_review: count, succeeded_amount_minor: count, fee_currency: CurrencySchema,
   review_not_started: count, review_under_review: count, review_completed: count,
   active_assignments: count, submitted_assignments: count, result_not_announced: count,
   result_official_selection: count, result_finalist: count, result_not_selected: count,
@@ -64,8 +64,10 @@ export function createAdminDashboardHandler(deps: {
         count(DISTINCT o.id) FILTER(WHERE o.state='cancelled') AS cancelled_payments,
         count(DISTINCT o.id) FILTER(WHERE o.state='expired') AS expired_payments,
         count(DISTINCT o.id) FILTER(WHERE o.needs_review) AS needs_review,
+        COALESCE(NULLIF(c.public_content->'fee'->>'currency',''),'EUR') AS fee_currency,
         COALESCE((SELECT sum(o2.amount_minor) FROM gyca_orders o2 JOIN gyca_entries e2 ON e2.id=o2.entry_id
-          WHERE e2.competition_id=c.id AND o2.state='succeeded'),0) AS succeeded_amount_minor,
+          WHERE e2.competition_id=c.id AND o2.state='succeeded'
+          AND o2.currency=COALESCE(NULLIF(c.public_content->'fee'->>'currency',''),'EUR')),0) AS succeeded_amount_minor,
         count(DISTINCT e.id) FILTER(WHERE e.review_status='not_started') AS review_not_started,
         count(DISTINCT e.id) FILTER(WHERE e.review_status='under_review') AS review_under_review,
         count(DISTINCT e.id) FILTER(WHERE e.review_status='completed') AS review_completed,
@@ -93,7 +95,7 @@ export function createAdminDashboardHandler(deps: {
               submitted: row.submitted, received: row.received, withdrawn: row.withdrawn, expired: row.expired_entries },
             payments: { total: row.total_payments, pending: row.pending_payments, succeeded: row.succeeded_payments,
               failed: row.failed_payments, cancelled: row.cancelled_payments, expired: row.expired_payments,
-              needsReview: row.needs_review, succeededAmountMinor: row.succeeded_amount_minor, currency: "EUR" },
+              needsReview: row.needs_review, succeededAmountMinor: row.succeeded_amount_minor, currency: row.fee_currency },
             reviews: { notStarted: row.review_not_started, underReview: row.review_under_review,
               completed: row.review_completed, activeAssignments: row.active_assignments,
               submittedAssignments: row.submitted_assignments },

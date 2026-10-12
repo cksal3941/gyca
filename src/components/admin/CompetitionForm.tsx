@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button, Message, Select } from "@/components/ds";
 import { createCompetition, updateCompetition, type AdminCompetition } from "@/lib/api/ops";
 import { CompetitionEditSchema } from "@/contracts/competition-admin";
-import { FORM_FIELD_PATHS, ASSET_PURPOSES } from "@/contracts";
+import { FORM_FIELD_PATHS, ASSET_PURPOSES, CURRENCIES, type Currency } from "@/contracts";
 
 const INPUT_TYPES = ["text", "textarea", "choice", "date", "email"] as const;
 type Req = "required" | "optional" | "unset";
@@ -56,6 +56,10 @@ export default function CompetitionForm({
   const [titleEn, setTitleEn] = useState(content?.title.en ?? "");
   const [titleKo, setTitleKo] = useState(content?.title.ko ?? "");
   const [feeMinor, setFeeMinor] = useState(content?.fee ? String(content.fee.amountMinor) : "");
+  const [feeCurrency, setFeeCurrency] = useState<Currency>(content?.fee?.currency ?? "EUR");
+  const altFee = content?.alternativeFees?.[0] ?? null;
+  const [altFeeMinor, setAltFeeMinor] = useState(altFee ? String(altFee.amountMinor) : "");
+  const [altFeeCurrency, setAltFeeCurrency] = useState<Currency>(altFee?.currency ?? "USD");
   const [timezone, setTimezone] = useState(content?.timezone ?? "Europe/Berlin");
   const [opensAt, setOpensAt] = useState(toLocalInput(initial?.input.opensAt ?? null));
   const [closesAt, setClosesAt] = useState(toLocalInput(initial?.input.closesAt ?? null));
@@ -116,7 +120,8 @@ export default function CompetitionForm({
       slug: slug.trim(),
       content: {
         title: { en: titleEn.trim(), ko: titleKo.trim() },
-        fee: feeMinor.trim() === "" ? null : { amountMinor: Number(feeMinor), currency: "EUR" },
+        fee: feeMinor.trim() === "" ? null : { amountMinor: Number(feeMinor), currency: feeCurrency },
+        alternativeFees: altFeeMinor.trim() === "" ? [] : [{ amountMinor: Number(altFeeMinor), currency: altFeeCurrency }],
         timezone: timezone.trim(),
         keyDates: keyDates.map((k) => ({
           id: k.id.trim(), label: { en: k.en.trim(), ko: k.ko.trim() }, timezone: k.timezone.trim(),
@@ -219,10 +224,30 @@ export default function CompetitionForm({
           </label>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block">
-            <span className={label}>참가비 (EUR, 최소단위 minor. 예: €70 → 7000. 비우면 미정)</span>
-            <input className={field} type="number" min={0} value={feeMinor} onChange={(e) => setFeeMinor(e.target.value)} />
-          </label>
+          <div className="grid grid-cols-[1fr_7rem] gap-2">
+            <label className="block">
+              <span className={label}>참가비 (최소단위. EUR·USD는 센트: €70 → 7000, KRW는 원: ₩100,000 → 100000. 비우면 미정)</span>
+              <input className={field} type="number" min={0} value={feeMinor} onChange={(e) => setFeeMinor(e.target.value)} />
+            </label>
+            <label className="block">
+              <span className={label}>통화</span>
+              <select className={field} value={feeCurrency} onChange={(e) => setFeeCurrency(e.target.value as Currency)}>
+                {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </label>
+          </div>
+          <div className="grid grid-cols-[1fr_7rem] gap-2">
+            <label className="block">
+              <span className={label}>해외 참가비 (다른 통화의 고정 금액. 예: PayPal USD $55 → 5500. 환율 변환 없음. 비우면 없음)</span>
+              <input className={field} type="number" min={0} value={altFeeMinor} onChange={(e) => setAltFeeMinor(e.target.value)} />
+            </label>
+            <label className="block">
+              <span className={label}>통화</span>
+              <select className={field} value={altFeeCurrency} onChange={(e) => setAltFeeCurrency(e.target.value as Currency)}>
+                {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </label>
+          </div>
           <label className="block">
             <span className={label}>시간대 (IANA)</span>
             <input className={field} value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder="Europe/Berlin" />

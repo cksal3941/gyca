@@ -145,7 +145,8 @@ export default function ContestDetailLive({ slug }: { slug: string }) {
   const facts: [string, string][] = [];
   if (city) facts.push([ko ? "도시" : "City", city]);
   if (period) facts.push([ko ? "접수 기간" : "Entry period", period]);
-  if (comp.fee) facts.push([ko ? "참가비" : "Entry fee", money(comp.fee.amountMinor)]);
+  const feeText = comp.fee ? [comp.fee, ...comp.alternativeFees].map((f) => money(f, ko)).join(ko ? " 또는 " : " or ") : null;
+  if (feeText) facts.push([ko ? "참가비" : "Entry fee", feeText]);
 
   const categories = comp.formSpec?.categories ?? [];
   const ageGroups = comp.formSpec?.ageGroups ?? [];
@@ -285,7 +286,7 @@ export default function ContestDetailLive({ slug }: { slug: string }) {
                 <>
                   <p className="text-[16px] text-ink-strong">{ko ? "참가비" : "Entry fee"}</p>
                   <p className="mt-1 font-title font-bold text-[26px] text-ink-strong">
-                    {money(comp.fee.amountMinor)}
+                    {feeText}
                   </p>
                 </>
               )}
@@ -336,7 +337,7 @@ export default function ContestDetailLive({ slug }: { slug: string }) {
             className="flex items-center justify-center gap-2 rounded-lg bg-black px-5 py-3 text-[16px] font-semibold text-white"
           >
             {ko ? "작품 접수하기" : "Apply now"}
-            {comp.fee ? ` · ${money(comp.fee.amountMinor)}` : ""}
+            {feeText ? ` · ${feeText}` : ""}
             <span aria-hidden>›</span>
           </Link>
         </div>

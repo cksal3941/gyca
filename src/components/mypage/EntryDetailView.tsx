@@ -361,7 +361,7 @@ export default function EntryDetailView({ id, locale }: { id: string; locale: Lo
   if (e.payment)
     rows.push([
       ko ? "결제" : "Payment",
-      `${money(e.payment.amountMinor)} · ${PAYMENT_STATE_LABEL[e.payment.state][locale]}`,
+      `${money(e.payment, ko)} · ${PAYMENT_STATE_LABEL[e.payment.state][locale]}`,
     ]);
   if (guardianVisible)
     rows.push([

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { AdminEntriesPageSchema, AdminFileStateSchema } from "../../contracts/admin-entries.ts";
-import { ENTRY_STATUSES, PAYMENT_STATES, PUBLISHED_RESULTS, REVIEW_STATUSES, EntryIdSchema, OrderIdSchema } from "../../contracts/index.ts";
+import { CurrencySchema, ENTRY_STATUSES, PAYMENT_STATES, PUBLISHED_RESULTS, REVIEW_STATUSES, EntryIdSchema, OrderIdSchema } from "../../contracts/index.ts";
 import type { EntryDatabase } from "./database.ts";
 import { EntryFault } from "./errors.ts";
 import { createAuthenticatedRunner, parseRequest } from "./http.ts";
@@ -12,7 +12,7 @@ const rowSchema = z.object({ id: EntryIdSchema, participant_name: z.string().nul
   file_state: AdminFileStateSchema, certificate_issued: z.boolean(), stage_certificate_issued: z.boolean(), has_submission: z.boolean(),
   created_at: z.date(), submitted_at: z.date().nullable(), received_at: z.date().nullable(), receipt_number: z.string().nullable(),
   order_id: OrderIdSchema.nullable(), payment_state: z.enum(PAYMENT_STATES).nullable(),
-  amount_minor: z.coerce.number().int().safe().nullable(), currency: z.literal("EUR").nullable(),
+  amount_minor: z.coerce.number().int().safe().nullable(), currency: CurrencySchema.nullable(),
   needs_review: z.boolean().nullable(), live_mode: z.boolean().nullable() });
 const cursorSchema = z.object({ v: z.literal(1), sort: sortSchema, value: z.string(), id: z.uuid() });
 

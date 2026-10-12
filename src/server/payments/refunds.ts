@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PAYMENT_STATES } from "../../contracts/index.ts";
+import { CurrencySchema, PAYMENT_STATES } from "../../contracts/index.ts";
 import { PaymentOrderSchema } from "../../contracts/payments.ts";
 import { RefundOverviewSchema, RefundRecordSchema, type RequestRefund } from "../../contracts/refunds.ts";
 import type { EntryDatabase, SqlConnection } from "../entries/database.ts";
@@ -8,10 +8,10 @@ import { RefundEvidenceSchema, type PaymentProvider } from "./provider.ts";
 
 const scopeSchema = z.object({ permission: z.enum(["viewer", "operator"]) });
 const orderSchema = z.object({ id: z.uuid(), entry_id: z.uuid(), competition_id: z.string(), amount_minor: z.coerce.number().int().positive(),
-  currency: z.literal("EUR"), state: z.enum(PAYMENT_STATES), needs_review: z.boolean(), created_at: z.coerce.date(),
+  currency: CurrencySchema, state: z.enum(PAYMENT_STATES), needs_review: z.boolean(), created_at: z.coerce.date(),
   payment_closes_at: z.coerce.date(), approval_basis: z.enum(["provider_paid_at", "server_verified_at"]), policy_version: z.string(),
   provider: z.string(), merchant_account: z.string(), live_mode: z.boolean(), provider_payment_id: z.string().nullable() });
-const refundRowSchema = z.object({ id: z.uuid(), order_id: z.uuid(), amount_minor: z.coerce.number().int().positive(), currency: z.literal("EUR"),
+const refundRowSchema = z.object({ id: z.uuid(), order_id: z.uuid(), amount_minor: z.coerce.number().int().positive(), currency: CurrencySchema,
   state: z.enum(["pending", "succeeded", "failed"]), reason: z.string(), requested_by: z.string(), requested_at: z.coerce.date(),
   provider_refund_id: z.string().nullable(), refunded_at: z.coerce.date().nullable() });
 type Scope = { readonly actor: string; readonly competitionId: string };

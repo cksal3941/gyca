@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { z } from "zod";
-import { EntryIdSchema, LocalizedTextSchema, OrderIdSchema, OrderSummarySchema, MoneySchema, PAYMENT_STATES, WorkDraftSchema } from "../../contracts/index.ts";
-import type { EntryId, OrderId, OrderSummary, Page } from "../../contracts/index.ts";
+import { CurrencySchema, EntryIdSchema, LocalizedTextSchema, OrderIdSchema, OrderSummarySchema, MoneySchema, PAYMENT_STATES, WorkDraftSchema } from "../../contracts/index.ts";
+import type { Currency, EntryId, OrderId, OrderSummary, Page } from "../../contracts/index.ts";
 import { PaymentCheckoutSessionSchema, PaymentOrderSchema } from "../../contracts/payments.ts";
 import type { PaymentOrder } from "../../contracts/payments.ts";
 import type { EntryDatabase, SqlConnection } from "../entries/database.ts";
@@ -9,7 +9,7 @@ import { EntryFault } from "../entries/errors.ts";
 import { PaymentEvidenceSchema } from "./provider.ts";
 import type { PaymentProvider } from "./provider.ts";
 
-const rowSchema = z.object({ id: OrderIdSchema, entry_id: EntryIdSchema, amount_minor: z.coerce.number(), currency: z.literal("EUR"),
+const rowSchema = z.object({ id: OrderIdSchema, entry_id: EntryIdSchema, amount_minor: z.coerce.number(), currency: CurrencySchema,
   state: z.enum(PAYMENT_STATES), needs_review: z.boolean(), created_at: z.coerce.date(), payment_closes_at: z.coerce.date(),
   approval_basis: z.enum(["provider_paid_at", "server_verified_at"]), policy_version: z.string(),
   provider: z.string(), merchant_account: z.string(), live_mode: z.boolean(), provider_payment_id: z.string().nullable(),
@@ -26,6 +26,14 @@ const summarySnapshotSchema = z.object({
 const titleContentSchema = z.object({ title: LocalizedTextSchema }).passthrough();
 import { PaymentPolicySchema as policySchema } from "../../contracts/payment-policy.ts";
 const fingerprint = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
+
+// The frozen submission snapshot carries the competition's fee plus fixed prices in other billing
+// currencies. An order charges exactly one of them; nothing is ever converted by exchange rate.
+const feeContentSchema = z.object({ fee: MoneySchema, alternativeFees: z.array(MoneySchema).optional() });
+export function feeFor(content: z.infer<typeof feeContentSchema>, currency: Currency | null) {
+  const fees = [content.fee, ...(content.alternativeFees ?? [])];
+  return currency === null ? content.fee : fees.find((fee) => fee.currency === currency) ?? null;
+}
 
 async function ownedEntry(db: SqlConnection, owner: string, id: EntryId) {
   const raw = (await db.query("SELECT * FROM gyca_entries WHERE id=$1 AND owner_id=$2 FOR UPDATE", [id, owner])).rows[0];
@@ -70,12 +78,16 @@ function projectSummary(row: z.infer<typeof summaryRowSchema>): OrderSummary {
     createdAt: row.created_at.toISOString(), refundSummary });
 }
 
-export function createPaymentService(database: EntryDatabase, provider: PaymentProvider | null, now: () => Date) {
+// `providers` may be a single provider (legacy callers and tests) or every configured provider; each
+// order is bound to the provider identity it was created with and is only ever served by that one.
+export function createPaymentService(database: EntryDatabase, providers: PaymentProvider | readonly PaymentProvider[] | null, now: () => Date) {
+  const configured: readonly PaymentProvider[] = providers === null ? [] : Array.isArray(providers) ? providers : [providers as PaymentProvider];
+  const resolve = (order: OrderRow): PaymentProvider | null => configured.find((candidate) => matching(candidate, order)) ?? null;
   async function applyEvidence(raw: unknown, expectedOrder?: OrderId) {
-    if (provider === null) throw new EntryFault("PAYMENT_UNAVAILABLE", 503);
+    if (configured.length === 0) throw new EntryFault("PAYMENT_UNAVAILABLE", 503);
     const evidence = PaymentEvidenceSchema.parse(raw);
-    if (evidence.merchantAccount !== provider.merchantAccount || evidence.liveMode !== provider.liveMode
-      || (expectedOrder !== undefined && evidence.orderId !== expectedOrder)) throw new EntryFault("FORBIDDEN", 403);
+    const provider = configured.find((candidate) => candidate.merchantAccount === evidence.merchantAccount && candidate.liveMode === evidence.liveMode) ?? null;
+    if (provider === null || (expectedOrder !== undefined && evidence.orderId !== expectedOrder)) throw new EntryFault("FORBIDDEN", 403);
     return database.transaction(async (db) => {
       // Event lock serializes reuse across different orders. All payment writers then lock entry -> order.
       await db.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [JSON.stringify([provider.id, provider.merchantAccount, provider.liveMode, evidence.eventId])]);
@@ -145,18 +157,20 @@ export function createPaymentService(database: EntryDatabase, provider: PaymentP
       const initial = await ownedOrder(db, owner, id);
       await ownedEntry(db, owner, initial.entry_id);
       const row = rowSchema.parse((await db.query("SELECT * FROM gyca_orders WHERE id=$1 FOR UPDATE", [id])).rows[0]);
-      if (!matching(provider, row)) throw new EntryFault("PAYMENT_UNAVAILABLE", 503);
+      if (resolve(row) === null) throw new EntryFault("PAYMENT_UNAVAILABLE", 503);
       const at = now();
       if (row.next_reconcile_at !== null && at < row.next_reconcile_at) throw new EntryFault("RATE_LIMITED", 429);
       await db.query("UPDATE gyca_orders SET next_reconcile_at=$2 WHERE id=$1", [id, new Date(at.getTime() + 10000)]);
       return row;
     });
-    if (!matching(provider, order)) throw new EntryFault("PAYMENT_UNAVAILABLE", 503);
+    const provider = resolve(order);
+    if (provider === null) throw new EntryFault("PAYMENT_UNAVAILABLE", 503);
     const events = z.array(PaymentEvidenceSchema).parse(await provider.reconcile(project(order, provider, now())));
     if (events.some(event => event.orderId !== id || event.merchantAccount !== provider.merchantAccount || event.liveMode !== provider.liveMode))
       throw new EntryFault("FORBIDDEN", 403);
     for (const event of events) await applyEvidence(event, id);
-    return project(await ownedOrder(database, owner, id), provider, now());
+    const latest = await ownedOrder(database, owner, id);
+    return project(latest, resolve(latest), now());
   }
   return {
     confirm: async (owner: string, id: OrderId, paymentKey: string) => {
@@ -164,29 +178,31 @@ export function createPaymentService(database: EntryDatabase, provider: PaymentP
         const initial = await ownedOrder(db, owner, id);
         const entry = await ownedEntry(db, owner, initial.entry_id);
         const order = rowSchema.parse((await db.query("SELECT * FROM gyca_orders WHERE id=$1 FOR UPDATE", [id])).rows[0]);
-        if (!matching(provider, order) || provider.confirm === undefined) throw new EntryFault("PAYMENT_UNAVAILABLE", 503);
+        const provider = resolve(order);
+        if (provider === null || provider.confirm === undefined) throw new EntryFault("PAYMENT_UNAVAILABLE", 503);
         const raw = (await db.query("SELECT * FROM gyca_payment_confirmations WHERE order_id=$1", [id])).rows[0];
         const previous = raw === undefined ? null : z.object({ payment_key: z.string(), idempotency_key: z.uuid(), replay_until: z.coerce.date() }).parse(raw);
         if (previous !== null && previous.payment_key !== paymentKey) throw new EntryFault("IDEMPOTENCY_CONFLICT", 409);
-        if (order.state === "succeeded") return { order, key: null, replayUntil: null };
+        if (order.state === "succeeded") return { order, provider, key: null, replayUntil: null };
         if (order.needs_review || entry.status !== "submitted") throw new EntryFault("ENTRY_LOCKED", 409);
         // Existing ambiguous approvals after expiry are lookup-only. Never start another charge.
         if (now() >= order.payment_closes_at || (previous !== null && now() >= previous.replay_until)) {
           if (previous === null) throw new EntryFault("DEADLINE_PASSED", 409);
-          return { order, key: null, replayUntil: null };
+          return { order, provider, key: null, replayUntil: null };
         }
         const policy = z.object({ payment_enabled: z.boolean() }).parse((await db.query(
           "SELECT payment_enabled FROM gyca_competitions WHERE id=$1 FOR SHARE", [entry.competition_id])).rows[0]);
         if (!policy.payment_enabled) throw new EntryFault("PAYMENT_UNAVAILABLE", 503);
-        if (previous !== null) return { order, key: previous.idempotency_key, replayUntil: previous.replay_until };
+        if (previous !== null) return { order, provider, key: previous.idempotency_key, replayUntil: previous.replay_until };
         const key = randomUUID();
         const requestedAt = now();
         const replayUntil = new Date(requestedAt.getTime() + (provider.confirmationReplayWindowMs ?? 0));
         await db.query("INSERT INTO gyca_payment_confirmations(order_id,payment_key,idempotency_key,requested_at,replay_until) VALUES($1,$2,$3,$4,$5)",
           [id, paymentKey, key, requestedAt, replayUntil]);
-        return { order, key, replayUntil };
+        return { order, provider, key, replayUntil };
       });
-      if (!matching(provider, reservation.order) || provider.confirm === undefined) throw new EntryFault("PAYMENT_UNAVAILABLE", 503);
+      const { provider } = reservation;
+      if (provider.confirm === undefined) throw new EntryFault("PAYMENT_UNAVAILABLE", 503);
       if (reservation.order.state === "succeeded") return project(reservation.order, provider, now());
       if (reservation.key === null || now() >= reservation.order.payment_closes_at
         || (reservation.replayUntil !== null && now() >= reservation.replayUntil)) {
@@ -194,72 +210,82 @@ export function createPaymentService(database: EntryDatabase, provider: PaymentP
       } else {
         await applyEvidence(await provider.confirm(project(reservation.order, provider, now()), paymentKey, reservation.key), id);
       }
-      return project(await ownedOrder(database, owner, id), provider, now());
+      const latest = await ownedOrder(database, owner, id);
+      return project(latest, resolve(latest), now());
     },
-    create: (owner: string, entryId: EntryId, key: string) => database.transaction(async (db) => {
+    // Creates the entry-fee order. With several configured providers the caller (routed orders)
+    // must instantiate this service with the single provider the chosen route resolved to.
+    create: (owner: string, entryId: EntryId, key: string, currency: Currency | null = null) => database.transaction(async (db) => {
       await db.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [JSON.stringify(["order-key", owner, key])]);
       const entry = await ownedEntry(db, owner, entryId);
       const previous = (await db.query("SELECT order_id FROM gyca_order_creation_keys WHERE owner_id=$1 AND key=$2", [owner, key])).rows[0];
       if (previous !== undefined) {
         const order = await ownedOrder(db, owner, z.object({ order_id: OrderIdSchema }).parse(previous).order_id);
         if (order.entry_id !== entryId) throw new EntryFault("IDEMPOTENCY_CONFLICT", 409);
-        return project(order, provider, now());
+        return project(order, resolve(order), now());
       }
       const existing = (await db.query("SELECT * FROM gyca_orders WHERE entry_id=$1", [entryId])).rows[0];
       if (existing !== undefined) {
         const row = rowSchema.parse(existing);
         await db.query("INSERT INTO gyca_order_creation_keys(owner_id,key,order_id) VALUES($1,$2,$3)", [owner, key, row.id]);
-        return project(row, provider, now());
+        return project(row, resolve(row), now());
       }
       if (entry.status !== "submitted") throw new EntryFault("ENTRY_LOCKED", 409);
-      if (provider === null) throw new EntryFault("PAYMENT_UNAVAILABLE", 503);
+      if (configured.length !== 1) throw new EntryFault("PAYMENT_UNAVAILABLE", 503);
+      const provider = configured[0];
       const current = z.object({ payment_enabled: z.boolean(), payment_policy: z.unknown() }).parse(
         (await db.query("SELECT payment_enabled,payment_policy FROM gyca_competitions WHERE id=$1 FOR SHARE", [entry.competition_id])).rows[0]);
       const policy = policySchema.safeParse(current.payment_policy);
       if (!current.payment_enabled || !policy.success) throw new EntryFault("POLICY_NOT_CONFIGURED", 503);
       const saved = z.object({ snapshot: z.object({ competition: z.object({
-        payment_closes_at: z.iso.datetime(), public_content: z.object({ fee: MoneySchema }),
+        payment_closes_at: z.iso.datetime(), public_content: feeContentSchema,
       }) }) }).parse((await db.query("SELECT snapshot FROM gyca_submissions WHERE entry_id=$1", [entryId])).rows[0]);
       const terms = saved.snapshot.competition;
       const createdAt = now();
       if (createdAt >= new Date(terms.payment_closes_at)) throw new EntryFault("DEADLINE_PASSED", 409);
-      if (terms.public_content.fee.amountMinor <= 0) throw new EntryFault("POLICY_NOT_CONFIGURED", 503);
+      const fee = feeFor(terms.public_content, currency);
+      if (fee === null || fee.amountMinor <= 0) throw new EntryFault("POLICY_NOT_CONFIGURED", 503);
       const id = randomUUID();
       const result = await db.query(`INSERT INTO gyca_orders(id,entry_id,amount_minor,currency,payment_closes_at,policy_version,approval_basis,
         provider,merchant_account,live_mode,created_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`,
-        [id, entryId, terms.public_content.fee.amountMinor, terms.public_content.fee.currency, terms.payment_closes_at,
+        [id, entryId, fee.amountMinor, fee.currency, terms.payment_closes_at,
           policy.data.version, policy.data.approvalBasis, provider.id, provider.merchantAccount, provider.liveMode, createdAt]);
       await db.query("INSERT INTO gyca_order_creation_keys(owner_id,key,order_id) VALUES($1,$2,$3)", [owner, key, id]);
       return project(rowSchema.parse(result.rows[0]), provider, now());
     }),
     checkout: async (owner: string, id: OrderId) => {
-      const order = await database.transaction(async (db) => {
+      const { order, buyerCountry } = await database.transaction(async (db) => {
         const row = await ownedOrder(db, owner, id);
         const entry = await ownedEntry(db, owner, row.entry_id);
         const current = rowSchema.parse((await db.query("SELECT * FROM gyca_orders WHERE id=$1 FOR UPDATE", [id])).rows[0]);
-        if (!matching(provider, current) || provider.beginCheckout === undefined) throw new EntryFault("PAYMENT_UNAVAILABLE", 503);
+        if (resolve(current)?.beginCheckout === undefined) throw new EntryFault("PAYMENT_UNAVAILABLE", 503);
         if (current.needs_review || current.state !== "pending" || entry.status !== "submitted") throw new EntryFault("ENTRY_LOCKED", 409);
         if (now() >= current.payment_closes_at) throw new EntryFault("DEADLINE_PASSED", 409);
         const competition = z.object({ payment_enabled: z.boolean() }).parse((await db.query(
           "SELECT payment_enabled FROM gyca_competitions WHERE id=$1 FOR SHARE", [entry.competition_id])).rows[0]);
         if (!competition.payment_enabled) throw new EntryFault("PAYMENT_UNAVAILABLE", 503);
-        return current;
+        // Residence country from the frozen submission (never from the browser) for methods that need it.
+        const snapshot = z.object({ snapshot: z.object({ participant: z.object({ residenceCountry: z.string().optional() }).optional() }) })
+          .safeParse((await db.query("SELECT snapshot FROM gyca_submissions WHERE entry_id=$1", [entry.id])).rows[0]);
+        const country = snapshot.success ? snapshot.data.snapshot.participant?.residenceCountry ?? null : null;
+        return { order: current, buyerCountry: country !== null && /^[A-Z]{2}$/.test(country) ? country : null };
       });
-      if (!matching(provider, order) || provider.beginCheckout === undefined) throw new EntryFault("PAYMENT_UNAVAILABLE", 503);
+      const provider = resolve(order);
+      if (provider === null || provider.beginCheckout === undefined) throw new EntryFault("PAYMENT_UNAVAILABLE", 503);
       const customerReference = createHash("sha256").update(`${provider.id}:${provider.merchantAccount}:${owner}`).digest("hex");
-      const session = PaymentCheckoutSessionSchema.parse(await provider.beginCheckout(project(order, provider, now()), customerReference));
+      const session = PaymentCheckoutSessionSchema.parse(await provider.beginCheckout(project(order, provider, now()), customerReference, { buyerCountry }));
       if (session.orderId !== order.id || session.provider !== provider.id
         || session.mode !== (provider.liveMode ? "live" : "test")
         || new Date(session.expiresAt) > order.payment_closes_at || new Date(session.expiresAt) <= now())
         throw new EntryFault("PAYMENT_UNAVAILABLE", 502);
       return session;
     },
-    get: async (owner: string, id: OrderId) => project(await ownedOrder(database, owner, id), provider, now()),
+    get: async (owner: string, id: OrderId) => { const row = await ownedOrder(database, owner, id); return project(row, resolve(row), now()); },
     list: async (owner: string, cursor: string | null, limit: number): Promise<Page<PaymentOrder>> => {
       const rows = z.array(rowSchema).parse((await database.query(`SELECT o.* FROM gyca_orders o JOIN gyca_entries e ON e.id=o.entry_id
         WHERE e.owner_id=$1 AND ($2::uuid IS NULL OR o.id>$2::uuid) ORDER BY o.id LIMIT $3`, [owner, cursor, limit + 1])).rows);
       const page = rows.slice(0, limit);
-      return { items: page.map((r) => project(r, provider, now())), nextCursor: rows.length > limit ? page.at(-1)?.id ?? null : null };
+      return { items: page.map((r) => project(r, resolve(r), now())), nextCursor: rows.length > limit ? page.at(-1)?.id ?? null : null };
     },
     listSummaries: async (owner: string, cursor: string | null, limit: number): Promise<Page<OrderSummary>> => {
       const rows = z.array(summaryRowSchema).parse((await database.query(`SELECT o.*,e.competition_id,s.snapshot,c.public_content,
@@ -272,9 +298,19 @@ export function createPaymentService(database: EntryDatabase, provider: PaymentP
       const page = rows.slice(0, limit);
       return { items: page.map(projectSummary), nextCursor: rows.length > limit ? page.at(-1)?.id ?? null : null };
     },
+    // A notification names only the order; each provider authenticates it against its own merchant
+    // account, so the first provider that recognises the notification supplies the evidence.
     webhook: async (bytes: Uint8Array, headers: Headers) => {
-      if (provider === null) throw new EntryFault("PAYMENT_UNAVAILABLE", 503);
-      return applyEvidence(await provider.verifyWebhook(bytes, headers));
+      if (configured.length === 0) throw new EntryFault("PAYMENT_UNAVAILABLE", 503);
+      let lastError: unknown = null;
+      for (const provider of configured) {
+        try { return await applyEvidence(await provider.verifyWebhook(bytes, headers)); }
+        catch (error) {
+          if (error instanceof EntryFault && (error.code === "FORBIDDEN" || error.code === "NOT_FOUND" || error.code === "PAYMENT_UNAVAILABLE")) { lastError = error; continue; }
+          throw error;
+        }
+      }
+      throw lastError ?? new EntryFault("PAYMENT_UNAVAILABLE", 503);
     },
     reconcile,
   };
