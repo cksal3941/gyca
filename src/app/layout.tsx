@@ -3,6 +3,16 @@ import { cookies } from "next/headers";
 import { Bebas_Neue, Quicksand, Manrope, DM_Serif_Display } from "next/font/google";
 import LocaleProvider from "@/components/i18n/LocaleProvider";
 import { LOCALE_COOKIE, normalizeLocale } from "@/lib/i18n";
+import {
+  SITE_URL,
+  SITE_NAME,
+  SITE_TITLE,
+  SITE_DESCRIPTION,
+  SITE_KEYWORDS,
+  OG_LOCALE,
+  organizationJsonLd,
+  websiteJsonLd,
+} from "@/lib/seo";
 import "./globals.css";
 
 const bebas = Bebas_Neue({
@@ -31,10 +41,52 @@ const dmSerif = DM_Serif_Display({
   weight: "400",
 });
 
-export const metadata: Metadata = {
-  title: "GYCA",
-  description: "Young Artists Begin and Grow — A Place Where Young Artists Begin and Grow",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const cookieStore = await cookies();
+  const l = normalizeLocale(cookieStore.get(LOCALE_COOKIE)?.value) === "ko" ? "ko" : "en";
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: { default: SITE_TITLE[l], template: "%s | GYCA" },
+    description: SITE_DESCRIPTION[l],
+    applicationName: "GYCA",
+    keywords: SITE_KEYWORDS,
+    authors: [{ name: "GYCA", url: SITE_URL }],
+    creator: "GYCA",
+    publisher: "GYCA (Global Young Creators Award)",
+    category: "education",
+    openGraph: {
+      type: "website",
+      siteName: SITE_NAME[l],
+      title: SITE_TITLE[l],
+      description: SITE_DESCRIPTION[l],
+      url: SITE_URL,
+      locale: OG_LOCALE[l],
+      alternateLocale: l === "ko" ? ["en_US"] : ["ko_KR"],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: SITE_TITLE[l],
+      description: SITE_DESCRIPTION[l],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
+      },
+    },
+    verification: {
+      google: "D-aLcR1qYRcrIWZeggeUgLlDDeq4emWHSnX-G5QGsko",
+      other: {
+        "naver-site-verification": "4a1154f1c0d397f4f253e43a6f8928d447328360",
+      },
+    },
+  };
+}
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const cookieStore = await cookies();
@@ -56,6 +108,12 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         />
       </head>
       <body className="antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([organizationJsonLd(), websiteJsonLd()]),
+          }}
+        />
         <LocaleProvider initialLocale={locale}>{children}</LocaleProvider>
       </body>
     </html>

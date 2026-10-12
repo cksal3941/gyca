@@ -18,7 +18,7 @@ const ITEMS: Media[] = [
       en: "Meet GYCA, connecting young creators to the global stage.",
       ko: "청소년 창작자를 국제 무대로 잇는 GYCA 어워드를 소개합니다.",
     },
-    image: "/images/media/dale-interview.jpg",
+    image: "/images/dale-interview.jpg",
   },
   {
     cat: { en: "Guide", ko: "안내" },
@@ -27,7 +27,7 @@ const ITEMS: Media[] = [
       en: "The international exhibition program for finalists in Leipzig.",
       ko: "Finalist 진출 작가를 위한 라이프치히 국제전시 프로그램을 안내합니다.",
     },
-    image: "/images/media/billboard.jpg",
+    image: "/images/billboard.jpg",
   },
   {
     cat: { en: "Guide", ko: "안내" },
@@ -36,7 +36,7 @@ const ITEMS: Media[] = [
       en: "One cover image and a single PDF of 20+ pages including the cover.",
       ko: "표지 이미지 1장과 표지 포함 20쪽 이상 단일 PDF 등 제출 규격을 안내합니다.",
     },
-    image: "/images/media/iyac-interview.jpg",
+    image: "/images/iyac-interview.jpg",
   },
 ];
 

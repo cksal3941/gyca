@@ -54,13 +54,16 @@ type RowVM = {
   city: string | null;
   period: string | null;
   status: ContestStatus;
-  coverSrc: string | null; // live cover; mock uses /images/contests/{slug}.jpg
+  coverSrc: string | null; // live cover; mock uses /images/{slug}.jpg
   tint: string;
   sample: boolean;
   applyHref: string | null; // null → no Apply CTA (server-gated in live)
 };
 
 function mockToRow(c: Contest, locale: Locale): RowVM {
+  // Once past the close instant, the row reads as 종료 regardless of authored status.
+  const status: ContestStatus =
+    c.deadlineAt && Date.now() >= new Date(c.deadlineAt).getTime() ? "closed" : c.status;
   return {
     slug: c.slug,
     title: c.title,
@@ -68,12 +71,13 @@ function mockToRow(c: Contest, locale: Locale): RowVM {
     summary: c.summary[locale],
     city: c.city,
     period: c.period,
-    status: c.status,
-    coverSrc: `/images/contests/${c.slug}.jpg`,
+    status,
+    coverSrc: `/images/${c.slug}.jpg`,
     tint: c.tint,
     sample: c.sample === true,
-    // Samples never link to Apply; real (Leipzig) uses its open call.
-    applyHref: c.sample ? null : c.status === "open" ? `/submit?contest=${c.slug}` : null,
+    // Samples never link to Apply; a real row with an external applyUrl (VIYBA's
+    // official form) uses it, otherwise the on-site /submit flow when open.
+    applyHref: c.sample ? null : c.applyUrl ?? (c.status === "open" ? `/submit?contest=${c.slug}` : null),
   };
 }
 
@@ -112,7 +116,6 @@ function liveToRow(card: CompetitionCard, locale: Locale): RowVM {
 // an Apply CTA shows only when the server allows it.
 function ContestCard({ r, locale }: { r: RowVM; locale: Locale }) {
   const ko = locale === "ko";
-  const applyLabel = r.status === "open" ? (ko ? "접수하기" : "Apply") : ko ? "자세히 보기" : "View details";
   return (
     <article className="group flex flex-col">
       <Link href={`/contests/${r.slug}`} className="block overflow-hidden ring-1 ring-black/5">
@@ -157,16 +160,6 @@ function ContestCard({ r, locale }: { r: RowVM; locale: Locale }) {
           {ko ? "접수" : "Entry"} {r.period}
         </p>
       )}
-
-      {r.applyHref && (
-        <Link
-          href={r.applyHref}
-          className="mt-4 inline-flex h-11 w-fit items-center justify-center gap-[10px] rounded-[7px] bg-black px-6 text-[14px] font-semibold text-white hover:opacity-90"
-        >
-          {applyLabel}
-          <span aria-hidden>›</span>
-        </Link>
-      )}
     </article>
   );
 }
@@ -209,14 +202,6 @@ export default function ContestsPage() {
         locale={locale}
       />
       <section className="mx-auto max-w-page px-6">
-        {/* Mock-only: samples are demo placeholders, not real open calls. */}
-        {!isLive && (
-          <div className="mt-6 rounded-xl border border-line bg-surface px-4 py-3 text-[16px] leading-[1.6] text-ink-strong">
-            {locale === "ko"
-              ? "현재 실제 접수 중인 공모는 Leipzig 2027입니다. ‘샘플 · 준비 중’으로 표시된 항목은 데모용 예시이며, 실제 접수·승인된 행사가 아닙니다."
-              : "The only open call right now is Leipzig 2027. Items marked “Sample · Coming soon” are demo placeholders — not real or approved events."}
-          </div>
-        )}
         {/* Category filter (mock only — live presentation category is free copy) */}
         {!isLive && (
           <div className="flex flex-wrap gap-2 pt-6">

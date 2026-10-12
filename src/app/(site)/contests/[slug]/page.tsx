@@ -92,7 +92,7 @@ export default async function ContestDetail({
       <div className="mx-auto max-w-page px-6 pt-10 lg:pt-14">
         <div
           className="aspect-[21/9] w-full overflow-hidden bg-cover bg-center ring-1 ring-black/5"
-          style={{ backgroundImage: coverBg(c.slug, `/images/contests/${c.slug}.jpg`) }}
+          style={{ backgroundImage: coverBg(c.slug, `/images/${c.slug}.jpg`) }}
           role="img"
           aria-label={c.title}
         />

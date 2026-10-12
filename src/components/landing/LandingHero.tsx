@@ -177,7 +177,7 @@ export default function LandingHero() {
             {/* Dancer (tallest) with the stamp anchored to its top-left corner */}
             <div className="relative shrink-0" style={{ width: 288, height: 380 }}>
               <CollageTile
-                src="/images/hero/collage-dance.jpg"
+                src="/images/collage-dance.jpg"
                 alt="Contemporary dance performance"
                 tint="linear-gradient(135deg,#d0d0d6,#6c6c74)"
                 className="h-full w-full rounded-[14px] rounded-br-none"
@@ -188,7 +188,7 @@ export default function LandingHero() {
             </div>
             {/* Abstract paint — shortest, in front */}
             <CollageTile
-              src="/images/hero/collage-paint.jpg"
+              src="/images/collage-paint.jpg"
               alt="Abstract painting detail"
               tint="linear-gradient(135deg,#a8dcd0,#f4c7cf 55%,#8fb6f0)"
               className="z-20 shrink-0 rounded-tr-[14px]"
@@ -196,7 +196,7 @@ export default function LandingHero() {
             />
             {/* Piano — medium height, folded (rounded) top-right corner, overlaps paint */}
             <CollageTile
-              src="/images/hero/collage-piano.jpg"
+              src="/images/collage-piano.jpg"
               alt="Pianist performing"
               tint="linear-gradient(135deg,#6b4326,#161616)"
               className="shrink-0"

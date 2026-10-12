@@ -55,7 +55,7 @@ function ExhibitionRow({ e, flip, locale }: { e: Exhibition; flip: boolean; loca
       <Link href={`/exhibitions/${e.slug}`} className={`block ${flip ? "lg:order-1" : ""}`}>
         <div
           className="aspect-[4/3] w-full overflow-hidden bg-cover bg-center ring-1 ring-black/5"
-          style={{ backgroundImage: coverBg(e.slug, `/images/exhibitions/${e.slug}.jpg`) }}
+          style={{ backgroundImage: coverBg(e.slug, `/images/${e.slug}.jpg`) }}
           role="img"
           aria-label={e.title[locale]}
         />

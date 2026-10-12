@@ -39,9 +39,9 @@ const EVENTS: EventItem[] = [
       ko: "만 7–18세 창작자가 자신의 아트북으로 세계 무대에 데뷔하는 국제 어워드. 세계가 주목하는 어린 작가로 인정받고, 당신의 책이 라이프치히 국제 전시의 주인공이 됩니다.",
     },
     posters: [
-      "/images/posters/iyac-1.jpg",
-      "/images/posters/iyac-2.jpg",
-      "/images/posters/iyac-3.jpg",
+      "/images/iyac-1.jpg",
+      "/images/iyac-2.jpg",
+      "/images/iyac-3.jpg",
     ],
   },
   {
@@ -57,9 +57,9 @@ const EVENTS: EventItem[] = [
       ko: "무용·발레·피아노·현악·미술 등 다양한 분야를 예선부터 본선, 해외 Grand Final까지 연결하는 공모를 순차적으로 공개할 예정입니다.",
     },
     posters: [
-      "/images/posters/kajaa-1.jpg",
-      "/images/posters/kajaa-2.jpg",
-      "/images/posters/kajaa-3.jpg",
+      "/images/kajaa-1.jpg",
+      "/images/kajaa-2.jpg",
+      "/images/kajaa-3.jpg",
     ],
   },
 ];

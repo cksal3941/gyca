@@ -284,7 +284,7 @@ export default function StyleGuidePage() {
           </div>
           <div
             className="aspect-[4/3] w-full overflow-hidden rounded-xl bg-cover bg-center ring-1 ring-black/5"
-            style={{ backgroundImage: "url(/images/hero/iyac.jpg), linear-gradient(135deg,#0b05e2,#111)" }}
+            style={{ backgroundImage: "url(/images/iyac.jpg), linear-gradient(135deg,#0b05e2,#111)" }}
             role="img"
             aria-label="Sample"
           />

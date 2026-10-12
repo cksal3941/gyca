@@ -123,7 +123,7 @@ export default function PresentationEditor({ competitionId }: { competitionId: s
           </label>
           {coverOn && (
             <div className="mt-3 grid gap-4 sm:grid-cols-2">
-              <label className="block sm:col-span-2"><span className={label}>이미지 경로/URL (사이트 경로 또는 https)</span><input className={field} value={coverSrc} onChange={(e) => setCoverSrc(e.target.value)} placeholder="/images/contests/leipzig-2027.jpg" /></label>
+              <label className="block sm:col-span-2"><span className={label}>이미지 경로/URL (사이트 경로 또는 https)</span><input className={field} value={coverSrc} onChange={(e) => setCoverSrc(e.target.value)} placeholder="/images/leipzig-2027.jpg" /></label>
               <label className="block"><span className={label}>대체 텍스트 EN</span><input className={field} value={coverAltEn} onChange={(e) => setCoverAltEn(e.target.value)} /></label>
               <label className="block"><span className={label}>대체 텍스트 KO</span><input className={field} value={coverAltKo} onChange={(e) => setCoverAltKo(e.target.value)} /></label>
             </div>

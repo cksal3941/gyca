@@ -65,7 +65,7 @@ export default async function WinnerDetail({
         <div>
           <div
             className="aspect-[4/5] w-full overflow-hidden bg-cover bg-center ring-1 ring-black/5"
-            style={{ backgroundImage: coverBg(w.slug, `/images/winners/${w.slug}.jpg`) }}
+            style={{ backgroundImage: coverBg(w.slug, `/images/${w.slug}.jpg`) }}
             role="img"
             aria-label={w.title}
           />
