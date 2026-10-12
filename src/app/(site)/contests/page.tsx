@@ -185,7 +185,12 @@ export default function ContestsPage() {
 
   const mockList =
     filter === "전체" ? CONTESTS : CONTESTS.filter((c) => c.category === filter);
-  const rows: RowVM[] = isLive ? (liveRows ?? []) : mockList.map((c) => mockToRow(c, locale));
+  // Live: server-backed competitions first, then the editorially curated real contests
+  // (e.g. VIYBA with its external application form) that have no DB record yet. Samples
+  // never appear in live; a DB record with the same slug replaces the curated row.
+  const liveSlugs = new Set((liveRows ?? []).map((r) => r.slug));
+  const curatedRows = CONTESTS.filter((c) => c.sample !== true && !liveSlugs.has(c.slug)).map((c) => mockToRow(c, locale));
+  const rows: RowVM[] = isLive ? [...(liveRows ?? []), ...curatedRows] : mockList.map((c) => mockToRow(c, locale));
   const visibleRows = rows.filter((r) => statusMatch(r.status, statusFilter));
 
   return (
