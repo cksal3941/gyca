@@ -39,7 +39,7 @@ function SectionH2({ ko, children }: { ko: boolean; children: React.ReactNode })
 }
 
 /** Two-column label/value definition list used across several sections. */
-function FactList({ rows, locale }: { rows: { label: I18n; value: I18n }[]; locale: Locale }) {
+function FactList({ rows, locale }: { rows: readonly { label: I18n; value: I18n }[]; locale: Locale }) {
   return (
     <dl className="mt-6 border-t border-line">
       {rows.map((r) => (
@@ -118,13 +118,16 @@ function viybaEventJsonLd() {
   };
 }
 
+// Evaluated per request on the server; kept outside the component so render stays free of clock reads.
+const isPreliminaryClosed = () => Date.now() >= new Date(VIYBA_PRELIM_DEADLINE_ISO).getTime();
+
 export default async function ViybaDetailPage() {
   const locale: Locale = await getServerLocale();
   const ko = locale === "ko";
   const t = (v: I18n) => v[locale];
 
   // Past the preliminary deadline, the Apply CTA flips to a closed state.
-  const prelimClosed = Date.now() >= new Date(VIYBA_PRELIM_DEADLINE_ISO).getTime();
+  const prelimClosed = isPreliminaryClosed();
   const applyCta = (variant: "desktop" | "mobile") =>
     prelimClosed ? (
       <div
