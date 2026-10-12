@@ -46,6 +46,7 @@ import {
   AdminCompetitionPresentationSchema,
   type CompetitionPresentationSchema,
 } from "@/contracts/competition-presentation";
+import { AdminCompetitionPosterSchema } from "@/contracts/competition-poster";
 import {
   ArchiveAdminItemSchema,
   type ArchiveContent,
@@ -937,6 +938,34 @@ export type CompetitionPresentation = z.infer<typeof CompetitionPresentationSche
 
 /** Card presentation copy for a competition (summary/category/city/cover). Live:
  *  GET /admin/competitions/{id}/presentation. No data yet → revision 0, all null. */
+/* ---- competition poster (pamphlet image; LIVE, organizer) ---- */
+export type AdminCompetitionPoster = z.infer<typeof AdminCompetitionPosterSchema>;
+export async function getCompetitionPoster(competitionId: string, opts: { signal?: AbortSignal } = {}): Promise<RequestState<AdminCompetitionPoster>> {
+  if (!isLive) return cmsOff();
+  return httpGet(`/admin/competitions/${encodeURIComponent(competitionId)}/poster`, AdminCompetitionPosterSchema, opts.signal);
+}
+/** PUT the raw image bytes (the server verifies the file signature and size itself). */
+export async function uploadCompetitionPoster(competitionId: string, file: Blob, opts: { signal?: AbortSignal } = {}): Promise<RequestState<AdminCompetitionPoster>> {
+  if (!isLive) return cmsOff();
+  try {
+    const response = await fetch(`/api/v1/admin/competitions/${encodeURIComponent(competitionId)}/poster`, {
+      method: "PUT", credentials: "same-origin", headers: { "content-type": file.type || "application/octet-stream" }, body: file, signal: opts.signal,
+    });
+    const json: unknown = await response.json().catch(() => null);
+    const parsed = z.object({ data: AdminCompetitionPosterSchema }).safeParse(json);
+    if (response.ok && parsed.success) return { kind: "success", data: parsed.data.data };
+    const failure = z.object({ error: z.object({ code: z.string(), message: z.string() }) }).safeParse(json);
+    return { kind: "error", code: failure.success ? failure.data.error.code : "INVALID_RESPONSE",
+      message: failure.success ? failure.data.error.message : "서버 응답을 해석하지 못했습니다.", retryable: response.status >= 500 };
+  } catch {
+    return { kind: "error", code: "NETWORK", message: "네트워크 오류로 업로드하지 못했습니다.", retryable: true };
+  }
+}
+export async function removeCompetitionPoster(competitionId: string, opts: { signal?: AbortSignal } = {}): Promise<RequestState<AdminCompetitionPoster>> {
+  if (!isLive) return cmsOff();
+  return httpSend("DELETE", `/admin/competitions/${encodeURIComponent(competitionId)}/poster`, AdminCompetitionPosterSchema, { signal: opts.signal });
+}
+
 export async function getCompetitionPresentation(competitionId: string, opts: { signal?: AbortSignal } = {}): Promise<RequestState<AdminCompetitionPresentation>> {
   if (!isLive) return cmsOff();
   return httpGet(`/admin/competitions/${encodeURIComponent(competitionId)}/presentation`, AdminCompetitionPresentationSchema, opts.signal);

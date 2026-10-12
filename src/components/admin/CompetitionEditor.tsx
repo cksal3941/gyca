@@ -6,6 +6,7 @@ import { getAdminCompetition, type AdminCompetition } from "@/lib/api/ops";
 import CompetitionForm from "./CompetitionForm";
 import LaunchControl from "./LaunchControl";
 import PresentationEditor from "./PresentationEditor";
+import PosterUploader from "./PosterUploader";
 
 // Loads one competition (LIVE, organizer) client-side, then renders the edit form
 // and launch control. A server component cannot forward the session cookie.
@@ -55,6 +56,7 @@ export default function CompetitionEditor({ id }: { id: string }) {
     <div className="flex flex-col gap-8">
       <LaunchControl competitionId={c.id} draftEnabled={c.draftEnabled} />
       <CompetitionForm mode="edit" initial={c} />
+      <PosterUploader competitionId={c.id} />
       <PresentationEditor competitionId={c.id} />
     </div>
   );

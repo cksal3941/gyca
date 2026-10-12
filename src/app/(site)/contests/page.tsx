@@ -11,6 +11,8 @@ import {
   STATUS_LABEL,
   type Contest,
   type ContestStatus,
+  effectiveContestStatus,
+  contestAcceptsEntries,
 } from "@/lib/site-data";
 import { listCompetitionCards, canStartEntry, type CompetitionCard } from "@/lib/api";
 import { isLive } from "@/lib/api/mode";
@@ -61,9 +63,8 @@ type RowVM = {
 };
 
 function mockToRow(c: Contest, locale: Locale): RowVM {
-  // Once past the close instant, the row reads as 종료 regardless of authored status.
-  const status: ContestStatus =
-    c.deadlineAt && Date.now() >= new Date(c.deadlineAt).getTime() ? "closed" : c.status;
+  // Schedule-aware: 종료 after the deadline, 접수 예정 before the opening instant.
+  const status: ContestStatus = effectiveContestStatus(c);
   return {
     slug: c.slug,
     title: c.title,
@@ -77,7 +78,7 @@ function mockToRow(c: Contest, locale: Locale): RowVM {
     sample: c.sample === true,
     // Samples never link to Apply; a real row with an external applyUrl (VIYBA's
     // official form) uses it, otherwise the on-site /submit flow when open.
-    applyHref: c.sample ? null : c.applyUrl ?? (c.status === "open" ? `/submit?contest=${c.slug}` : null),
+    applyHref: contestAcceptsEntries(c) ? c.applyUrl ?? `/submit?contest=${c.slug}` : null,
   };
 }
 

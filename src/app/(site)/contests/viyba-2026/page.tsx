@@ -21,9 +21,9 @@ import {
   FEES,
   CONTACT,
   VIYBA_FORM_URL,
-  VIYBA_PRELIM_DEADLINE_ISO,
   type I18n,
 } from "@/lib/content/viyba-detail";
+import { CONTESTS, effectiveContestStatus } from "@/lib/site-data";
 
 // Dedicated VIYBA 2026 detail. A static route segment, so it takes precedence
 // over the generic /contests/[slug] page. Content mirrors the official
@@ -119,21 +119,25 @@ function viybaEventJsonLd() {
 }
 
 // Evaluated per request on the server; kept outside the component so render stays free of clock reads.
-const isPreliminaryClosed = () => Date.now() >= new Date(VIYBA_PRELIM_DEADLINE_ISO).getTime();
+const viybaStatus = () => {
+  const contest = CONTESTS.find((c) => c.slug === "viyba-2026");
+  return contest ? effectiveContestStatus(contest) : "open";
+};
 
 export default async function ViybaDetailPage() {
   const locale: Locale = await getServerLocale();
   const ko = locale === "ko";
   const t = (v: I18n) => v[locale];
 
-  // Past the preliminary deadline, the Apply CTA flips to a closed state.
-  const prelimClosed = isPreliminaryClosed();
+  // The Apply CTA follows the schedule: closed after the preliminary deadline, "opens soon"
+  // before the opening instant, and the external form only while entries are open.
+  const status = viybaStatus();
   const applyCta = (variant: "desktop" | "mobile") =>
-    prelimClosed ? (
+    status !== "open" ? (
       <div
         className={`${variant === "desktop" ? "mt-5 " : ""}inline-flex h-12 w-full cursor-default items-center justify-center rounded-[7px] bg-neutral-300 px-6 text-[16px] font-bold text-ink-strong`}
       >
-        {ko ? "예선 접수 마감" : "Entries closed"}
+        {status === "upcoming" ? (ko ? "예선 접수 예정" : "Entries open soon") : ko ? "예선 접수 마감" : "Entries closed"}
       </div>
     ) : (
       <a

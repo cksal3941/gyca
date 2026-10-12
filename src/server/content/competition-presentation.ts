@@ -5,6 +5,7 @@ import type { EntryDatabase } from '../entries/database.ts';
 import { EntryFault } from '../entries/errors.ts';
 import { CompetitionRowSchema, projectCompetition } from '../competitions/policy.ts';
 import { authorizeArchiveEditor } from './archive-reader.ts';
+import { competitionPosterUrl } from '../../contracts/competition-poster.ts';
 
 const empty = { summary: null, category: null, city: null, cover: null } as const;
 const presentationRow = z.object({ revision: z.number().int().positive(), content: CompetitionPresentationSchema, updated_at: z.coerce.date() });
@@ -39,16 +40,22 @@ export function createPresentationService(database: EntryDatabase, now: () => Da
       });
     },
     async list(page: { readonly cursor: string | null; readonly limit: number }) {
-      const rows = (await database.query(`SELECT c.*,p.content AS presentation FROM gyca_competitions c
+      const rows = (await database.query(`SELECT c.*,p.content AS presentation,po.sha256 AS poster_sha256 FROM gyca_competitions c
         LEFT JOIN gyca_competition_presentations p ON p.competition_id=c.id
+        LEFT JOIN gyca_competition_posters po ON po.competition_id=c.id
         WHERE c.published=true AND c.public_content IS NOT NULL AND ($1::text IS NULL OR c.id>$1) ORDER BY c.id LIMIT $2`,
       [page.cursor, page.limit + 1])).rows;
       const cards = rows.map(raw => {
-        const row = CompetitionRowSchema.extend({ presentation: CompetitionPresentationSchema.nullable() }).parse(raw);
+        const row = CompetitionRowSchema.extend({ presentation: CompetitionPresentationSchema.nullable(),
+          poster_sha256: z.string().nullable() }).parse(raw);
         const competition = projectCompetition(row, now());
         if (competition === null) throw new EntryFault('NOT_FOUND', 404);
         const content = row.presentation ?? empty;
-        return { competition, presentation: { ...content,
+        // An uploaded pamphlet is the default cover; an explicit cover URL in the presentation wins.
+        const cover = content.cover ?? (row.poster_sha256 === null ? null
+          : { src: competitionPosterUrl(competition.slug, row.poster_sha256),
+            alt: { en: `${competition.title.en} poster`, ko: `${competition.title.ko} 포스터` }, caption: null });
+        return { competition, presentation: { ...content, cover,
           city: competition.exhibition?.approvalStatus === 'approved' ? content.city : null } };
       });
       const items = cards.slice(0, page.limit);

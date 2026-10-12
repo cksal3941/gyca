@@ -174,14 +174,25 @@ export default function ContestDetailLive({ slug }: { slug: string }) {
         }
       />
 
-      {/* Hero image band (cover art or neutral tint) */}
+      {/* Poster/pamphlet (portrait, shown whole) or a neutral image band when none is set */}
       <div className="mx-auto max-w-page px-6 pt-10 lg:pt-14">
-        <div
-          className="aspect-[21/9] w-full overflow-hidden bg-cover bg-center ring-1 ring-black/5"
-          style={{ backgroundImage: coverBg(comp.slug, cover, 1600) }}
-          role="img"
-          aria-label={comp.title[locale]}
-        />
+        {cover ? (
+          <div className="flex justify-center bg-surface p-4 ring-1 ring-black/5 sm:p-8">
+            <div
+              className="aspect-[3/4] w-full max-w-[520px] bg-contain bg-center bg-no-repeat"
+              style={{ backgroundImage: `url(${cover})` }}
+              role="img"
+              aria-label={pres?.cover?.alt[locale] ?? comp.title[locale]}
+            />
+          </div>
+        ) : (
+          <div
+            className="aspect-[21/9] w-full overflow-hidden bg-cover bg-center ring-1 ring-black/5"
+            style={{ backgroundImage: coverBg(comp.slug, null, 1600) }}
+            role="img"
+            aria-label={comp.title[locale]}
+          />
+        )}
       </div>
 
       <section className="mx-auto max-w-page px-6 py-12 lg:py-16">

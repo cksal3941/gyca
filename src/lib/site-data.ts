@@ -72,7 +72,24 @@ export type Contest = {
   /** Absolute entry-close instant (ISO). When set and now is past it, the row's
    *  effective status becomes "closed" (종료), regardless of the authored status. */
   deadlineAt?: string;
+  /** Absolute entry-open instant (ISO). Until then the effective status is "upcoming"
+   *  (접수 예정) and no Apply CTA is offered, regardless of the authored status. */
+  opensAt?: string;
+  /** Poster/pamphlet images for the home page slider (portrait). Falls back to the card cover. */
+  posters?: string[];
 };
+
+/** Status as it should read right now: the schedule overrides the authored status.
+ *  Past the deadline → closed; before the opening instant → upcoming; otherwise authored. */
+export function effectiveContestStatus(c: Contest, now: number = Date.now()): ContestStatus {
+  if (c.deadlineAt && now >= new Date(c.deadlineAt).getTime()) return "closed";
+  if (c.opensAt && now < new Date(c.opensAt).getTime()) return "upcoming";
+  return c.status;
+}
+/** Whether applying is possible right now (schedule-aware). */
+export function contestAcceptsEntries(c: Contest, now: number = Date.now()): boolean {
+  return c.sample !== true && effectiveContestStatus(c, now) === "open";
+}
 
 export const CONTESTS: Contest[] = [
   // Real first-launch open call (has a dedicated detail route /contests/viyba-2026).
@@ -86,12 +103,15 @@ export const CONTESTS: Contest[] = [
     stage: { en: "Vienna Final · 14–16 Dec 2026", ko: "비엔나 본선 · 2026.12.14–16" },
     period: "~ 2026.11.07",
     deadline: "2026.11.07",
-    status: "open",
+    // Entries have not opened yet: the card reads 접수 예정 until `opensAt` (set it once the
+    // official opening date is confirmed; the status flips to open automatically).
+    status: "upcoming",
     fee: "₩150,000",
     summary: {
-      en: "Vienna International Youth Book Awards — now open. A book you can read, touch, and experience, judged as a work of art.",
-      ko: "비엔나 국제 청소년 북 어워드 — 접수 중. 읽고, 만지고, 경험하는 책 한 권을 예술작품으로 평가합니다.",
+      en: "Vienna International Youth Book Awards. A book you can read, touch, and experience, judged as a work of art.",
+      ko: "비엔나 국제 청소년 북 어워드. 읽고, 만지고, 경험하는 책 한 권을 예술작품으로 평가합니다.",
     },
+    posters: ["/images/viyba-poster-1.png", "/images/viyba-poster-2.png"],
     tint: "linear-gradient(135deg,#13294b,#0a0f1f)",
     applyUrl:
       "https://docs.google.com/forms/d/e/1FAIpQLScl8oMz9KT0ViWU99tgWxTjWZpLNBay7cacXMJQ_pzh_pSLIw/viewform",
