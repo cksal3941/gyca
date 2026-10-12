@@ -3,7 +3,7 @@
 // matching) with separate bilingual LABEL maps for display.
 // Replace with real data / CMS later.
 
-import type { Bi } from "@/lib/i18n";
+import type { Bi, BiLines } from "@/lib/i18n";
 
 export const ALL: Bi = { en: "All", ko: "전체" };
 
@@ -72,6 +72,13 @@ export type Contest = {
   /** Absolute entry-close instant (ISO). When set and now is past it, the row's
    *  effective status becomes "closed" (종료), regardless of the authored status. */
   deadlineAt?: string;
+  /** Home-promo fields (Hero + EventSlider). Only set for contests that should
+   *  headline the landing page. Hero headline is split into display lines. */
+  heroTitle?: BiLines;
+  /** Landscape hero background for the home Hero (replace with a wide image). */
+  heroImage?: string;
+  /** Poster images (5:7) shown in the home EventSlider. */
+  posters?: string[];
 };
 
 export const CONTESTS: Contest[] = [
@@ -97,8 +104,35 @@ export const CONTESTS: Contest[] = [
       "https://docs.google.com/forms/d/e/1FAIpQLScl8oMz9KT0ViWU99tgWxTjWZpLNBay7cacXMJQ_pzh_pSLIw/viewform",
     // 2026.11.07 24:00 CET (= 23:00 UTC). After this the card shows 종료.
     deadlineAt: "2026-11-07T23:00:00Z",
+    heroTitle: {
+      en: ["VIYBA 2026", "Vienna International", "Youth Book Awards"],
+      ko: ["VIYBA 2026", "비엔나 국제", "청소년 북 어워드"],
+    },
+    // TODO: swap for a wide/landscape hero image when provided.
+    heroImage: "/images/viyba-2026.jpg",
+    posters: ["/images/viyba-poster-1.png", "/images/VIYBA_exhibition.webp"],
   },
 ];
+
+/** Effective status, applying the absolute deadline instant if it has passed. */
+export function effectiveStatus(c: Contest): ContestStatus {
+  if (c.deadlineAt && Date.now() >= new Date(c.deadlineAt).getTime()) {
+    return "closed";
+  }
+  return c.status;
+}
+
+/** Real, currently-recruiting contests (status "open", deadline not passed),
+ *  excluding design-preview samples. The home promo reads from here so the
+ *  landing page follows the single source of truth. */
+export function getOpenContests(): Contest[] {
+  return CONTESTS.filter((c) => !c.sample && effectiveStatus(c) === "open");
+}
+
+/** The single contest the home page headlines (first open contest, if any). */
+export function getFeaturedContest(): Contest | undefined {
+  return getOpenContests()[0];
+}
 
 export const GLOBAL_STAGES: { city: string; note: Bi }[] = [
   { city: "Frankfurt", note: { en: "Book & illustration finals", ko: "도서·일러스트 본선" } },
@@ -147,9 +181,10 @@ export type Exhibition = {
   summary: Bi;
 };
 
-// PLACEHOLDER exhibitions & performances — realistic virtual events for design
-// preview. Not approved/confirmed; replace with real records before launch.
-export const EXHIBITIONS: Exhibition[] = [
+// Design-preview samples (virtual events). Removed from the live site on
+// 2026-10-12; kept here so the exhibitions/stages design can be restored later.
+// See memory: demo-content-removed.
+export const SAMPLE_EXHIBITIONS: Exhibition[] = [
   {
     slug: "seoul-touring-2026",
     title: { en: "2026 Art for Tomorrow — Seoul Touring Exhibition", ko: "2026 Art for Tomorrow 서울 순회전" },
@@ -240,6 +275,10 @@ export const EXHIBITIONS: Exhibition[] = [
   },
 ];
 
+// Live: no real exhibitions/performances yet. (VIYBA's Vienna Final lives on the
+// contest detail page, not here.) Restore from SAMPLE_EXHIBITIONS when real.
+export const EXHIBITIONS: Exhibition[] = [];
+
 export type Winner = {
   slug: string;
   title: string;
@@ -270,9 +309,9 @@ export const AWARD_LABEL: Record<string, Bi> = {
   Finalist: { en: "Finalist", ko: "Finalist" },
 };
 
-// PLACEHOLDER winners — realistic virtual awardees for design preview. Not real
-// results; replace after judging. English work titles + mixed artist names.
-export const WINNERS: Winner[] = [
+// Design-preview samples (virtual awardees). Removed from the live site on
+// 2026-10-12; kept so the winners design can be restored. See memory.
+export const SAMPLE_WINNERS: Winner[] = [
   { slug: "quiet-morning", title: "Quiet Morning", artist: "김서연", award: "Grand Prize", category: "도서·일러스트", year: "2026", country: "KR" },
   { slug: "paper-boats", title: "Paper Boats", artist: "박지민", award: "Gold", category: "도서·일러스트", year: "2026", country: "KR" },
   { slug: "city-of-light", title: "City of Light", artist: "David Park", award: "Gold", category: "미술", year: "2026", country: "US" },
@@ -284,6 +323,10 @@ export const WINNERS: Winner[] = [
   { slug: "next-step", title: "Next Step", artist: "Team Aurora", award: "Finalist", category: "비즈니스", year: "2025", country: "KR" },
   { slug: "green-ledger", title: "Green Ledger", artist: "Team Sprout", award: "Finalist", category: "비즈니스", year: "2026", country: "KR" },
 ];
+
+// Live: no real winners yet — results are published after judging.
+// Restore from SAMPLE_WINNERS when real.
+export const WINNERS: Winner[] = [];
 
 export type Notice = {
   slug: string;
@@ -302,7 +345,10 @@ export const NOTICE_CATEGORY_LABEL: Record<string, Bi> = {
   FAQ: { en: "FAQ", ko: "FAQ" },
 };
 
-export const NOTICES: Notice[] = [
+// Design-preview samples. The notice/schedule items were removed from the live
+// /notices on 2026-10-12; kept here so the notices design can be restored.
+// See memory. NOTE: the FAQ item still feeds /help via the live NOTICES below.
+export const SAMPLE_NOTICES: Notice[] = [
   {
     slug: "2026-schedule",
     category: "일정",
@@ -343,6 +389,11 @@ export const NOTICES: Notice[] = [
     },
   },
 ];
+
+// Live notices: nothing is shown on /notices yet (the demo notice/schedule items
+// were removed). Only the FAQ item is kept live — it feeds /help, not /notices
+// (the notices page filters FAQ out). Restore from SAMPLE_NOTICES when real.
+export const NOTICES: Notice[] = SAMPLE_NOTICES.filter((n) => n.category === "FAQ");
 
 export function getContest(slug: string) {
   return CONTESTS.find((c) => c.slug === slug);

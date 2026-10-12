@@ -84,13 +84,6 @@ export default function ExhibitionsPage() {
         locale={locale}
       />
       <section className="mx-auto max-w-page px-6">
-        {/* Safety notice — these events are demo placeholders, not approved */}
-        <div className="mt-6 rounded-xl border border-line bg-surface px-4 py-3 text-[16px] leading-[1.6] text-ink-strong">
-          {ko
-            ? "표시된 전시·공연은 디자인 데모용 예시이며, 승인·확정된 실제 행사가 아닙니다."
-            : "The exhibitions and stages shown are demo placeholders — not approved or confirmed events."}
-        </div>
-
         {/* Type tabs */}
         <div className="flex flex-wrap gap-2 border-b border-line py-6">
           {EXHIBITION_TYPE_FILTERS.map((f) => (
@@ -120,7 +113,9 @@ export default function ExhibitionsPage() {
           </div>
         ) : (
           <p className="py-24 text-center text-[16px] text-ink-strong">
-            {ko ? "해당 종류의 전시·공연이 아직 없습니다." : "No events of this type yet."}
+            {ko
+              ? "예정된 전시·공연이 아직 없습니다."
+              : "No exhibitions or performances yet."}
           </p>
         )}
       </section>

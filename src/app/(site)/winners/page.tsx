@@ -154,12 +154,6 @@ export default function WinnersPage() {
         locale={locale}
       />
       <section className="mx-auto max-w-page px-6 pb-16">
-        {/* Safety notice — these winners are demo placeholders, not real results */}
-        <div className="mt-6 rounded-xl border border-line bg-surface px-4 py-3 text-[16px] leading-[1.6] text-ink-strong">
-          {locale === "ko"
-            ? "표시된 수상작은 디자인 데모용 예시이며, 실제 수상 실적·수상자가 아닙니다. 실제 결과는 심사 종료 후 공개됩니다."
-            : "The winners shown are demo placeholders — not real results or awardees. Actual results are published after judging."}
-        </div>
         {list.length > 0 && featured && <FeaturedWinner w={featured} locale={locale} />}
 
         {/* Filters */}
@@ -196,7 +190,9 @@ export default function WinnersPage() {
           )
         ) : (
           <p className="py-24 text-center text-[16px] text-ink-strong">
-            {locale === "ko" ? "조건에 맞는 수상작이 없습니다." : "No winners match your filters."}
+            {locale === "ko"
+              ? "아직 공개된 수상작이 없습니다. 수상 결과는 심사 종료 후 공개됩니다."
+              : "No winners yet — results are published after judging."}
           </p>
         )}
       </section>

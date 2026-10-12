@@ -21,6 +21,7 @@
 
 # local QA screenshots (not product assets)
 /docs/e2e-*.png
+/.screenshots/
 
 # next.js
 /.next/

@@ -2,52 +2,50 @@
 
 import { useEffect, useState } from "react";
 import { ChevronsDown } from "lucide-react";
+import Link from "next/link";
 import { useLocale } from "@/components/i18n/LocaleProvider";
+import {
+  getFeaturedContest,
+  effectiveStatus,
+  STATUS_LABEL,
+} from "@/lib/site-data";
 import type { BiLines } from "@/lib/i18n";
 
+// Two editorial story slides. Copy is Vienna/VIYBA-themed; the apply/detail
+// links and deadline pill are sourced from the featured (open) contest so the
+// Hero stays wired to the single source of truth as contests change.
 type Slide = {
+  tag: string;
   title: BiLines;
   desc: BiLines;
-  tag: string;
   image: string;
+  apply?: boolean; // show the "Apply Now" CTA + deadline pill on this slide
 };
 
-// First launch: Leipzig 2027 art book award (copy from the GYCA Leipzig 2027 brief).
 const SLIDES: Slide[] = [
   {
-    title: {
-      en: ["2027 GYCA INTERNATIONAL", "YOUTH ART BOOK AWARDS"],
-      ko: ["2027 GYCA 국제", "청소년 아트북 어워드"],
-    },
-    desc: {
-      en: ["The world is waiting for your art.", "An art book award where creators aged 7–18 debut on the global stage."],
-      ko: ["세상이 당신의 그림을 기다립니다.", "7–18세 창작자가 국제 무대에 데뷔하는 아트북 어워드."],
-    },
-    tag: "Leipzig 2027",
-    image: "/images/iyac.jpg",
-  },
-  {
-    title: {
-      en: ["YOUR BOOK, YOUR STORY", "NEXT STOP, LEIPZIG"],
-      ko: ["당신의 책, 당신의 이야기", "다음 무대는 라이프치히"],
-    },
-    desc: {
-      en: ["Your story, recognized by the world.", "A GYCA Official Selection is where it begins."],
-      ko: ["당신의 작은 이야기가 세계의 인정을 받습니다.", "GYCA 공식 선정이 그 첫 무대입니다."],
-    },
     tag: "Open Call",
-    image: "/images/kajaa.jpg",
-  },
-  {
     title: {
-      en: ["FINALISTS GO", "TO LEIPZIG"],
-      ko: ["Finalist는", "라이프치히로"],
+      en: ["YOUR BOOK, YOUR STORY", "ON STAGE IN VIENNA"],
+      ko: ["당신의 책, 당신의 이야기", "무대는 비엔나로"],
     },
     desc: {
-      en: ["Meet a global audience in Leipzig.", "Your book takes center stage at an international exhibition."],
-      ko: ["라이프치히에서 세계 관객과 마주하세요.", "당신의 책이 국제 전시의 주인공이 됩니다."],
+      en: ["Your story, recognized by the world.", "A VIYBA selection is where it begins."],
+      ko: ["당신의 작은 이야기가 세계의 인정을 받습니다.", "VIYBA 선정이 그 첫 무대입니다."],
     },
+    image: "/images/VIYBA_slide.webp",
+    apply: true,
+  },
+  {
     tag: "Finalist",
+    title: {
+      en: ["FINALISTS GO", "TO VIENNA"],
+      ko: ["Finalist는", "비엔나로"],
+    },
+    desc: {
+      en: ["Meet a global audience in Vienna.", "Your book takes center stage at an international exhibition."],
+      ko: ["비엔나에서 세계 관객과 마주하세요.", "당신의 책이 국제 전시의 주인공이 됩니다."],
+    },
     image: "/images/led-wall.jpg",
   },
 ];
@@ -57,12 +55,20 @@ export default function Hero() {
   const [index, setIndex] = useState(0);
   const count = SLIDES.length;
 
+  // Live links / deadline for the currently-recruiting contest.
+  const featured = getFeaturedContest();
+  const applyUrl = featured?.applyUrl;
+  const detailHref = featured ? `/contests/${featured.slug}` : "/contests";
+  const statusLabel = featured ? STATUS_LABEL[effectiveStatus(featured)] : null;
+  const period = featured?.period ?? "";
+
   useEffect(() => {
     const id = setInterval(() => setIndex((i) => (i + 1) % count), 6000);
     return () => clearInterval(id);
   }, [count]);
 
   const active = SLIDES[index];
+  const showApply = Boolean(active.apply && featured);
 
   return (
     <section className="relative h-screen min-h-[640px] w-full overflow-hidden bg-black text-white">
@@ -82,6 +88,16 @@ export default function Hero() {
       {/* Content — left inset ~8%, flex column gap 24px, max-width ~893px */}
       <div className="relative flex h-full flex-col justify-center px-[8%]">
         <div className="flex max-w-[893px] flex-col items-start gap-6">
+          {/* Status + deadline pill (recruiting slide only) */}
+          {showApply && statusLabel && (
+            <span className="flex items-center gap-2 rounded-full bg-brand-teal px-4 py-1.5 text-[14px] font-bold text-white">
+              {statusLabel[locale]}
+              {period && (
+                <span className="font-semibold text-white/90">· {period}</span>
+              )}
+            </span>
+          )}
+
           <h1
             key={`${index}-${locale}`}
             className={`text-[52px] sm:text-[64px] md:text-[80px] ${
@@ -111,10 +127,26 @@ export default function Hero() {
             ))}
           </p>
 
-          <button className="mt-2 flex h-11 items-center gap-2 rounded-[5px] border border-white/[0.28] bg-white/[0.12] px-[26px] text-[14px] font-bold text-white backdrop-blur-sm hover:bg-white/20">
-            {locale === "ko" ? "자세히 보기" : "View More"}
-            <span aria-hidden>›</span>
-          </button>
+          <div className="mt-2 flex flex-wrap items-center gap-3">
+            {showApply && applyUrl && (
+              <a
+                href={applyUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-11 items-center gap-2 rounded-[5px] bg-white px-[26px] text-[14px] font-bold text-black hover:bg-white/90"
+              >
+                {locale === "ko" ? "접수하기" : "Apply Now"}
+                <span aria-hidden>›</span>
+              </a>
+            )}
+            <Link
+              href={detailHref}
+              className="flex h-11 items-center gap-2 rounded-[5px] border border-white/[0.28] bg-white/[0.12] px-[26px] text-[14px] font-bold text-white backdrop-blur-sm hover:bg-white/20"
+            >
+              {locale === "ko" ? "자세히 보기" : "View More"}
+              <span aria-hidden>›</span>
+            </Link>
+          </div>
         </div>
       </div>
 

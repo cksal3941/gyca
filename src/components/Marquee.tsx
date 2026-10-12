@@ -1,8 +1,8 @@
 // Scrolling headline band — always English (the Bebas display face is Latin,
 // and the marquee reads as a graphic element regardless of the site locale).
 const PHRASES = [
-  "Your Book. Your Story. Next Stop, Leipzig.",
-  "GYCA International Youth Art Book Awards",
+  "Your Book. Your Story. On Stage in Vienna.",
+  "VIYBA 2026 — Vienna International Youth Book Awards",
 ];
 
 export default function Marquee() {

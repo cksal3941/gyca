@@ -2,9 +2,10 @@ import Link from "next/link";
 import SectionHeading from "./SectionHeading";
 import type { Bi, Locale } from "@/lib/i18n";
 
-// All items are Leipzig 2027 announcements → link to the real competition detail
-// (no dead "#" links).
-const NEWS_HREF = "/contests/leipzig-2027";
+// All items are VIYBA 2026 announcements → link to the real competition detail
+// (no dead "#" links). NOTE: publish dates below are editorial placeholders —
+// replace with the real announcement dates before launch.
+const NEWS_HREF = "/contests/viyba-2026";
 
 type News = {
   tag?: Bi;
@@ -21,48 +22,50 @@ const NEWS: News[] = [
     tag: { en: "New Award", ko: "대회 개최" },
     tagColor: "text-brand-blue",
     title: {
-      en: "2027 GYCA International Youth Art Book Awards — entries open",
-      ko: "2027 GYCA International Youth Art Book Awards 접수 시작",
+      en: "VIYBA 2026 — Vienna International Youth Book Awards now open (deadline 7 Nov 2026)",
+      ko: "VIYBA 2026 비엔나 국제 청소년 북 어워드 접수 중 (마감 2026.11.07)",
     },
-    date: "2026-09-14",
+    date: "2026-10-01",
     no: "0001",
-  },
-  {
-    tag: { en: "Guide", ko: "안내" },
-    tagColor: "text-brand-blue",
-    title: {
-      en: "Submission format — single PDF 20+ pages incl. cover; English title & description required",
-      ko: "출품 규격 안내 — 표지 포함 20쪽 이상 단일 PDF, 영문 작품명·소개 필수",
-    },
-    date: "2026-09-14",
-    no: "0002",
   },
   {
     tag: { en: "Schedule", ko: "일정" },
     tagColor: "text-brand-orange",
     title: {
-      en: "First international review & Official Selection announcement schedule",
-      ko: "1차 국제심사 및 Official Selection 발표 일정 안내",
+      en: "Vienna Final — 14–16 Dec 2026",
+      ko: "비엔나 본선 안내 — 2026.12.14~16",
     },
-    date: "2026-09-14",
+    date: "2026-10-01",
+    no: "0002",
+  },
+  {
+    tag: { en: "Guide", ko: "안내" },
+    tagColor: "text-brand-blue",
+    title: {
+      en: "A book you can read, touch, and experience — judged as a work of art",
+      ko: "읽고, 만지고, 경험하는 책 한 권을 예술작품으로 평가합니다",
+    },
+    date: "2026-10-01",
     no: "0003",
   },
   {
+    tag: { en: "How to apply", ko: "접수 방법" },
+    tagColor: "text-ink-strong",
     title: {
-      en: "Finalist · Leipzig international exhibition (up to 30 works)",
-      ko: "Finalist · 라이프치히 국제전시 안내 (최대 30작품)",
+      en: "Entries are accepted through the official application form",
+      ko: "공식 접수 양식(구글폼)을 통해 작품을 접수합니다",
     },
-    date: "2026-09-14",
+    date: "2026-10-01",
     no: "0004",
   },
   {
     tag: { en: "Notice", ko: "공지" },
     tagColor: "text-ink-strong",
     title: {
-      en: "Entry fee (€70 per work) & refund policy",
-      ko: "참가비(작품당 €70) 및 환불 규정 안내",
+      en: "Entry fee ₩150,000 per work & refund policy",
+      ko: "참가비(작품당 ₩150,000) 및 환불 규정 안내",
     },
-    date: "2026-09-14",
+    date: "2026-10-01",
     no: "0005",
   },
 ];

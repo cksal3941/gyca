@@ -67,14 +67,6 @@ export default function NoticesPage() {
       />
 
       <section className="mx-auto max-w-page px-6">
-        {!isLive && (
-          <div className="mt-6 rounded-xl border border-line bg-surface px-4 py-3 text-[16px] leading-[1.6] text-ink-strong">
-            {locale === "ko"
-              ? "아래 공지·일정은 디자인 데모용 예시입니다. 공식 일정은 Leipzig 2027 공모 안내를 따르세요."
-              : "The notices below are demo placeholders. For official dates, see the Leipzig 2027 competition page."}
-          </div>
-        )}
-
         {/* Filters */}
         <div className="flex flex-wrap gap-2 -mx-6 border-b border-line px-6 py-6">
           {["all", ...cats].map((f) => (
