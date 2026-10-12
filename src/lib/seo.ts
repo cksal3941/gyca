@@ -2,10 +2,10 @@
 // sitemap, and robots. Korean + English are both represented so the site is
 // discoverable domestically (Naver/Google KR) and internationally (GEO).
 //
-// Set NEXT_PUBLIC_SITE_URL to the production origin (e.g. https://www.gyca.org)
-// at build time. The fallback is used for local/preview builds.
+// Set NEXT_PUBLIC_SITE_URL to override the production origin at build time.
+// The fallback below is the live domain, used when the env var is unset.
 
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.gyca.org").replace(/\/$/, "");
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://gycaawards.com").replace(/\/$/, "");
 
 export const SITE_NAME = {
   en: "GYCA — Global Young Creators Award",
