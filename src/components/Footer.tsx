@@ -31,7 +31,7 @@ export default function Footer() {
               </a>
             </p>
             <p>
-              Address · 서울특별시 강남구 압구정로 401, 55동 807호 (압구정동, 한양아파트)
+              Address · 서울 서초구 서초중앙로33길 7, 2층 201호
             </p>
             <p>Business registration · 454-25-02305</p>
             <p className="mt-3">

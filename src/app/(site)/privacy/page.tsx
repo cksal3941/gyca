@@ -10,8 +10,8 @@ const ORG = {
   name: { ko: "글로벌 영 크리에이트 어워드 (GYCA)", en: "Global Young Create Awards (GYCA)" },
   ceo: { ko: "구민영", en: "Koo Min-young" },
   address: {
-    ko: "서울특별시 강남구 압구정로 401, 55동 807호 (압구정동, 한양아파트)",
-    en: "55-807, 401 Apgujeong-ro, Gangnam-gu, Seoul, Republic of Korea",
+    ko: "서울 서초구 서초중앙로33길 7, 2층 201호",
+    en: "2F, Rm 201, 7 Seocho-jungang-ro 33-gil, Seocho-gu, Seoul, Republic of Korea",
   },
   bizNo: "454-25-02305",
   email: "admin@gyca.org",
