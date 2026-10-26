@@ -82,7 +82,10 @@ export async function generateMetadata(): Promise<Metadata> {
     verification: {
       google: "D-aLcR1qYRcrIWZeggeUgLlDDeq4emWHSnX-G5QGsko",
       other: {
-        "naver-site-verification": "4a1154f1c0d397f4f253e43a6f8928d447328360",
+        "naver-site-verification": [
+          "4a1154f1c0d397f4f253e43a6f8928d447328360",
+          "e07865ae34ae0ac597c5e2bf97cd64634d24f5a5",
+        ],
       },
     },
   };
