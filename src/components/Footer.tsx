@@ -92,7 +92,7 @@ export default function Footer() {
 
       <div className="border-t border-white/10">
         <p className="mx-auto max-w-page px-6 py-5 text-[16px] leading-5 text-white">
-          Company: 글로벌 영 크리에이트 어워드 (GYCA) · CEO: 구민영 · Business
+          Company: 글로벌 영 크리에이트 어워드 (GYCA) · Business
           registration no.: 454-25-02305 · E-commerce permit: 준비 중 · Privacy
           officer: admin@gyca.org · Hosting provider: Google Cloud
         </p>
