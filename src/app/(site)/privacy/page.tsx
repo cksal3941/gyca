@@ -8,7 +8,6 @@ import LegalDocument, { type LegalDocumentData } from "@/components/site/LegalDo
 
 const ORG = {
   name: { ko: "글로벌 영 크리에이트 어워드 (GYCA)", en: "Global Young Create Awards (GYCA)" },
-  ceo: { ko: "구민영", en: "Koo Min-young" },
   address: {
     ko: "서울 서초구 서초중앙로33길 7, 2층 201호",
     en: "2F, Rm 201, 7 Seocho-jungang-ro 33-gil, Seocho-gu, Seoul, Republic of Korea",
@@ -35,7 +34,6 @@ const doc: LegalDocumentData = {
           {
             list: [
               `사업자명: ${ORG.name.ko}`,
-              `대표자: ${ORG.ceo.ko}`,
               `주소: ${ORG.address.ko}`,
               `사업자등록번호: ${ORG.bizNo}`,
               `개인정보 보호책임자 연락처: ${ORG.email}`,
@@ -47,7 +45,6 @@ const doc: LegalDocumentData = {
           {
             list: [
               `Business name: ${ORG.name.en}`,
-              `Representative: ${ORG.ceo.en}`,
               `Address: ${ORG.address.en}`,
               `Business registration no.: ${ORG.bizNo}`,
               `Privacy officer: ${ORG.email}`,
