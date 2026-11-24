@@ -38,7 +38,7 @@ export default function LeipzigApplyButton({
 
   const ko = locale === "ko";
   const applyLabel = variant === "mobile"
-    ? ko ? "작품 접수하기 · €70" : "Apply now · €70"
+    ? ko ? "작품 접수하기 · $120" : "Apply now · $120"
     : ko ? "작품 접수하기" : "Apply now";
   const comingSoonLabel = ko ? "접수 준비 중" : "Opening soon";
 

@@ -92,6 +92,32 @@ export function contestAcceptsEntries(c: Contest, now: number = Date.now()): boo
 }
 
 export const CONTESTS: Contest[] = [
+  // New open call (poster: "International Youth Art Book Award 2027 in Leipzig").
+  // Dedicated detail route /contests/leipzig-2027; Apply there is server-gated.
+  {
+    slug: "leipzig-2027",
+    title: "International Youth Art Book Award 2027 | in Leipzig",
+    titleEn: "Art Book Award",
+    category: "도서·일러스트",
+    categoryEn: "BOOK AWARDS",
+    city: "Leipzig",
+    stage: { en: "Leipzig Book Fair · 18–21 Mar 2027", ko: "라이프치히 도서전 · 2027.03.18–21" },
+    period: "~ 2027.01.15",
+    deadline: "2027.01.15",
+    status: "open",
+    fee: "$120",
+    summary: {
+      en: "When a book becomes a work of art. Original books by young creators aged 7–18, exhibited at the Leipzig Book Fair 2027.",
+      ko: "책이 예술이 되는 순간. 만 7–18세 청소년 창작자의 오리지널 북을 2027 라이프치히 도서전에서 선보입니다.",
+    },
+    posters: ["/images/leipzig-2027-poster.jpg"],
+    tint: "linear-gradient(135deg,#13294b,#0a0f1f)",
+    // Entries are taken through the official Google Form (no on-site payment).
+    applyUrl:
+      "https://docs.google.com/forms/d/e/1FAIpQLSfbMMChnrV7UwS10olUHQrJO-rIJhkfZMhwE9X-0CEDgRZCmg/viewform",
+    // 2027.01.15 23:59 KST (= 14:59 UTC). After this the card shows 종료.
+    deadlineAt: "2027-01-15T15:00:00Z",
+  },
   // Real first-launch open call (has a dedicated detail route /contests/viyba-2026).
   {
     slug: "viyba-2026",
